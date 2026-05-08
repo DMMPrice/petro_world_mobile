@@ -8,6 +8,8 @@ import 'package:shop/screens/product/views/components/product_list_tile.dart';
 import 'package:shop/screens/product/views/location_permission_store_availability_screen.dart';
 import 'package:shop/screens/product/views/size_guide_screen.dart';
 
+import 'package:shop/models/product_model.dart';
+import 'package:shop/services/supabase_service.dart';
 import '../../../constants.dart';
 import 'components/product_quantity.dart';
 import 'components/selected_colors.dart';
@@ -15,26 +17,40 @@ import 'components/selected_size.dart';
 import 'components/unit_price.dart';
 
 class ProductBuyNowScreen extends StatefulWidget {
-  const ProductBuyNowScreen({super.key});
+  final ProductModel product;
+  const ProductBuyNowScreen({super.key, required this.product});
 
   @override
   _ProductBuyNowScreenState createState() => _ProductBuyNowScreenState();
 }
 
 class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
+  int _quantity = 1;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: CartButton(
-        price: 269.4,
+        price: (widget.product.priceAfterDiscount ?? widget.product.price) * _quantity,
         title: "Add to cart",
         subTitle: "Total price",
-        press: () {
-          customModalBottomSheet(
-            context,
-            isDismissible: false,
-            child: const AddedToCartMessageScreen(),
-          );
+        press: () async {
+          try {
+            await SupabaseService.addToCart(widget.product.id, _quantity);
+            if (mounted) {
+              customModalBottomSheet(
+                context,
+                isDismissible: false,
+                child: const AddedToCartMessageScreen(),
+              );
+            }
+          } catch (e) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error adding to cart: $e')),
+              );
+            }
+          }
         },
       ),
       body: Column(
@@ -46,13 +62,18 @@ class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const BackButton(),
-                Text(
-                  "Sleeveless Ruffle",
-                  style: Theme.of(context).textTheme.titleSmall,
+                Expanded(
+                  child: Text(
+                    widget.product.title,
+                    style: Theme.of(context).textTheme.titleSmall,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: SvgPicture.asset("assets/icons/Bookmark.svg",
+                  icon: SvgPicture.asset("assets/icons/heart.svg",
                       color: Theme.of(context).textTheme.bodyLarge!.color),
                 ),
               ],
@@ -61,12 +82,12 @@ class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
           Expanded(
             child: CustomScrollView(
               slivers: [
-                const SliverToBoxAdapter(
+                SliverToBoxAdapter(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: defaultPadding),
+                    padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
                     child: AspectRatio(
                       aspectRatio: 1.05,
-                      child: NetworkImageWithLoader(productDemoImg1),
+                      child: NetworkImageWithLoader(widget.product.image),
                     ),
                   ),
                 ),
@@ -76,16 +97,26 @@ class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: UnitPrice(
-                            price: 145,
-                            priceAfterDiscount: 134.7,
+                            price: widget.product.price,
+                            priceAfterDiscount: widget.product.priceAfterDiscount,
                           ),
                         ),
                         ProductQuantity(
-                          numOfItem: 2,
-                          onIncrement: () {},
-                          onDecrement: () {},
+                          numOfItem: _quantity,
+                          onIncrement: () {
+                            setState(() {
+                              _quantity++;
+                            });
+                          },
+                          onDecrement: () {
+                            if (_quantity > 1) {
+                              setState(() {
+                                _quantity--;
+                              });
+                            }
+                          },
                         ),
                       ],
                     ),

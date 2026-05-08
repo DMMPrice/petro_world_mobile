@@ -25,14 +25,14 @@ const AppBarTheme appBarDarkTheme = AppBarTheme(
 );
 
 ScrollbarThemeData scrollbarThemeData = ScrollbarThemeData(
-  trackColor: MaterialStateProperty.all(primaryColor),
+  trackColor: WidgetStateProperty.all(primaryColor),
 );
 
 DataTableThemeData dataTableLightThemeData = DataTableThemeData(
   columnSpacing: 24,
-  headingRowColor: MaterialStateProperty.all(Colors.black12),
+  headingRowColor: WidgetStateProperty.all(Colors.black12),
   decoration: BoxDecoration(
-    borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+    borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
     border: Border.all(color: Colors.black12),
   ),
   dataTextStyle: const TextStyle(
@@ -44,9 +44,9 @@ DataTableThemeData dataTableLightThemeData = DataTableThemeData(
 
 DataTableThemeData dataTableDarkThemeData = DataTableThemeData(
   columnSpacing: 24,
-  headingRowColor: MaterialStateProperty.all(Colors.white10),
+  headingRowColor: WidgetStateProperty.all(Colors.white10),
   decoration: BoxDecoration(
-    borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+    borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
     border: Border.all(color: Colors.white10),
   ),
   dataTextStyle: const TextStyle(

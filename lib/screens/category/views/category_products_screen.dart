@@ -1,62 +1,81 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/components/product/product_card.dart';
 import 'package:shop/models/product_model.dart';
 import 'package:shop/route/route_constants.dart';
+import 'package:shop/providers/providers.dart';
 
 import '../../../constants.dart';
 
 import 'package:shop/services/supabase_service.dart';
 
-class CategoryProductsScreen extends StatelessWidget {
+class CategoryProductsScreen extends ConsumerWidget {
   const CategoryProductsScreen({super.key, required this.category});
 
   final String category;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wishlistAsyncValue = ref.watch(wishlistProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(category),
       ),
-      body: SafeArea(
-        child: FutureBuilder<List<ProductModel>>(
-          future: SupabaseService.getProducts(categoryName: category),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-            final products = snapshot.data ?? [];
+      body: FutureBuilder<List<ProductModel>>(
+        future: SupabaseService.getProducts(categoryName: category),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text("Error: ${snapshot.error}"));
+          }
+          final products = snapshot.data ?? [];
+          return products.isEmpty
+              ? const Center(child: Text("No products found in this category"))
+              : GridView.builder(
+                  padding: const EdgeInsets.all(defaultPadding),
+                  itemCount: products.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.55,
+                    mainAxisSpacing: defaultPadding,
+                    crossAxisSpacing: defaultPadding,
+                  ),
+                  itemBuilder: (context, index) {
+                    final product = products[index];
+                    final isBookmarked = wishlistAsyncValue.maybeWhen(
+                      data: (wishlist) => wishlist.any((p) => p.id == product.id),
+                      orElse: () => false,
+                    );
 
-            return products.isEmpty
-                ? const Center(child: Text("No products found in this category"))
-                : GridView.builder(
-                    padding: const EdgeInsets.all(defaultPadding),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.6,
-                      mainAxisSpacing: defaultPadding,
-                      crossAxisSpacing: defaultPadding,
-                    ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) => ProductCard(
-                      image: products[index].image,
-                      brandName: products[index].brandName,
-                      title: products[index].title,
-                      price: products[index].price,
-                      priceAfterDiscount: products[index].priceAfterDiscount,
-                      discountPercent: products[index].discountPercent,
+                    return ProductCard(
+                      productId: product.id,
+                      image: product.image,
+                      brandName: product.brandName,
+                      title: product.title,
+                      price: product.price,
+                      priceAfterDiscount: product.priceAfterDiscount,
+                      discountPercent: product.discountPercent,
+                      discountType: product.discountType,
+                      discountValue: product.discountValue,
+                      rating: product.rating,
+                      reviewCount: product.reviewCount,
+                      isBookmarked: isBookmarked,
+                      onBookmarkTap: () {
+                        ref
+                            .read(wishlistProvider.notifier)
+                            .toggleWishlist(product.id);
+                      },
                       press: () {
                         Navigator.pushNamed(context, productDetailsScreenRoute,
-                            arguments: products[index]);
+                            arguments: product);
                       },
-                    ),
-                  );
-          },
-        ),
+                    );
+                  },
+                );
+        },
       ),
     );
   }

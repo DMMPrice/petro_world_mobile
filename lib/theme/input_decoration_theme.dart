@@ -23,19 +23,19 @@ const InputDecorationTheme darkInputDecorationTheme = InputDecorationTheme(
 );
 
 const OutlineInputBorder outlineInputBorder = OutlineInputBorder(
-  borderRadius: BorderRadius.all(Radius.circular(defaultBorderRadious)),
+  borderRadius: BorderRadius.all(Radius.circular(defaultBorderRadius)),
   borderSide: BorderSide(
     color: Colors.transparent,
   ),
 );
 
 const OutlineInputBorder focusedOutlineInputBorder = OutlineInputBorder(
-  borderRadius: BorderRadius.all(Radius.circular(defaultBorderRadious)),
+  borderRadius: BorderRadius.all(Radius.circular(defaultBorderRadius)),
   borderSide: BorderSide(color: primaryColor),
 );
 
 const OutlineInputBorder errorOutlineInputBorder = OutlineInputBorder(
-  borderRadius: BorderRadius.all(Radius.circular(defaultBorderRadious)),
+  borderRadius: BorderRadius.all(Radius.circular(defaultBorderRadius)),
   borderSide: BorderSide(
     color: errorColor,
   ),
@@ -43,7 +43,7 @@ const OutlineInputBorder errorOutlineInputBorder = OutlineInputBorder(
 
 OutlineInputBorder secodaryOutlineInputBorder(BuildContext context) {
   return OutlineInputBorder(
-    borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+    borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
     borderSide: BorderSide(
       color: Theme.of(context).textTheme.bodyLarge!.color!.withOpacity(0.15),
     ),

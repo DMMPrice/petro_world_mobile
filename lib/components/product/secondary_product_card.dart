@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../constants.dart';
 import '../network_image_with_loader.dart';
 
@@ -13,61 +12,34 @@ class SecondaryProductCard extends StatelessWidget {
     this.priceAfterDiscount,
     this.discountPercent,
     this.press,
-    this.style,
   });
-  final String image, brandName, title;
-  final double price;
-  final double? priceAfterDiscount;
-  final int? discountPercent;
-  final VoidCallback? press;
 
-  final ButtonStyle? style;
+  final String image, brandName, title;
+  final dynamic price;
+  final dynamic priceAfterDiscount;
+  final dynamic discountPercent;
+  final VoidCallback? press;
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: () {},
-      style: style ??
-          OutlinedButton.styleFrom(
-              minimumSize: const Size(256, 114),
-              maximumSize: const Size(256, 114),
-              padding: const EdgeInsets.all(8)),
-      child: Row(
-        children: [
-          AspectRatio(
-            aspectRatio: 1.15,
-            child: Stack(
-              children: [
-                NetworkImageWithLoader(image, radius: defaultBorderRadious),
-                if (discountPercent != null)
-                  Positioned(
-                    right: defaultPadding / 2,
-                    top: defaultPadding / 2,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: defaultPadding / 2),
-                      height: 16,
-                      decoration: const BoxDecoration(
-                        color: errorColor,
-                        borderRadius: BorderRadius.all(
-                            Radius.circular(defaultBorderRadious)),
-                      ),
-                      child: Text(
-                        "$discountPercent% off",
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  )
-              ],
+    return InkWell(
+      onTap: press,
+      borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
+      child: Container(
+        padding: const EdgeInsets.all(defaultPadding / 2),
+        decoration: BoxDecoration(
+          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+          borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              height: 80,
+              width: 80,
+              child: NetworkImageWithLoader(image, radius: defaultBorderRadius),
             ),
-          ),
-          const SizedBox(width: defaultPadding / 4),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(defaultPadding / 2),
+            const SizedBox(width: defaultPadding),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -78,7 +50,7 @@ class SecondaryProductCard extends StatelessWidget {
                         .bodyMedium!
                         .copyWith(fontSize: 10),
                   ),
-                  const SizedBox(height: defaultPadding / 2),
+                  const SizedBox(height: defaultPadding / 4),
                   Text(
                     title,
                     maxLines: 2,
@@ -88,45 +60,59 @@ class SecondaryProductCard extends StatelessWidget {
                         .titleSmall!
                         .copyWith(fontSize: 12),
                   ),
-                  const Spacer(),
-                  priceAfterDiscount != null
-                      ? Row(
-                          children: [
-                            Text(
-                              "\$$priceAfterDiscount",
-                              style: const TextStyle(
-                                color: Color(0xFF31B0D8),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(width: defaultPadding / 4),
-                            Text(
-                              "\$$price",
-                              style: TextStyle(
-                                color: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium!
-                                    .color,
-                                fontSize: 10,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                          ],
-                        )
-                      : Text(
-                          "\$$price",
-                          style: const TextStyle(
-                            color: Color(0xFF31B0D8),
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
+                  const SizedBox(height: defaultPadding / 4),
+                  Row(
+                    children: [
+                      Text(
+                        "₹${(priceAfterDiscount ?? price).toStringAsFixed(0)}",
+                        style: const TextStyle(
+                          color: primaryColor,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                        ),
+                      ),
+                      if (priceAfterDiscount != null && priceAfterDiscount < price) ...[
+                        const SizedBox(width: defaultPadding / 4),
+                        Text(
+                          "₹${price.toStringAsFixed(0)}",
+                          style: TextStyle(
+                            color: Theme.of(context)
+                                .textTheme
+                                .bodyMedium!
+                                .color!
+                                .withOpacity(0.5),
+                            fontSize: 10,
+                            decoration: TextDecoration.lineThrough,
                           ),
                         ),
+                      ],
+                      if (priceAfterDiscount != null && priceAfterDiscount < price && discountPercent != null && discountPercent > 0) ...[
+                        const SizedBox(width: defaultPadding / 2),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: defaultPadding / 4),
+                          decoration: const BoxDecoration(
+                            color: errorColor,
+                            borderRadius: BorderRadius.all(
+                                Radius.circular(defaultBorderRadius)),
+                          ),
+                          child: Text(
+                            "$discountPercent% off",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

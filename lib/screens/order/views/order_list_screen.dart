@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'components/order_card.dart';
 import 'components/order_status_tracker.dart';
 import 'package:shop/services/supabase_service.dart';
+import 'package:intl/intl.dart';
+import 'package:shop/constants.dart' as constants;
 
 class OrderListScreen extends StatelessWidget {
   const OrderListScreen({
@@ -16,9 +18,7 @@ class OrderListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
+      appBar: AppBar(title: Text(title)),
       body: FutureBuilder<List<Map<String, dynamic>>>(
         future: SupabaseService.getOrders(),
         builder: (context, snapshot) {
@@ -29,16 +29,28 @@ class OrderListScreen extends StatelessWidget {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          // Filter orders by status
           final allOrders = snapshot.data ?? [];
+
+          // Filter by status group
           final orders = allOrders.where((o) {
-            final oStatus = o['status'].toString().toLowerCase();
-            final sStatus = status.name.toLowerCase();
-            return oStatus == sStatus;
+            final String s = o['status'].toString().toLowerCase();
+            if (status == OrderStatus.processing) {
+              return ['ordered', 'processing', 'packed', 'shipped'].contains(s);
+            }
+            return s == status.name.toLowerCase();
           }).toList();
 
           if (orders.isEmpty) {
-            return const Center(child: Text("No orders found."));
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.shopping_bag_outlined, size: 64, color: constants.greyColor),
+                  const SizedBox(height: constants.defaultPadding),
+                  Text('No $title orders', style: Theme.of(context).textTheme.titleMedium),
+                ],
+              ),
+            );
           }
 
           return ListView.builder(
@@ -46,28 +58,48 @@ class OrderListScreen extends StatelessWidget {
             itemCount: orders.length,
             itemBuilder: (context, index) {
               final order = orders[index];
-              final items = order['order_items'] as List;
+              final items = order['order_items'] as List? ?? [];
 
-              // Convert items to mockProducts format for OrderCard
               final List<Map<String, dynamic>> products = items.map((item) {
-                final p = item['products'];
+                final p = item['products'] ?? {};
                 return {
-                  "image": p['image_url'],
-                  "brandName": p['brand_name'] ?? "Unknown",
-                  "title": p['title'],
-                  "price": (p['price'] as num).toDouble(),
-                  "priceAfterDiscount": p['price_after_discount'] != null
-                      ? (p['price_after_discount'] as num).toDouble()
-                      : null,
-                  "discountPercent": p['discount_percent'],
+                  'image':              p['image_url'],
+                  'brandName':          p['brand_name'] ?? '',
+                  'title':              p['title'] ?? 'Product',
+                  'price':              (p['price'] as num?)?.toDouble() ?? 0.0,
                 };
               }).toList();
 
+              String formattedDate = '';
+              try {
+                formattedDate = DateFormat('dd/MM/yyyy').format(DateTime.parse(order['created_at']));
+              } catch (_) {
+                formattedDate = order['created_at']?.toString().split('T')[0] ?? '';
+              }
+
+              // Map DB status string → OrderStatus enum
+              OrderStatus currentStatus = status;
+              try {
+                final s = order['status'].toString().toLowerCase();
+                currentStatus = OrderStatus.values.firstWhere(
+                  (e) => e.name.toLowerCase() == s,
+                  orElse: () => status,
+                );
+              } catch (_) {}
+
               return OrderCard(
-                orderId: "#${order['id'].toString().substring(0, 8).toUpperCase()}",
-                date: order['created_at'].toString().split('T')[0],
-                status: status,
-                products: products,
+                orderId:           order['id'].toString(),
+                orderNumber:       order['order_number']?.toString() ?? '#${order['id'].toString().substring(0, 8).toUpperCase()}',
+                date:              formattedDate,
+                status:            currentStatus,
+                products:          products,
+                totalAmount:       (order['total_amount'] as num?)?.toDouble(),
+                shiprocketOrderId: order['shiprocket_order_id']?.toString(),
+                shipmentId:        order['shipment_id']?.toString(),
+                trackingNumber:    order['tracking_number']?.toString(),
+                invoiceUrl:        order['shipping_label_url']?.toString(),
+                courierName:       order['courier_name']?.toString(),
+                courierStatus:     order['courier_status']?.toString(),
               );
             },
           );

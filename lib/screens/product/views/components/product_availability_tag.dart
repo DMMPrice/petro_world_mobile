@@ -17,7 +17,7 @@ class ProductAvailabilityTag extends StatelessWidget {
       decoration: BoxDecoration(
         color: isAvailable ? successColor : errorColor,
         borderRadius: const BorderRadius.all(
-          Radius.circular(defaultBorderRadious / 2),
+          Radius.circular(defaultBorderRadius / 2),
         ),
       ),
       child: Text(

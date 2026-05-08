@@ -33,7 +33,7 @@ class CartItemCard extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         border: Border.all(color: Theme.of(context).dividerColor),
-        borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+        borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,7 +42,7 @@ class CartItemCard extends StatelessWidget {
             aspectRatio: 1.15,
             child: Stack(
               children: [
-                NetworkImageWithLoader(image, radius: defaultBorderRadious),
+                NetworkImageWithLoader(image, radius: defaultBorderRadius),
                 if (discountPercent != null)
                   Positioned(
                     right: defaultPadding / 2,
@@ -54,7 +54,7 @@ class CartItemCard extends StatelessWidget {
                       decoration: const BoxDecoration(
                         color: errorColor,
                         borderRadius: BorderRadius.all(
-                            Radius.circular(defaultBorderRadious)),
+                            Radius.circular(defaultBorderRadius)),
                       ),
                       child: Text(
                         "$discountPercent% off",
@@ -93,11 +93,11 @@ class CartItemCard extends StatelessWidget {
                         .copyWith(fontSize: 12),
                   ),
                   const Spacer(),
-                  priceAfterDiscount != null
+                  priceAfterDiscount != null && priceAfterDiscount! < price
                       ? Row(
                           children: [
                             Text(
-                              "\$$priceAfterDiscount",
+                              "₹${priceAfterDiscount!.toStringAsFixed(0)}",
                               style: const TextStyle(
                                 color: Color(0xFF31B0D8),
                                 fontWeight: FontWeight.w500,
@@ -106,7 +106,7 @@ class CartItemCard extends StatelessWidget {
                             ),
                             const SizedBox(width: defaultPadding / 4),
                             Text(
-                              "\$$price",
+                              "₹${price.toStringAsFixed(0)}",
                               style: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme
@@ -119,7 +119,7 @@ class CartItemCard extends StatelessWidget {
                           ],
                         )
                       : Text(
-                          "\$$price",
+                          "₹${price.toStringAsFixed(0)}",
                           style: const TextStyle(
                             color: Color(0xFF31B0D8),
                             fontWeight: FontWeight.w500,
@@ -147,7 +147,7 @@ class CartItemCard extends StatelessWidget {
                 Container(
                   decoration: BoxDecoration(
                     border: Border.all(color: Theme.of(context).dividerColor),
-                    borderRadius: BorderRadius.circular(defaultBorderRadious),
+                    borderRadius: BorderRadius.circular(defaultBorderRadius),
                   ),
                   child: Row(
                     children: [

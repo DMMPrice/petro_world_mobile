@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { Mail, Phone, Calendar, Trash2, Plus } from 'lucide-react';
+import { Mail, Phone, Calendar, Trash2, Plus, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/lib/data-context';
+import { formatDate } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -36,14 +37,22 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 export default function CustomersPage() {
-  const { customers, addCustomer, deleteCustomer } = useData();
+  const { customers, addCustomer, deleteCustomer, loading } = useData();
   const [isFormOpen, setIsFormOpen] = useState(false);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
+
   const totalRevenue = customers.reduce((sum, c) => sum + c.totalSpent, 0);
-  const averageSpent = Math.round(totalRevenue / customers.length);
-  const topCustomer = customers.reduce((prev, current) =>
-    current.totalSpent > prev.totalSpent ? current : prev
-  );
+  const averageSpent = customers.length > 0 ? Math.round(totalRevenue / customers.length) : 0;
+  const topCustomer = customers.length > 0 
+    ? customers.reduce((prev, current) => current.totalSpent > prev.totalSpent ? current : prev)
+    : null;
 
   return (
     <div className="p-8 space-y-6">
@@ -79,7 +88,7 @@ export default function CustomersPage() {
             <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">₹{totalRevenue.toFixed(2)}</div>
             <p className="text-xs text-slate-600">From all customers</p>
           </CardContent>
         </Card>
@@ -89,7 +98,7 @@ export default function CustomersPage() {
             <CardTitle className="text-sm font-medium">Average Spent</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${averageSpent}</div>
+            <div className="text-2xl font-bold">₹{averageSpent}</div>
             <p className="text-xs text-slate-600">Per customer</p>
           </CardContent>
         </Card>
@@ -134,11 +143,11 @@ export default function CustomersPage() {
                     <TableCell>
                       <Badge variant="secondary">{customer.totalOrders}</Badge>
                     </TableCell>
-                    <TableCell className="font-medium">${customer.totalSpent.toFixed(2)}</TableCell>
+                    <TableCell className="font-medium">₹{customer.totalSpent.toFixed(2)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2 text-slate-600">
                         <Calendar className="w-4 h-4" />
-                        {new Date(customer.joinDate).toLocaleDateString()}
+                        {formatDate(customer.joinDate)}
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
@@ -191,7 +200,7 @@ export default function CustomersPage() {
                   <p className="text-sm text-slate-600">{topCustomer.email}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold">${topCustomer.totalSpent.toFixed(2)}</p>
+                  <p className="text-2xl font-bold">₹{topCustomer.totalSpent.toFixed(2)}</p>
                   <p className="text-sm text-slate-600">{topCustomer.totalOrders} orders</p>
                 </div>
               </div>
@@ -218,8 +227,8 @@ function AddCustomerDialog({ onClose }: { onClose: () => void }) {
     },
   });
 
-  const onSubmit = (data: any) => {
-    addCustomer({
+  const onSubmit = async (data: any) => {
+    await addCustomer({
       name: data.name,
       email: data.email,
       phone: data.phone,
@@ -227,7 +236,6 @@ function AddCustomerDialog({ onClose }: { onClose: () => void }) {
       totalSpent: 0,
       joinDate: new Date().toISOString().split('T')[0],
     });
-    toast.success('Customer added successfully');
     reset();
     onClose();
   };

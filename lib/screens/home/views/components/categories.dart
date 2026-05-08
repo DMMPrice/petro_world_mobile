@@ -1,31 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/route/route_constants.dart';
+import 'package:shop/components/shimmer_wrapper.dart';
 import '../../../../constants.dart';
 
 import 'package:shop/models/category_model.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/providers/providers.dart';
 
-class Categories extends StatelessWidget {
-  const Categories({
-    super.key,
-  });
+class Categories extends ConsumerWidget {
+  const Categories({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<List<CategoryModel>>(
-      future: SupabaseService.getCategories(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        }
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categoriesAsyncValue = ref.watch(categoriesProvider);
 
+    return categoriesAsyncValue.when(
+      loading: () => const CategoryListSkeleton(),
+      error: (error, stack) => Center(child: Text('Error: $error')),
+      data: (data) {
         final categories = [
           CategoryModel(id: 'all', title: "All Categories"),
-          ...snapshot.data!,
+          ...data,
         ];
 
         return SingleChildScrollView(
@@ -37,20 +33,18 @@ class Categories extends StatelessWidget {
                 (index) => Padding(
                   padding: EdgeInsets.only(
                       left: index == 0 ? defaultPadding : defaultPadding / 2,
-                      right:
-                          index == categories.length - 1 ? defaultPadding : 0),
+                      right: index == categories.length - 1 ? defaultPadding : 0),
                   child: CategoryBtn(
                     category: categories[index].title,
                     svgSrc: categories[index].svgSrc,
-                    isActive: index == 0,
+                    isActive: false, // Could be derived from searchParams but home is usually "fresh"
                     press: () {
-                      if (categories[index].title != "All Categories") {
-                        Navigator.pushNamed(
-                          context,
-                          categoryProductsScreenRoute,
-                          arguments: categories[index].title,
-                        );
+                      if (categories[index].title == "All Categories") {
+                        ref.read(searchParamsProvider.notifier).clearAll();
+                      } else {
+                        ref.read(searchParamsProvider.notifier).setCategory(categories[index].title);
                       }
+                      Navigator.pushNamed(context, searchScreenRoute);
                     },
                   ),
                 ),
@@ -59,6 +53,36 @@ class Categories extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class CategoryListSkeleton extends StatelessWidget {
+  const CategoryListSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const NeverScrollableScrollPhysics(),
+      child: Row(
+        children: List.generate(
+          5,
+          (index) => Padding(
+            padding: EdgeInsets.only(
+              left: index == 0 ? defaultPadding : defaultPadding / 2,
+              right: index == 4 ? defaultPadding : 0,
+            ),
+            child: const ShimmerWrapper(
+              child: SkeletonBox(
+                width: 100,
+                height: 36,
+                borderRadius: 30,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

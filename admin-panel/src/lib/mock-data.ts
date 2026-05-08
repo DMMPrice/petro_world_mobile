@@ -3,10 +3,20 @@ export interface Product {
   id: string;
   name: string;
   category: string;
+  category_id?: string;
+  sub_category_id?: string;
+  sub_category_name?: string;
+  weight?: number;
+  length?: number;
+  width?: number;
+  height?: number;
   price: number;
   stock: number;
-  sku: string;
   image?: string;
+  gallery?: string[];
+  description?: string;
+  discount_type?: 'percentage' | 'fixed' | null;
+  discount_value?: number | null;
 }
 
 export interface Order {
@@ -15,9 +25,19 @@ export interface Order {
   customerId: string;
   customerName: string;
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'ordered' | 'processing' | 'packed' | 'shipped' | 'delivered' | 'canceled' | 'returned' | 'awaitingPayment';
   date: string;
   items: number;
+  trackingNumber?: string;
+  shippingLabelUrl?: string;
+  courierStatus?: string;
+  shiprocketOrderId?: string;
+  shipmentId?: string;
+  shippingAddress?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  order_items?: any[];
 }
 
 export interface Customer {
@@ -28,6 +48,7 @@ export interface Customer {
   totalOrders: number;
   totalSpent: number;
   joinDate: string;
+  role: 'customer' | 'admin';
 }
 
 export interface Coupon {
@@ -39,6 +60,14 @@ export interface Coupon {
   active: boolean;
 }
 
+export interface Banner {
+  id: string;
+  imageUrl: string;
+  title?: string;
+  linkTo?: string;
+  active: boolean;
+}
+
 export const mockProducts: Product[] = [
   {
     id: '1',
@@ -46,7 +75,6 @@ export const mockProducts: Product[] = [
     category: 'Fuel',
     price: 2.45,
     stock: 5000,
-    sku: 'FUEL-95-001',
   },
   {
     id: '2',
@@ -54,7 +82,6 @@ export const mockProducts: Product[] = [
     category: 'Fuel',
     price: 2.65,
     stock: 3200,
-    sku: 'FUEL-98-001',
   },
   {
     id: '3',
@@ -62,7 +89,6 @@ export const mockProducts: Product[] = [
     category: 'Fuel',
     price: 2.35,
     stock: 4500,
-    sku: 'DIESEL-001',
   },
   {
     id: '4',
@@ -70,7 +96,6 @@ export const mockProducts: Product[] = [
     category: 'Gas',
     price: 1.85,
     stock: 2000,
-    sku: 'LPG-001',
   },
   {
     id: '5',
@@ -78,7 +103,6 @@ export const mockProducts: Product[] = [
     category: 'Lubricants',
     price: 8.99,
     stock: 450,
-    sku: 'OIL-5W30-001',
   },
   {
     id: '6',
@@ -86,7 +110,6 @@ export const mockProducts: Product[] = [
     category: 'Maintenance',
     price: 12.50,
     stock: 320,
-    sku: 'BRAKE-DOT4-001',
   },
   {
     id: '7',
@@ -94,7 +117,6 @@ export const mockProducts: Product[] = [
     category: 'Detailing',
     price: 6.99,
     stock: 150,
-    sku: 'WASH-SHAMP-001',
   },
   {
     id: '8',
@@ -102,7 +124,6 @@ export const mockProducts: Product[] = [
     category: 'Maintenance',
     price: 15.00,
     stock: 85,
-    sku: 'FILTER-AIR-001',
   },
 ];
 
@@ -156,54 +177,6 @@ export const mockOrders: Order[] = [
     status: 'delivered',
     date: '2024-04-18',
     items: 8,
-  },
-];
-
-export const mockCustomers: Customer[] = [
-  {
-    id: 'c1',
-    name: 'John Smith',
-    email: 'john@example.com',
-    phone: '+1 (555) 123-4567',
-    totalOrders: 5,
-    totalSpent: 456.25,
-    joinDate: '2023-01-15',
-  },
-  {
-    id: 'c2',
-    name: 'Sarah Johnson',
-    email: 'sarah@example.com',
-    phone: '+1 (555) 234-5678',
-    totalOrders: 12,
-    totalSpent: 1245.80,
-    joinDate: '2022-06-20',
-  },
-  {
-    id: 'c3',
-    name: 'Mike Wilson',
-    email: 'mike@example.com',
-    phone: '+1 (555) 345-6789',
-    totalOrders: 3,
-    totalSpent: 285.50,
-    joinDate: '2023-11-10',
-  },
-  {
-    id: 'c4',
-    name: 'Emily Davis',
-    email: 'emily@example.com',
-    phone: '+1 (555) 456-7890',
-    totalOrders: 8,
-    totalSpent: 654.30,
-    joinDate: '2023-03-22',
-  },
-  {
-    id: 'c5',
-    name: 'Robert Brown',
-    email: 'robert@example.com',
-    phone: '+1 (555) 567-8901',
-    totalOrders: 15,
-    totalSpent: 2100.00,
-    joinDate: '2022-01-05',
   },
 ];
 

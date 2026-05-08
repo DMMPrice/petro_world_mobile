@@ -35,11 +35,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
       });
 
       try {
-        await Supabase.instance.client.auth.signUp(
+        final response = await Supabase.instance.client.auth.signUp(
           email: _email!,
           password: _password!,
         );
-        // AuthGate will handle redirection
+        if (response.session == null && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Registration successful! Please check your email for a confirmation link.'),
+              backgroundColor: successColor,
+            ),
+          );
+        }
+        // AuthGate will handle redirection if session is not null
       } on AuthException catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -32,7 +32,7 @@ class CardInfo extends StatelessWidget {
               decoration: BoxDecoration(
                 color: bgColor,
                 borderRadius: const BorderRadius.all(
-                  Radius.circular(defaultBorderRadious * 2),
+                  Radius.circular(defaultBorderRadius * 2),
                 ),
               ),
               child: Column(

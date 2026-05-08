@@ -11,6 +11,10 @@ import {
   Tag,
   LogOut,
   Menu,
+  ShieldCheck,
+  Settings,
+  HelpCircle,
+  MessageSquare,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -47,6 +51,26 @@ const navigationItems = [
     title: 'Promotions',
     href: '/dashboard/promotions',
     icon: Tag,
+  },
+  {
+    title: 'Team',
+    href: '/dashboard/team',
+    icon: ShieldCheck,
+  },
+  {
+    title: 'FAQs',
+    href: '/dashboard/faqs',
+    icon: HelpCircle,
+  },
+  {
+    title: 'Support',
+    href: '/dashboard/support',
+    icon: MessageSquare,
+  },
+  {
+    title: 'Settings',
+    href: '/dashboard/settings',
+    icon: Settings,
   },
 ];
 

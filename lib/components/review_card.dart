@@ -32,7 +32,7 @@ class ReviewCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).textTheme.bodyLarge!.color!.withOpacity(0.035),
         borderRadius:
-            const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+            const BorderRadius.all(Radius.circular(defaultBorderRadius)),
       ),
       child: Row(
         children: [
@@ -80,11 +80,11 @@ class ReviewCard extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                RateBar(star: 5, value: numOfFiveStar / numOfReviews),
-                RateBar(star: 4, value: numOfFourStar / numOfReviews),
-                RateBar(star: 3, value: numOfThreeStar / numOfReviews),
-                RateBar(star: 2, value: numOfTwoStar / numOfReviews),
-                RateBar(star: 1, value: numOfOneStar / numOfReviews),
+                RateBar(star: 5, value: numOfReviews > 0 ? numOfFiveStar / numOfReviews : 0),
+                RateBar(star: 4, value: numOfReviews > 0 ? numOfFourStar / numOfReviews : 0),
+                RateBar(star: 3, value: numOfReviews > 0 ? numOfThreeStar / numOfReviews : 0),
+                RateBar(star: 2, value: numOfReviews > 0 ? numOfTwoStar / numOfReviews : 0),
+                RateBar(star: 1, value: numOfReviews > 0 ? numOfOneStar / numOfReviews : 0),
               ],
             ),
           ),
@@ -122,7 +122,7 @@ class RateBar extends StatelessWidget {
           Expanded(
             child: ClipRRect(
               borderRadius: const BorderRadius.all(
-                Radius.circular(defaultBorderRadious),
+                Radius.circular(defaultBorderRadius),
               ),
               child: LinearProgressIndicator(
                 minHeight: 6,

@@ -24,7 +24,7 @@ class NotifyMeCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: isNotify ? primaryColor : Colors.transparent,
             borderRadius: const BorderRadius.all(
-              Radius.circular(defaultBorderRadious),
+              Radius.circular(defaultBorderRadius),
             ),
             border: Border.all(
               color: isNotify
@@ -70,7 +70,7 @@ class NotifyMeCard extends StatelessWidget {
                 CupertinoSwitch(
                   onChanged: onChanged,
                   value: isNotify,
-                  activeColor: primaryMaterialColor.shade900,
+                  activeTrackColor: primaryMaterialColor.shade900,
                 )
               ],
             ),

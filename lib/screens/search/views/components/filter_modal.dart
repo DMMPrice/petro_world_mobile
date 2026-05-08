@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/constants.dart';
+import 'package:shop/providers/providers.dart';
 
-class FilterModal extends StatefulWidget {
+class FilterModal extends ConsumerStatefulWidget {
   const FilterModal({super.key});
 
   @override
-  State<FilterModal> createState() => _FilterModalState();
+  ConsumerState<FilterModal> createState() => _FilterModalState();
 }
 
-class _FilterModalState extends State<FilterModal> {
+class _FilterModalState extends ConsumerState<FilterModal> {
   bool isFilterTab = true;
-  String? selectedSort;
-  bool availableInStock = false;
 
   final List<String> sortOptions = [
     "Price [Low to High]",
     "Price [High to Low]",
-    "New",
     "Highest Rated",
     "A-Z",
     "Z-A",
@@ -24,14 +23,17 @@ class _FilterModalState extends State<FilterModal> {
 
   @override
   Widget build(BuildContext context) {
+    final searchParams = ref.watch(searchParamsProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
+
     return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
       padding: const EdgeInsets.only(top: defaultPadding),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         children: [
           // Header
           Padding(
@@ -39,20 +41,14 @@ class _FilterModalState extends State<FilterModal> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.arrow_back),
-                ),
+                const SizedBox(width: 48), // Spacer to balance Clear All
                 Text(
                   isFilterTab ? "Filter" : "Sort",
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 TextButton(
                   onPressed: () {
-                    setState(() {
-                      selectedSort = null;
-                      availableInStock = false;
-                    });
+                    ref.read(searchParamsProvider.notifier).clearAll();
                   },
                   child: const Text("Clear All"),
                 ),
@@ -76,7 +72,7 @@ class _FilterModalState extends State<FilterModal> {
                             color: isFilterTab
                                 ? primaryColor
                                 : Theme.of(context).dividerColor),
-                        borderRadius: BorderRadius.circular(defaultBorderRadious),
+                        borderRadius: BorderRadius.circular(defaultBorderRadius),
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -103,7 +99,7 @@ class _FilterModalState extends State<FilterModal> {
                             color: !isFilterTab
                                 ? primaryColor
                                 : Theme.of(context).dividerColor),
-                        borderRadius: BorderRadius.circular(defaultBorderRadious),
+                        borderRadius: BorderRadius.circular(defaultBorderRadius),
                       ),
                       alignment: Alignment.center,
                       child: Text(
@@ -125,7 +121,9 @@ class _FilterModalState extends State<FilterModal> {
           const Divider(height: 1),
           // Content
           Expanded(
-            child: isFilterTab ? _buildFilterContent() : _buildSortContent(),
+            child: isFilterTab 
+              ? _buildFilterContent(searchParams, categoriesAsync) 
+              : _buildSortContent(searchParams),
           ),
           // Footer
           SafeArea(
@@ -135,7 +133,7 @@ class _FilterModalState extends State<FilterModal> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Done"),
+                  child: const Text("Apply"),
                 ),
               ),
             ),
@@ -145,34 +143,46 @@ class _FilterModalState extends State<FilterModal> {
     );
   }
 
-  Widget _buildFilterContent() {
+  Widget _buildFilterContent(SearchState params, AsyncValue categoriesAsync) {
     return ListView(
       children: [
-        ListTile(
-          title: const Text("Category"),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {},
+        Padding(
+          padding: const EdgeInsets.all(defaultPadding),
+          child: Text("Category", style: Theme.of(context).textTheme.titleSmall),
         ),
-        const Divider(height: 1),
-        ListTile(
-          title: const Text("Brand"),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {},
+        categoriesAsync.when(
+          data: (categories) => Wrap(
+            spacing: 8,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                child: Wrap(
+                  spacing: 8,
+                  children: [
+                    FilterChip(
+                      label: const Text("All"),
+                      selected: params.category == null,
+                      onSelected: (_) => ref.read(searchParamsProvider.notifier).setCategory(null),
+                    ),
+                    ...categories.map((cat) => FilterChip(
+                      label: Text(cat.title),
+                      selected: params.category == cat.title,
+                      onSelected: (_) => ref.read(searchParamsProvider.notifier).setCategory(cat.title),
+                    )),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, s) => const Text("Error loading categories"),
         ),
-        const Divider(height: 1),
-        ListTile(
-          title: const Text("Price"),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {},
-        ),
-        const Divider(height: 1),
+        const Divider(height: 32),
         CheckboxListTile(
           title: const Text("Available in stock"),
-          value: availableInStock,
+          value: params.availableInStock,
           onChanged: (val) {
-            setState(() {
-              availableInStock = val ?? false;
-            });
+            ref.read(searchParamsProvider.notifier).setInStock(val ?? false);
           },
           controlAffinity: ListTileControlAffinity.leading,
           contentPadding: const EdgeInsets.symmetric(horizontal: defaultPadding),
@@ -181,23 +191,18 @@ class _FilterModalState extends State<FilterModal> {
     );
   }
 
-  Widget _buildSortContent() {
+  Widget _buildSortContent(SearchState params) {
     return ListView.separated(
       itemCount: sortOptions.length,
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final option = sortOptions[index];
-        return CheckboxListTile(
+        return RadioListTile<String>(
           title: Text(option),
-          value: selectedSort == option,
+          value: option,
+          groupValue: params.sortOption,
           onChanged: (val) {
-            setState(() {
-              if (val == true) {
-                selectedSort = option;
-              } else {
-                selectedSort = null;
-              }
-            });
+            ref.read(searchParamsProvider.notifier).setSortOption(val);
           },
           controlAffinity: ListTileControlAffinity.leading,
           contentPadding: const EdgeInsets.symmetric(horizontal: defaultPadding),

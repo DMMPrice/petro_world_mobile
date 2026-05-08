@@ -3,6 +3,7 @@ import 'package:shop/constants.dart';
 import 'package:shop/route/route_constants.dart';
 
 import 'package:shop/services/supabase_service.dart';
+import 'package:intl/intl.dart';
 
 class UserInfoScreen extends StatelessWidget {
   const UserInfoScreen({super.key});
@@ -42,7 +43,7 @@ class UserInfoScreen extends StatelessWidget {
                       ? "${profile!['first_name']} ${profile['last_name'] ?? ''}"
                       : "User",
                   email: user?.email ?? "No email",
-                  image: profile?['avatar_url'] ?? "https://i.imgur.com/IXnwbLk.png",
+                  image: profile?['avatar_url'] ?? "",
                 ),
                 const SizedBox(height: defaultPadding * 2),
                 UserInfoListTile(
@@ -53,7 +54,16 @@ class UserInfoScreen extends StatelessWidget {
                 ),
                 UserInfoListTile(
                   title: "Date of birth",
-                  trailingText: profile?['dob'] ?? "Not set",
+                  trailingText: (profile?['dob'] != null && profile!['dob'].toString().isNotEmpty)
+                      ? (() {
+                          try {
+                            DateTime dbDate = DateTime.parse(profile['dob']);
+                            return DateFormat('dd/MM/yyyy').format(dbDate);
+                          } catch (e) {
+                            return profile['dob'].toString();
+                          }
+                        })()
+                      : "Not set",
                 ),
                 UserInfoListTile(
                   title: "Phone number",
@@ -111,7 +121,12 @@ class ProfileInfo extends StatelessWidget {
           CircleAvatar(
             radius: 30,
             backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-            backgroundImage: NetworkImage(image),
+            backgroundImage: image.isNotEmpty && !image.contains('i.imgur.com/IXnwbLk.png')
+                ? NetworkImage(image)
+                : null,
+            child: image.isEmpty || image.contains('i.imgur.com/IXnwbLk.png')
+                ? const Icon(Icons.person, color: Colors.grey)
+                : null,
           ),
           const SizedBox(width: defaultPadding),
           Expanded(

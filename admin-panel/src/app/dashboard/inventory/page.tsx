@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, TrendingDown, Package } from 'lucide-react';
+import { AlertCircle, TrendingDown, Package, Loader2 } from 'lucide-react';
 import { useData } from '@/lib/data-context';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -16,12 +16,20 @@ import {
 import { Progress } from '@/components/ui/progress';
 
 export default function InventoryPage() {
-  const { products } = useData();
+  const { products, loading } = useData();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
 
   const lowStockProducts = products.filter(p => p.stock < 100).sort((a, b) => a.stock - b.stock);
   const criticalStockProducts = products.filter(p => p.stock < 50);
   const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
-  const averageStock = Math.round(totalStock / products.length);
+  const averageStock = products.length > 0 ? Math.round(totalStock / products.length) : 0;
 
   const getStockPercentage = (stock: number) => {
     const maxStock = 5000;

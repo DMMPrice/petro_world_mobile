@@ -33,7 +33,7 @@ class OrderStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       borderRadius:
-          const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+          const BorderRadius.all(Radius.circular(defaultBorderRadius)),
       onTap: press,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -41,7 +41,7 @@ class OrderStatusCard extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               borderRadius:
-                  const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+                  const BorderRadius.all(Radius.circular(defaultBorderRadius)),
               border: Border.all(color: Theme.of(context).dividerColor),
             ),
             child: Column(

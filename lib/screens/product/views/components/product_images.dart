@@ -52,7 +52,7 @@ class _ProductImagesState extends State<ProductImages> {
                 padding: const EdgeInsets.only(right: defaultPadding),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.all(
-                    Radius.circular(defaultBorderRadious * 2),
+                    Radius.circular(defaultBorderRadius * 2),
                   ),
                   child: NetworkImageWithLoader(widget.images[index]),
                 ),

@@ -1,28 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shop/components/list_tile/divider_list_tile.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/route/screen_export.dart';
+import 'package:shop/services/supabase_service.dart';
 import 'components/profile_card.dart';
 import 'components/profile_menu_item_list_tile.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shop/providers/providers.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: ListView(
         children: [
-          ProfileCard(
-            name: "Sepide",
-            email: "theflutterway@gmail.com",
-            imageSrc: "https://i.imgur.com/IXnwbLk.png",
-            // proLableText: "Sliver",
-            // isPro: true, if the user is pro
-            press: () {
-              Navigator.pushNamed(context, userInfoScreenRoute);
+          FutureBuilder<Map<String, dynamic>?>(
+            future: SupabaseService.getProfile(),
+            builder: (context, snapshot) {
+              final profile = snapshot.data;
+              final user = SupabaseService.client.auth.currentUser;
+              
+              return ProfileCard(
+                name: profile?['first_name'] ?? "User",
+                email: user?.email ?? "No email",
+                imageSrc: profile?['avatar_url'] ?? "",
+                press: () {
+                  Navigator.pushNamed(context, userInfoScreenRoute);
+                },
+              );
             },
           ),
           const SizedBox(height: defaultPadding * 1.5),
@@ -42,14 +50,11 @@ class ProfileScreen extends StatelessWidget {
             },
           ),
           ProfileMenuListTile(
-            text: "Returns",
-            svgSrc: "assets/icons/Return.svg",
-            press: () {},
-          ),
-          ProfileMenuListTile(
             text: "Wishlist",
             svgSrc: "assets/icons/Wishlist.svg",
-            press: () {},
+            press: () {
+              ref.read(navigationProvider.notifier).setIndex(2);
+            },
           ),
           ProfileMenuListTile(
             text: "Addresses",
@@ -57,65 +62,6 @@ class ProfileScreen extends StatelessWidget {
             press: () {
               Navigator.pushNamed(context, addressesScreenRoute);
             },
-          ),
-          ProfileMenuListTile(
-            text: "Payment",
-            svgSrc: "assets/icons/card.svg",
-            press: () {
-              Navigator.pushNamed(context, emptyPaymentScreenRoute);
-            },
-          ),
-          ProfileMenuListTile(
-            text: "Wallet",
-            svgSrc: "assets/icons/Wallet.svg",
-            press: () {
-              Navigator.pushNamed(context, walletScreenRoute);
-            },
-          ),
-          const SizedBox(height: defaultPadding),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: defaultPadding, vertical: defaultPadding / 2),
-            child: Text(
-              "Personalization",
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-          ),
-          DividerListTileWithTrilingText(
-            svgSrc: "assets/icons/Notification.svg",
-            title: "Notification",
-            trilingText: "Off",
-            press: () {
-              Navigator.pushNamed(context, enableNotificationScreenRoute);
-            },
-          ),
-          ProfileMenuListTile(
-            text: "Preferences",
-            svgSrc: "assets/icons/Preferences.svg",
-            press: () {
-              Navigator.pushNamed(context, preferencesScreenRoute);
-            },
-          ),
-          const SizedBox(height: defaultPadding),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: defaultPadding, vertical: defaultPadding / 2),
-            child: Text(
-              "Settings",
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-          ),
-          ProfileMenuListTile(
-            text: "Language",
-            svgSrc: "assets/icons/Language.svg",
-            press: () {
-              Navigator.pushNamed(context, selectLanguageScreenRoute);
-            },
-          ),
-          ProfileMenuListTile(
-            text: "Location",
-            svgSrc: "assets/icons/Location.svg",
-            press: () {},
           ),
           const SizedBox(height: defaultPadding),
           Padding(
@@ -136,7 +82,9 @@ class ProfileScreen extends StatelessWidget {
           ProfileMenuListTile(
             text: "FAQ",
             svgSrc: "assets/icons/FAQ.svg",
-            press: () {},
+            press: () {
+              Navigator.pushNamed(context, faqScreenRoute);
+            },
             isShowDivider: false,
           ),
           const SizedBox(height: defaultPadding),

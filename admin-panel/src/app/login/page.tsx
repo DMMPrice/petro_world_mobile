@@ -68,9 +68,6 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <p className="text-xs text-slate-500">
-              Demo: Use any email and a password with 4+ characters
-            </p>
             <Button
               type="submit"
               className="w-full bg-amber-500 hover:bg-amber-600"

@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Copy, Trash2, Toggle2 } from 'lucide-react';
+import { Plus, Copy, Trash2, ToggleLeft, ToggleRight, Loader2, Image as ImageIcon, ExternalLink, Edit2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useData } from '@/lib/data-context';
-import { Coupon } from '@/lib/mock-data';
+import { formatDate } from '@/lib/utils';
+import { Coupon, Banner } from '@/lib/mock-data';
+import { BannerForm } from '@/components/banner-form';
 import {
   Table,
   TableBody,
@@ -44,8 +46,18 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
 export default function PromotionsPage() {
-  const { coupons, addCoupon, deleteCoupon, updateCoupon } = useData();
+  const { coupons, addCoupon, deleteCoupon, updateCoupon, banners, deleteBanner, updateBanner, loading } = useData();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isBannerFormOpen, setIsBannerFormOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
 
   const activeCoupons = coupons.filter(c => c.active).length;
   const totalDiscount = coupons.reduce((sum, c) => sum + c.discount, 0);
@@ -53,6 +65,16 @@ export default function PromotionsPage() {
   const handleToggle = (coupon: Coupon) => {
     updateCoupon(coupon.id, { active: !coupon.active });
     toast.success(`Coupon ${coupon.active ? 'deactivated' : 'activated'}`);
+  };
+
+  const handleBannerToggle = (banner: Banner) => {
+    updateBanner(banner.id, { active: !banner.active });
+    toast.success(`Banner ${banner.active ? 'deactivated' : 'activated'}`);
+  };
+
+  const handleEditBanner = (banner: Banner) => {
+    setEditingBanner(banner);
+    setIsBannerFormOpen(true);
   };
 
   const handleCopy = (code: string) => {
@@ -112,6 +134,120 @@ export default function PromotionsPage() {
         </Card>
       </div>
 
+      {/* Home Screen Banners */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-slate-900">Home Screen Banners</h2>
+          <p className="text-slate-600 mt-1">Manage promotional banners for the mobile app carousel</p>
+        </div>
+        <Button
+          onClick={() => {
+            setEditingBanner(null);
+            setIsBannerFormOpen(true);
+          }}
+          variant="outline"
+          className="gap-2 border-amber-200 text-amber-700 hover:bg-amber-50"
+        >
+          <Plus className="w-4 h-4" />
+          Add Banner
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {banners.map((banner) => (
+          <Card key={banner.id} className="overflow-hidden group">
+            <div className="aspect-[2/1] relative bg-slate-100">
+              <img
+                src={banner.imageUrl}
+                alt={banner.title || 'Banner'}
+                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+              />
+              <div className="absolute top-2 right-2 flex gap-2">
+                <Badge className={banner.active ? 'bg-green-500' : 'bg-slate-500'}>
+                  {banner.active ? 'Active' : 'Inactive'}
+                </Badge>
+              </div>
+            </div>
+            <CardContent className="p-4 space-y-3">
+              <div>
+                <h3 className="font-bold text-slate-900 truncate">
+                  {banner.title || 'Untitled Banner'}
+                </h3>
+                {banner.linkTo && (
+                  <div className="flex items-center gap-1 mt-1 text-xs text-slate-500">
+                    <ExternalLink className="w-3 h-3" />
+                    <span className="truncate">{banner.linkTo}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleBannerToggle(banner)}
+                >
+                  {banner.active ? (
+                    <ToggleRight className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <ToggleLeft className="w-5 h-5 text-slate-400" />
+                  )}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEditBanner(banner)}
+                >
+                  <Edit2 className="w-4 h-4 text-slate-600" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogTitle>Delete Banner</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this banner? This action cannot be undone.
+                    </AlertDialogDescription>
+                    <div className="flex justify-end gap-2">
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => deleteBanner(banner.id)}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </div>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+        {banners.length === 0 && (
+          <div className="col-span-full py-12 flex flex-col items-center justify-center border-2 border-dashed rounded-xl border-slate-200 bg-slate-50/50">
+            <ImageIcon className="w-12 h-12 text-slate-300 mb-3" />
+            <p className="text-slate-500 font-medium">No banners uploaded yet</p>
+            <Button
+              variant="link"
+              className="text-amber-600 mt-1"
+              onClick={() => setIsBannerFormOpen(true)}
+            >
+              Add your first banner
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="border-t border-slate-100 pt-8 mt-8">
+        <h2 className="text-xl font-bold text-slate-900 mb-6">Coupon Management</h2>
+      </div>
+
       {/* Featured Offers Carousel */}
       <Card>
         <CardHeader>
@@ -128,7 +264,7 @@ export default function PromotionsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <p className="text-2xl font-bold text-amber-600">
-                      {coupon.discount}{coupon.type === 'percentage' ? '%' : '$'}
+                      {coupon.discount}{coupon.type === 'percentage' ? '%' : '₹'}
                     </p>
                     <p className="text-sm text-slate-600">
                       {coupon.type === 'percentage' ? 'Discount' : 'Off'}
@@ -144,7 +280,7 @@ export default function PromotionsPage() {
                     <p className="font-mono font-bold">{coupon.code}</p>
                   </div>
                   <p className="text-xs text-slate-600">
-                    Expires: {new Date(coupon.expiry).toLocaleDateString()}
+                    Expires: {formatDate(coupon.expiry)}
                   </p>
                 </div>
                 <Button
@@ -189,7 +325,7 @@ export default function PromotionsPage() {
                       <TableCell className="font-mono font-bold">{coupon.code}</TableCell>
                       <TableCell>
                         <span className="font-semibold">
-                          {coupon.discount}{coupon.type === 'percentage' ? '%' : '$'}
+                          {coupon.discount}{coupon.type === 'percentage' ? '%' : '₹'}
                         </span>
                       </TableCell>
                       <TableCell>
@@ -197,7 +333,7 @@ export default function PromotionsPage() {
                           {coupon.type === 'percentage' ? 'Percentage' : 'Fixed'}
                         </Badge>
                       </TableCell>
-                      <TableCell>{new Date(coupon.expiry).toLocaleDateString()}</TableCell>
+                      <TableCell>{formatDate(coupon.expiry)}</TableCell>
                       <TableCell>
                         {expired ? (
                           <Badge variant="destructive">Expired</Badge>
@@ -216,9 +352,12 @@ export default function PromotionsPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleToggle(coupon)}
-                              className={coupon.active ? 'text-green-600' : 'text-slate-400'}
                             >
-                              <Toggle2 className="w-4 h-4" />
+                              {coupon.active ? (
+                                <ToggleRight className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <ToggleLeft className="w-4 h-4 text-slate-400" />
+                              )}
                             </Button>
                           )}
                           <AlertDialog>
@@ -262,6 +401,17 @@ export default function PromotionsPage() {
       {isFormOpen && (
         <AddCouponDialog onClose={() => setIsFormOpen(false)} />
       )}
+
+      {/* Banner Form */}
+      {isBannerFormOpen && (
+        <BannerForm
+          banner={editingBanner || undefined}
+          onClose={() => {
+            setIsBannerFormOpen(false);
+            setEditingBanner(null);
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -277,15 +427,14 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
     },
   });
 
-  const onSubmit = (data: any) => {
-    addCoupon({
+  const onSubmit = async (data: any) => {
+    await addCoupon({
       code: data.code.toUpperCase(),
       discount: parseInt(data.discount),
       type,
       expiry: data.expiry,
       active: true,
     });
-    toast.success('Coupon created successfully');
     reset();
     onClose();
   };
@@ -315,9 +464,21 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
               <Input
                 id="discount"
                 type="number"
-                placeholder="10"
-                {...register('discount', { required: 'Discount is required' })}
+                min="0"
+                max={type === 'percentage' ? 100 : undefined}
+                placeholder={type === 'percentage' ? "10" : "100"}
+                {...register('discount', { 
+                  required: 'Discount is required',
+                  min: { value: 0, message: 'Discount cannot be negative' },
+                  validate: (val) => {
+                    if (type === 'percentage' && parseFloat(val) > 100) {
+                      return 'Percentage cannot exceed 100%';
+                    }
+                    return true;
+                  }
+                })}
               />
+              {errors.discount && <p className="text-sm text-red-600">{errors.discount.message as string}</p>}
             </div>
 
             <div className="space-y-2">
@@ -328,7 +489,7 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="percentage">Percentage (%)</SelectItem>
-                  <SelectItem value="fixed">Fixed ($)</SelectItem>
+                  <SelectItem value="fixed">Fixed (₹)</SelectItem>
                 </SelectContent>
               </Select>
             </div>

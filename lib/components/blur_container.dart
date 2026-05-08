@@ -20,7 +20,7 @@ class BlurContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: const BorderRadius.all(
-        Radius.circular(defaultBorderRadious / 2),
+        Radius.circular(defaultBorderRadius / 2),
       ),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),

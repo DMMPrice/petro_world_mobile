@@ -11,7 +11,7 @@ class InchesSizeTable extends StatelessWidget {
       width: double.infinity,
       child: ClipRRect(
         borderRadius:
-            const BorderRadius.all(Radius.circular(defaultBorderRadious)),
+            const BorderRadius.all(Radius.circular(defaultBorderRadius)),
         child: DataTable(
           border: TableBorder(
             verticalInside: BorderSide(

@@ -15,6 +15,7 @@ class SearchForm extends StatelessWidget {
     this.onFieldSubmitted,
     this.focusNode,
     this.autofocus = false,
+    this.controller,
   });
 
   final GlobalKey<FormState>? formKey;
@@ -24,11 +25,13 @@ class SearchForm extends StatelessWidget {
   final VoidCallback? onTabFilter;
   final FocusNode? focusNode;
   final bool autofocus;
+  final TextEditingController? controller;
 
   @override
   Widget build(BuildContext context) {
     return Form(
       child: TextFormField(
+        controller: controller,
         autofocus: autofocus,
         focusNode: focusNode,
         enabled: isEnabled,

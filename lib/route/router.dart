@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop/entry_point.dart';
 import 'package:shop/models/product_model.dart';
+import 'package:shop/models/address_model.dart';
 
 import 'screen_export.dart';
 
@@ -138,7 +139,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       );
     case productReviewsScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const ProductReviewsScreen(),
+        builder: (context) {
+          final product = settings.arguments as ProductModel;
+          return ProductReviewsScreen(product: product);
+        },
       );
     // case addReviewsScreenRoute:
     //   return MaterialPageRoute(
@@ -160,10 +164,10 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //   return MaterialPageRoute(
     //     builder: (context) => const SubDiscoverScreen(),
     //   );
-    case discoverScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const DiscoverScreen(),
-      );
+    // case discoverScreenRoute:
+    //   return MaterialPageRoute(
+    //     builder: (context) => const DiscoverScreen(),
+    //   );
     case categoryProductsScreenRoute:
       return MaterialPageRoute(
         builder: (context) {
@@ -191,10 +195,21 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const ProfileScreen(),
       );
-    // case getHelpScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const GetHelpScreen(),
-    //   );
+    case getHelpScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const GetHelpScreen(),
+      );
+    case faqScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const FAQScreen(),
+      );
+    case supportChatScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) {
+          final ticket = settings.arguments as Map<String, dynamic>;
+          return SupportChatScreen(ticket: ticket);
+        },
+      );
     // case chatScreenRoute:
     //   return MaterialPageRoute(
     //     builder: (context) => const ChatScreen(),
@@ -239,10 +254,13 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const AddressesScreen(),
       );
-    // case addNewAddressesScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const AddNewAddressScreen(),
-    //   );
+    case addNewAddressesScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) {
+          final address = settings.arguments as AddressModel?;
+          return AddNewAddressScreen(address: address);
+        },
+      );
     case ordersScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const OrdersScreen(),
@@ -294,34 +312,21 @@ Route<dynamic> generateRoute(RouteSettings settings) {
       return MaterialPageRoute(
         builder: (context) => const PreferencesScreen(),
       );
-    // case emptyPaymentScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const EmptyPaymentScreen(),
-    //   );
-    case emptyWalletScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const EmptyWalletScreen(),
-      );
-    case walletScreenRoute:
-      return MaterialPageRoute(
-        builder: (context) => const WalletScreen(),
-      );
     case cartScreenRoute:
       return MaterialPageRoute(
         builder: (context) => const CartScreen(),
       );
-    // case paymentMethodScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const PaymentMethodScreen(),
-    //   );
-    // case addNewCardScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const AddNewCardScreen(),
-    //   );
-    // case thanksForOrderScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const ThanksForOrderScreen(),
-    //   );
+    case paymentScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) {
+          final args = settings.arguments as PaymentScreenArgs;
+          return PaymentScreen(args: args);
+        },
+      );
+    case thanksForOrderScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const ThanksForOrderScreen(),
+      );
     default:
       return MaterialPageRoute(
         // Make a screen for undefine

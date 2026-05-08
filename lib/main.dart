@@ -5,6 +5,8 @@ import 'package:shop/theme/app_theme.dart';
 import 'package:shop/auth_gate.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -15,7 +17,7 @@ Future<void> main() async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
   
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {

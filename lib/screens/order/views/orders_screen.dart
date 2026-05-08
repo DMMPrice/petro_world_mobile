@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/route/route_constants.dart';
+import 'package:shop/services/supabase_service.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
@@ -12,68 +13,84 @@ class OrdersScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Orders"),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(defaultPadding),
-              child: Text(
-                "Orders history",
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
+      body: FutureBuilder<Map<String, int>>(
+        future: SupabaseService.getOrderCounts(),
+        builder: (context, snapshot) {
+          final counts = snapshot.data ?? {};
+          
+          int awaitingPaymentCount = counts['awaitingpayment'] ?? 0;
+          int processingCount = (counts['ordered'] ?? 0) + 
+                               (counts['processing'] ?? 0) + 
+                               (counts['packed'] ?? 0) + 
+                               (counts['shipped'] ?? 0);
+          int deliveredCount = counts['delivered'] ?? 0;
+          int returnedCount = counts['returned'] ?? 0;
+          int canceledCount = counts['canceled'] ?? 0;
+
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(defaultPadding),
+                  child: Text(
+                    "Orders history",
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                OrderHistoryListTile(
+                  title: "Awaiting Payment",
+                  svgSrc: "assets/icons/card.svg",
+                  badgeCount: awaitingPaymentCount,
+                  badgeColor: warningColor,
+                  press: () {
+                    Navigator.pushNamed(context, awaitingPaymentOrdersScreenRoute);
+                  },
+                ),
+                OrderHistoryListTile(
+                  title: "Processing",
+                  svgSrc: "assets/icons/Order.svg",
+                  badgeCount: processingCount,
+                  badgeColor: primaryColor,
+                  press: () {
+                    Navigator.pushNamed(context, orderProcessingScreenRoute);
+                  },
+                ),
+                OrderHistoryListTile(
+                  title: "Delivered",
+                  svgSrc: "assets/icons/Delivery.svg",
+                  badgeCount: deliveredCount,
+                  badgeColor: primaryColor,
+                  press: () {
+                    Navigator.pushNamed(context, deliveredOrdersScreenRoute);
+                  },
+                ),
+                OrderHistoryListTile(
+                  title: "Returned",
+                  svgSrc: "assets/icons/Return.svg",
+                  badgeCount: returnedCount,
+                  badgeColor: primaryColor,
+                  press: () {
+                    Navigator.pushNamed(context, returnedOrdersScreenRoute);
+                  },
+                ),
+                Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  child: OrderHistoryListTile(
+                    title: "Canceled",
+                    svgSrc: "assets/icons/Close-Circle.svg",
+                    badgeCount: canceledCount,
+                    badgeColor: errorColor,
+                    press: () {
+                      Navigator.pushNamed(context, cancledOrdersScreenRoute);
+                    },
+                    isShowDivider: false,
+                  ),
+                ),
+              ],
             ),
-            OrderHistoryListTile(
-              title: "Awaiting Payment",
-              svgSrc: "assets/icons/Wallet.svg",
-              badgeCount: 0,
-              badgeColor: warningColor,
-              press: () {
-                Navigator.pushNamed(context, awaitingPaymentOrdersScreenRoute);
-              },
-            ),
-            OrderHistoryListTile(
-              title: "Processing",
-              svgSrc: "assets/icons/Order.svg",
-              badgeCount: 1,
-              badgeColor: primaryColor,
-              press: () {
-                Navigator.pushNamed(context, orderProcessingScreenRoute);
-              },
-            ),
-            OrderHistoryListTile(
-              title: "Delivered",
-              svgSrc: "assets/icons/Delivery.svg",
-              badgeCount: 5,
-              badgeColor: primaryColor,
-              press: () {
-                Navigator.pushNamed(context, deliveredOrdersScreenRoute);
-              },
-            ),
-            OrderHistoryListTile(
-              title: "Returned",
-              svgSrc: "assets/icons/Return.svg",
-              badgeCount: 2,
-              badgeColor: primaryColor,
-              press: () {
-                Navigator.pushNamed(context, returnedOrdersScreenRoute);
-              },
-            ),
-            Container(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
-              child: OrderHistoryListTile(
-                title: "Canceled",
-                svgSrc: "assets/icons/Close-Circle.svg",
-                badgeCount: 2,
-                badgeColor: errorColor,
-                press: () {
-                  Navigator.pushNamed(context, cancledOrdersScreenRoute);
-                },
-                isShowDivider: false,
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -116,7 +133,7 @@ class OrderHistoryListTile extends StatelessWidget {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (badgeCount > 0 || badgeColor == warningColor)
+              if (badgeCount > 0)
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
