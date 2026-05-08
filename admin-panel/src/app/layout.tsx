@@ -9,8 +9,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'PetroWorld Admin Panel',
-  description: 'Admin panel for PetroWorld petroleum company',
+  title: 'PETRO WORLD Admin Panel',
+  description: 'Admin panel for PETRO WORLD petroleum company',
   generator: 'v0.app',
   icons: {
     icon: [

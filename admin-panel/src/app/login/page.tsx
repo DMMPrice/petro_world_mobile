@@ -36,10 +36,8 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">P</span>
-            </div>
-            <span className="font-bold text-lg">PetroWorld</span>
+            <img src="/logo.png" alt="PETRO WORLD Logo" className="w-12 h-12 object-contain" />
+            <span className="font-bold text-lg">PETRO WORLD</span>
           </div>
           <CardTitle className="text-2xl">Admin Panel</CardTitle>
           <CardDescription>Enter your credentials to access the admin panel</CardDescription>
@@ -70,7 +68,7 @@ export default function LoginPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-amber-500 hover:bg-amber-600"
+              className="w-full bg-[#F57C00] hover:bg-[#E65100]"
               disabled={isLoading}
             >
               {isLoading ? 'Signing in...' : 'Sign in'}

@@ -15,24 +15,24 @@ const grandisExtendedFont = "Grandis Extended";
 
 // On color 80, 60.... those means opacity
 
-// Amazon-inspired color palette
-const Color primaryColor = Color(0xFFFF9900); // Amazon Orange
+// PETRO WORLD color palette
+const Color primaryColor = Color(0xFFF57C00); // Brand Orange
 
 const MaterialColor primaryMaterialColor =
-    MaterialColor(0xFFFF9900, <int, Color>{
-  50: Color(0xFFFFF4E0),
-  100: Color(0xFFFFE4B3),
-  200: Color(0xFFFFD280),
-  300: Color(0xFFFFBF4D),
-  400: Color(0xFFFFB026),
-  500: Color(0xFFFF9900),
-  600: Color(0xFFE68A00),
-  700: Color(0xFFCC7A00),
-  800: Color(0xFFB36B00),
-  900: Color(0xFF995C00),
+    MaterialColor(0xFFF57C00, <int, Color>{
+  50: Color(0xFFFFF3E0),
+  100: Color(0xFFFFE0B2),
+  200: Color(0xFFFFCC80),
+  300: Color(0xFFFFB74D),
+  400: Color(0xFFFFA726),
+  500: Color(0xFFF57C00),
+  600: Color(0xFFFB8C00),
+  700: Color(0xFFF57C00),
+  800: Color(0xFFEF6C00),
+  900: Color(0xFFE65100),
 });
 
-const Color navyColor = Color(0xFF232F3E); // Amazon Navy
+const Color navyColor = Color(0xFF002D5B); // Brand Navy
 
 const Color blackColor = Color(0xFF111111);
 const Color blackColor80 = Color(0xFF404040);

@@ -1,4 +1,4 @@
-// Mock data for the PetroWorld Admin Panel
+// Mock data for the PETRO WORLD Admin Panel
 export interface Product {
   id: string;
   name: string;

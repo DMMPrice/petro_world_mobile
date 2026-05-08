@@ -97,10 +97,8 @@ export function Sidebar() {
         <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800">
           {open && (
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">P</span>
-              </div>
-              <span className="font-bold text-white text-lg">PetroWorld</span>
+              <img src="/logo.png" alt="PETRO WORLD Logo" className="w-10 h-10 object-contain" />
+              <span className="font-bold text-white text-lg">PETRO WORLD</span>
             </div>
           )}
           <Button
@@ -125,7 +123,7 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors',
                   isActive
-                    ? 'bg-amber-500 text-white'
+                    ? 'bg-[#F57C00] text-white'
                     : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 )}
               >
