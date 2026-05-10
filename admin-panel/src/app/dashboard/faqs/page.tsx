@@ -40,6 +40,7 @@ export default function FAQsPage() {
   const [loading, setLoading] = useState(true);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState<any | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     fetchFaqs();
@@ -84,6 +85,8 @@ export default function FAQsPage() {
 
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     const formData = new FormData(e.currentTarget);
     const question = formData.get('question') as string;
     const answer = formData.get('answer') as string;
@@ -108,6 +111,8 @@ export default function FAQsPage() {
       fetchFaqs();
     } catch (e: any) {
       toast.error('Failed to save FAQ: ' + e.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -259,11 +264,18 @@ export default function FAQsPage() {
               />
             </div>
             <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} disabled={isSubmitting}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-amber-500 hover:bg-amber-600">
-                {editingFaq ? 'Update' : 'Create'}
+              <Button type="submit" className="bg-amber-500 hover:bg-amber-600" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  editingFaq ? 'Update' : 'Create'
+                )}
               </Button>
             </div>
           </form>

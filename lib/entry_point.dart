@@ -1,12 +1,14 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/screen_export.dart';
-import 'package:shop/components/app_bottom_navigation_bar.dart';
+import 'constants.dart';
+import 'route/screen_export.dart';
+import 'components/app_bottom_navigation_bar.dart';
 
+import 'components/notification_badge.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/providers/providers.dart';
+import 'providers/providers.dart';
+import 'services/supabase_service.dart';
 
 class EntryPoint extends ConsumerStatefulWidget {
   const EntryPoint({super.key});
@@ -40,17 +42,26 @@ class _EntryPointState extends ConsumerState<EntryPoint> {
           fit: BoxFit.contain,
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.pushNamed(context, notificationsScreenRoute);
-            },
-            icon: SvgPicture.asset(
-              "assets/icons/Notification.svg",
-              height: 24,
-              colorFilter: ColorFilter.mode(
-                  Theme.of(context).textTheme.bodyLarge!.color!,
-                  BlendMode.srcIn),
-            ),
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () {
+                  if (SupabaseService.client.auth.currentUser == null) {
+                    Navigator.pushNamed(context, logInScreenRoute);
+                  } else {
+                    Navigator.pushNamed(context, notificationsScreenRoute);
+                  }
+                },
+                icon: SvgPicture.asset(
+                  "assets/icons/Notification.svg",
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                      Theme.of(context).textTheme.bodyLarge!.color!,
+                      BlendMode.srcIn),
+                ),
+              ),
+              const NotificationBadge(),
+            ],
           ),
         ],
       ),

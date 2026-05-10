@@ -109,12 +109,16 @@ export function BannerForm({ banner, onClose }: BannerFormProps) {
         imageUrl,
       };
 
+      let success = false;
       if (banner) {
-        await updateBanner(banner.id, bannerData);
+        success = await updateBanner(banner.id, bannerData) as boolean;
       } else {
-        await addBanner(bannerData);
+        success = await addBanner(bannerData) as boolean;
       }
-      onClose();
+      
+      if (success) {
+        onClose();
+      }
     } catch (error) {
       console.error('Error saving banner:', error);
       toast.error('Failed to save banner');

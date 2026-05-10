@@ -29,19 +29,27 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: whiteColor,
       appBar: AppBar(
-        title: const Text("Password Recovery"),
+        backgroundColor: whiteColor,
+        elevation: 0,
+        leading: const BackButton(color: navyColor),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(defaultPadding),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Image.asset(
-                _getIllustration(),
-                height: MediaQuery.of(context).size.height * 0.3,
-              ),
               const SizedBox(height: defaultPadding),
+              Center(
+                child: Image.asset(
+                  "assets/logo/logo.png",
+                  height: 80,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: defaultPadding * 2),
               _buildStepContent(),
               const SizedBox(height: defaultPadding * 2),
               ElevatedButton(
@@ -57,8 +65,17 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                     );
                   }
                 },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: primaryColor,
+                  foregroundColor: whiteColor,
+                  minimumSize: const Size(double.infinity, 56),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(defaultBorderRadius),
+                  ),
+                ),
                 child: Text(_currentStep < 2 ? "Continue" : "Reset Password"),
               ),
+              const SizedBox(height: defaultPadding),
             ],
           ),
         ),
@@ -66,23 +83,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
     );
   }
 
-  String _getIllustration() {
-    bool isDark = Theme.of(context).brightness == Brightness.dark;
-    switch (_currentStep) {
-      case 0:
-        return isDark
-            ? "assets/Illustration/Password_dark.png"
-            : "assets/Illustration/Password.png";
-      case 1:
-        return "assets/Illustration/VerificationCode_dark.png";
-      case 2:
-        return isDark
-            ? "assets/Illustration/Success_darkTheme.png"
-            : "assets/Illustration/Success_lightTheme.png";
-      default:
-        return "assets/Illustration/Password.png";
-    }
-  }
+
 
   Widget _buildStepContent() {
     switch (_currentStep) {
@@ -92,11 +93,17 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
           children: [
             Text(
               "Forgot password",
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: navyColor,
+                  ),
             ),
             const SizedBox(height: defaultPadding / 2),
-            const Text(
+            Text(
               "Please enter your email address. You will receive a link to create a new password via email.",
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: blackColor60,
+                  ),
             ),
             const SizedBox(height: defaultPadding),
             PasswordRecoveryForm(
@@ -111,11 +118,17 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
           children: [
             Text(
               "Verification code",
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: navyColor,
+                  ),
             ),
             const SizedBox(height: defaultPadding / 2),
-            const Text(
+            Text(
               "Please enter the 4-digit code sent to your email address.",
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: blackColor60,
+                  ),
             ),
             const SizedBox(height: defaultPadding),
             OtpForm(
@@ -130,11 +143,17 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
           children: [
             Text(
               "Reset password",
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: Theme.of(context).textTheme.headlineSmall!.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: navyColor,
+                  ),
             ),
             const SizedBox(height: defaultPadding / 2),
-            const Text(
+            Text(
               "Your new password must be different from previous used passwords.",
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    color: blackColor60,
+                  ),
             ),
             const SizedBox(height: defaultPadding),
             ResetPasswordForm(

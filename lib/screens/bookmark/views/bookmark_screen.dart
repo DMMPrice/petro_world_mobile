@@ -51,7 +51,7 @@ class BookmarkScreen extends ConsumerWidget {
                         reviewCount: product.reviewCount,
                         isBookmarked: true,
                         onBookmarkTap: () {
-                          ref.read(wishlistProvider.notifier).toggleWishlist(product.id);
+                          ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
                         },
                         press: () {
                           Navigator.pushNamed(

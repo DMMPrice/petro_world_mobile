@@ -219,6 +219,7 @@ export default function CustomersPage() {
 
 function AddCustomerDialog({ onClose }: { onClose: () => void }) {
   const { addCustomer } = useData();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       name: '',
@@ -228,16 +229,24 @@ function AddCustomerDialog({ onClose }: { onClose: () => void }) {
   });
 
   const onSubmit = async (data: any) => {
-    await addCustomer({
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      totalOrders: 0,
-      totalSpent: 0,
-      joinDate: new Date().toISOString().split('T')[0],
-    });
-    reset();
-    onClose();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      await addCustomer({
+        name: data.name,
+        email: data.email,
+        phone: data.phone,
+        totalOrders: 0,
+        totalSpent: 0,
+        joinDate: new Date().toISOString().split('T')[0],
+      });
+      reset();
+      onClose();
+    } catch (error) {
+      console.error('Failed to add customer', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -281,11 +290,18 @@ function AddCustomerDialog({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-amber-500 hover:bg-amber-600">
-              Add Customer
+            <Button type="submit" className="bg-amber-500 hover:bg-amber-600" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                'Add Customer'
+              )}
             </Button>
           </div>
         </form>

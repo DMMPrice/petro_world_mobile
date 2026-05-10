@@ -24,6 +24,7 @@ class _AuthGateState extends State<AuthGate> {
       if (session != null) {
         // If we have a session, pop all screens until we're back at the AuthGate
         // This handles cases where login/signup screens were pushed onto the stack
+        if (!mounted) return;
         if (Navigator.canPop(context)) {
           Navigator.of(context).popUntil((route) => route.isFirst);
         }
@@ -43,11 +44,7 @@ class _AuthGateState extends State<AuthGate> {
         }
         
         final session = snapshot.data?.session;
-        if (session != null) {
-          return const EntryPoint();
-        } else {
-          return const OnBordingScreen();
-        }
+        return const EntryPoint();
       },
     );
   }

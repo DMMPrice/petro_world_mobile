@@ -15,6 +15,8 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
+  String? _firstName;
+  String? _lastName;
   String? _email;
   String? _password;
   bool _isLoading = false;
@@ -38,6 +40,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         final response = await Supabase.instance.client.auth.signUp(
           email: _email!,
           password: _password!,
+          data: {
+            'first_name': _firstName,
+            'last_name': _lastName,
+          },
         );
         if (response.session == null && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -73,94 +79,135 @@ class _SignUpScreenState extends State<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Image.asset(
-              "assets/images/signUp_dark.png",
-              height: MediaQuery.of(context).size.height * 0.35,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(defaultPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      backgroundColor: whiteColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: defaultPadding),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+              ),
+              const SizedBox(height: defaultPadding),
+              Center(
+                child: Image.asset(
+                  "assets/logo/logo.png",
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: defaultPadding * 3),
+              Text(
+                "Create Account",
+                style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: navyColor,
+                    ),
+              ),
+              const SizedBox(height: defaultPadding / 2),
+              Text(
+                "Join PETRO WORLD for exclusive deals",
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: blackColor60,
+                    ),
+              ),
+              const SizedBox(height: defaultPadding * 2),
+              SignUpForm(
+                formKey: _formKey,
+                onFirstNameSaved: (value) => _firstName = value,
+                onLastNameSaved: (value) => _lastName = value,
+                onEmailSaved: (value) => _email = value,
+                onPasswordSaved: (value) => _password = value,
+              ),
+              const SizedBox(height: defaultPadding),
+              Row(
                 children: [
-                  Text(
-                    "Let’s get started!",
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: defaultPadding / 2),
-                  const Text(
-                    "Please enter your valid data in order to create an account.",
-                  ),
-                  const SizedBox(height: defaultPadding),
-                  SignUpForm(
-                    formKey: _formKey,
-                    onEmailSaved: (value) => _email = value,
-                    onPasswordSaved: (value) => _password = value,
-                  ),
-                  const SizedBox(height: defaultPadding),
-                  Row(
-                    children: [
-                      Checkbox(
-                        onChanged: (value) {
-                          setState(() {
-                            _agreedToTerms = value ?? false;
-                          });
-                        },
-                        value: _agreedToTerms,
+                  SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: Checkbox(
+                      onChanged: (value) {
+                        setState(() {
+                          _agreedToTerms = value ?? false;
+                        });
+                      },
+                      value: _agreedToTerms,
+                      activeColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      Expanded(
-                        child: Text.rich(
+                    ),
+                  ),
+                  const SizedBox(width: defaultPadding / 2),
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        text: "I agree with the ",
+                        children: [
                           TextSpan(
-                            text: "I agree with the",
-                            children: [
-                              TextSpan(
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () {
-                                    Navigator.pushNamed(
-                                        context, termsOfServicesScreenRoute);
-                                  },
-                                text: " Terms of service ",
-                                style: const TextStyle(
-                                  color: primaryColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const TextSpan(
-                                text: "& privacy policy.",
-                              ),
-                            ],
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.pushNamed(
+                                    context, termsOfServicesScreenRoute);
+                              },
+                            text: "Terms of service",
+                            style: const TextStyle(
+                              color: primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: defaultPadding * 2),
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: _signUp,
-                          child: const Text("Continue"),
-                        ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Do you have an account?"),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, logInScreenRoute);
-                        },
-                        child: const Text("Log in"),
-                      )
-                    ],
-                  ),
+                          const TextSpan(text: " & "),
+                          const TextSpan(
+                            text: "privacy policy",
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  )
                 ],
               ),
-            )
-          ],
+              const SizedBox(height: defaultPadding * 2),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                      onPressed: _signUp,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: whiteColor,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(defaultBorderRadius),
+                        ),
+                      ),
+                      child: const Text("Create Account"),
+                    ),
+              const SizedBox(height: defaultPadding),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Already have an account?"),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, logInScreenRoute);
+                    },
+                    child: const Text(
+                      "Log in",
+                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                    ),
+                  )
+                ],
+              ),
+              const SizedBox(height: defaultPadding * 2),
+            ],
+          ),
         ),
       ),
     );

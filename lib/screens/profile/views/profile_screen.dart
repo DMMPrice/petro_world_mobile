@@ -23,9 +23,20 @@ class ProfileScreen extends ConsumerWidget {
               final profile = snapshot.data;
               final user = SupabaseService.client.auth.currentUser;
               
+              if (user == null) {
+                return ProfileCard(
+                  name: "Guest User",
+                  email: "Log in to place orders",
+                  imageSrc: "",
+                  press: () {
+                    Navigator.pushNamed(context, logInScreenRoute);
+                  },
+                );
+              }
+
               return ProfileCard(
                 name: profile?['first_name'] ?? "User",
-                email: user?.email ?? "No email",
+                email: user.email ?? "No email",
                 imageSrc: profile?['avatar_url'] ?? "",
                 press: () {
                   Navigator.pushNamed(context, userInfoScreenRoute);
@@ -46,21 +57,33 @@ class ProfileScreen extends ConsumerWidget {
             text: "Orders",
             svgSrc: "assets/icons/Order.svg",
             press: () {
-              Navigator.pushNamed(context, ordersScreenRoute);
+              if (SupabaseService.client.auth.currentUser == null) {
+                Navigator.pushNamed(context, logInScreenRoute);
+              } else {
+                Navigator.pushNamed(context, ordersScreenRoute);
+              }
             },
           ),
           ProfileMenuListTile(
             text: "Wishlist",
             svgSrc: "assets/icons/Wishlist.svg",
             press: () {
-              ref.read(navigationProvider.notifier).setIndex(2);
+              if (SupabaseService.client.auth.currentUser == null) {
+                Navigator.pushNamed(context, logInScreenRoute);
+              } else {
+                ref.read(navigationProvider.notifier).setIndex(2);
+              }
             },
           ),
           ProfileMenuListTile(
             text: "Addresses",
             svgSrc: "assets/icons/Address.svg",
             press: () {
-              Navigator.pushNamed(context, addressesScreenRoute);
+              if (SupabaseService.client.auth.currentUser == null) {
+                Navigator.pushNamed(context, logInScreenRoute);
+              } else {
+                Navigator.pushNamed(context, addressesScreenRoute);
+              }
             },
           ),
           const SizedBox(height: defaultPadding),
@@ -89,24 +112,34 @@ class ProfileScreen extends ConsumerWidget {
           ),
           const SizedBox(height: defaultPadding),
 
-          // Log Out
+          // Log Out / Log In
           ListTile(
             onTap: () async {
-              await Supabase.instance.client.auth.signOut();
+              if (SupabaseService.client.auth.currentUser == null) {
+                Navigator.pushNamed(context, logInScreenRoute);
+              } else {
+                await Supabase.instance.client.auth.signOut();
+              }
             },
             minLeadingWidth: 24,
             leading: SvgPicture.asset(
-              "assets/icons/Logout.svg",
+              SupabaseService.client.auth.currentUser == null 
+                ? "assets/icons/Edit Square.svg" 
+                : "assets/icons/Logout.svg",
               height: 24,
               width: 24,
-              colorFilter: const ColorFilter.mode(
-                errorColor,
+              colorFilter: ColorFilter.mode(
+                SupabaseService.client.auth.currentUser == null ? primaryColor : errorColor,
                 BlendMode.srcIn,
               ),
             ),
-            title: const Text(
-              "Log Out",
-              style: TextStyle(color: errorColor, fontSize: 14, height: 1),
+            title: Text(
+              SupabaseService.client.auth.currentUser == null ? "Log In" : "Log Out",
+              style: TextStyle(
+                color: SupabaseService.client.auth.currentUser == null ? primaryColor : errorColor, 
+                fontSize: 14, 
+                height: 1
+              ),
             ),
           )
         ],

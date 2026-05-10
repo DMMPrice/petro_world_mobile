@@ -92,14 +92,8 @@ export default function PromotionsPage() {
           <h1 className="text-3xl font-bold text-slate-900">Promotions</h1>
           <p className="text-slate-600 mt-2">Manage coupons and discount offers</p>
         </div>
-        <Button
-          onClick={() => setIsFormOpen(true)}
-          className="gap-2 bg-amber-500 hover:bg-amber-600"
-        >
-          <Plus className="w-4 h-4" />
-          New Coupon
-        </Button>
       </div>
+
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -145,8 +139,7 @@ export default function PromotionsPage() {
             setEditingBanner(null);
             setIsBannerFormOpen(true);
           }}
-          variant="outline"
-          className="gap-2 border-amber-200 text-amber-700 hover:bg-amber-50"
+          className="gap-2 bg-amber-500 hover:bg-amber-600 text-white"
         >
           <Plus className="w-4 h-4" />
           Add Banner
@@ -156,7 +149,7 @@ export default function PromotionsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {banners.map((banner) => (
           <Card key={banner.id} className="overflow-hidden group">
-            <div className="aspect-[2/1] relative bg-slate-100">
+            <div className="aspect-2/1 relative bg-slate-100">
               <img
                 src={banner.imageUrl}
                 alt={banner.title || 'Banner'}
@@ -244,8 +237,15 @@ export default function PromotionsPage() {
         )}
       </div>
 
-      <div className="border-t border-slate-100 pt-8 mt-8">
-        <h2 className="text-xl font-bold text-slate-900 mb-6">Coupon Management</h2>
+      <div className="border-t border-slate-100 pt-8 mt-8 flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-slate-900">Coupon Management</h2>
+        <Button
+          onClick={() => setIsFormOpen(true)}
+          className="gap-2 bg-amber-500 hover:bg-amber-600"
+        >
+          <Plus className="w-4 h-4" />
+          New Coupon
+        </Button>
       </div>
 
       {/* Featured Offers Carousel */}
@@ -419,6 +419,8 @@ export default function PromotionsPage() {
 function AddCouponDialog({ onClose }: { onClose: () => void }) {
   const { addCoupon } = useData();
   const [type, setType] = useState<'percentage' | 'fixed'>('percentage');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     defaultValues: {
       code: '',
@@ -428,20 +430,33 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
   });
 
   const onSubmit = async (data: any) => {
-    await addCoupon({
-      code: data.code.toUpperCase(),
-      discount: parseInt(data.discount),
-      type,
-      expiry: data.expiry,
-      active: true,
-    });
-    reset();
-    onClose();
+    if (isSubmitting) return;
+    
+    console.log('Form data:', data);
+    setIsSubmitting(true);
+    
+    try {
+      await addCoupon({
+        code: data.code.toUpperCase().trim(),
+        discount: Number(data.discount),
+        type,
+        expiry: data.expiry,
+        active: true,
+      });
+      console.log('Coupon added successfully, closing dialog');
+      reset();
+      onClose();
+    } catch (err: any) {
+      console.error('Submit error:', err);
+      // Toast is already handled in addCoupon, but we could add more here if needed
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Create New Coupon</DialogTitle>
           <DialogDescription>Add a new promotional discount code</DialogDescription>
@@ -455,7 +470,7 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
               placeholder="SAVE10"
               {...register('code', { required: 'Code is required' })}
             />
-            {errors.code && <p className="text-sm text-red-600">{errors.code.message}</p>}
+            {errors.code && <p className="text-sm text-red-600">{errors.code.message as string}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -464,6 +479,7 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
               <Input
                 id="discount"
                 type="number"
+                step="0.01"
                 min="0"
                 max={type === 'percentage' ? 100 : undefined}
                 placeholder={type === 'percentage' ? "10" : "100"}
@@ -471,7 +487,7 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
                   required: 'Discount is required',
                   min: { value: 0, message: 'Discount cannot be negative' },
                   validate: (val) => {
-                    if (type === 'percentage' && parseFloat(val) > 100) {
+                    if (type === 'percentage' && val > 100) {
                       return 'Percentage cannot exceed 100%';
                     }
                     return true;
@@ -505,11 +521,18 @@ function AddCouponDialog({ onClose }: { onClose: () => void }) {
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button type="submit" className="bg-amber-500 hover:bg-amber-600">
-              Create Coupon
+            <Button type="submit" className="bg-amber-500 hover:bg-amber-600 text-white" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Coupon'
+              )}
             </Button>
           </div>
         </form>

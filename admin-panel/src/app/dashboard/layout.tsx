@@ -9,11 +9,16 @@ export default function DashboardLayout({
 }) {
   return (
     <DashboardWrapper>
-      <div className="flex h-screen bg-background">
+      <div className="flex h-screen overflow-hidden bg-slate-50">
         <Sidebar />
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+          {/* Main content area with its own scrollbar */}
+          <main className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            <div className="max-w-[1600px] mx-auto w-full">
+              {children}
+            </div>
+          </main>
+        </div>
         <Toaster />
       </div>
     </DashboardWrapper>

@@ -1,10 +1,12 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter/foundation.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
 import '../models/cart_item_model.dart';
 import '../models/banner_model.dart';
 import '../models/review_model.dart';
 import '../models/address_model.dart';
+import '../models/coupon_model.dart';
 
 class SupabaseService {
   static final client = Supabase.instance.client;
@@ -201,6 +203,8 @@ class SupabaseService {
     required List<CartItemModel> items,
     String paymentMethod = "Cash on Delivery",
     String? razorpayPaymentId,
+    String? couponId,
+    double couponDiscount = 0,
   }) async {
     final user = client.auth.currentUser;
     if (user == null) return;
@@ -216,13 +220,15 @@ class SupabaseService {
       'order_number': orderNumber,
       'payment_method': paymentMethod,
       if (razorpayPaymentId != null) 'razorpay_payment_id': razorpayPaymentId,
+      if (couponId != null) 'coupon_id': couponId,
+      'coupon_discount': couponDiscount,
     }).select();
 
     if (orderResponse.isEmpty) throw Exception("Failed to create order");
     
     final orderId = orderResponse[0]['id'];
 
-    // 2. Create order items
+    // 2. Create order items and decrement stock
     final List<Map<String, dynamic>> orderItems = items.map((item) => {
       'order_id': orderId,
       'product_id': item.product.id,
@@ -231,6 +237,29 @@ class SupabaseService {
     }).toList();
 
     await client.from('order_items').insert(orderItems);
+
+    // Atomic decrement of stock_quantity for each product
+    for (final item in items) {
+      try {
+        await client.rpc('decrement_stock', params: {
+          'p_product_id': item.product.id,
+          'p_quantity': item.quantity,
+        });
+      } catch (e) {
+        // Fallback to manual update if RPC fails
+        try {
+          final productData = await client.from('products').select('stock_quantity').eq('id', item.product.id).single();
+          if (productData != null) {
+            final int currentStock = productData['stock_quantity'] as int;
+            await client.from('products').update({
+              'stock_quantity': (currentStock - item.quantity).clamp(0, 999999)
+            }).eq('id', item.product.id);
+          }
+        } catch (innerE) {
+          print('Failed to decrement stock for ${item.product.id}: $innerE');
+        }
+      }
+    }
     
     // 3. Push to Shiprocket automatically
     try {
@@ -278,6 +307,8 @@ class SupabaseService {
     required String addressId,
     required double total,
     required List<CartItemModel> items,
+    String? couponId,
+    double couponDiscount = 0,
   }) async {
     final user = client.auth.currentUser;
     if (user == null) throw Exception('Not logged in');
@@ -295,6 +326,8 @@ class SupabaseService {
           'quantity': i.quantity,
           'price_at_purchase': i.product.priceAfterDiscount ?? i.product.price,
         }).toList(),
+        if (couponId != null) 'coupon_id': couponId,
+        'coupon_discount': couponDiscount,
       },
     );
 
@@ -337,12 +370,24 @@ class SupabaseService {
     final user = client.auth.currentUser;
     if (user == null) return [];
     
-    final response = await client
-        .from('wishlists')
-        .select('products(*)')
-        .eq('user_id', user.id);
-    
-    return (response as List).map((json) => ProductModel.fromJson(json['products'])).toList();
+    try {
+      final response = await client
+          .from('wishlists')
+          .select('products(*)')
+          .eq('user_id', user.id);
+      
+      return (response as List).map((json) {
+        final productData = json['products'];
+        if (productData == null) return null;
+        if (productData is List) {
+          return productData.isNotEmpty ? ProductModel.fromJson(productData[0]) : null;
+        }
+        return ProductModel.fromJson(productData);
+      }).whereType<ProductModel>().toList();
+    } catch (e) {
+      print('Error fetching wishlist: $e');
+      return [];
+    }
   }
 
   static Future<void> addToWishlist(String productId) async {
@@ -364,17 +409,33 @@ class SupabaseService {
   static Future<List<CartItemModel>> getCart() async {
     final user = client.auth.currentUser;
     if (user == null) return [];
-
-    final response = await client
-        .from('carts')
-        .select('*, products(*)')
-        .eq('user_id', user.id);
     
-    return (response as List).map((json) => CartItemModel(
-      id: json['id'],
-      product: ProductModel.fromJson(json['products']),
-      quantity: json['quantity'],
-    )).toList();
+    try {
+      final response = await client
+          .from('carts')
+          .select('*, products(*)')
+          .eq('user_id', user.id);
+      
+      return (response as List).map((json) {
+        final productData = json['products'];
+        if (productData == null) return null;
+        
+        final product = productData is List 
+            ? (productData.isNotEmpty ? ProductModel.fromJson(productData[0]) : null)
+            : ProductModel.fromJson(productData);
+            
+        if (product == null) return null;
+
+        return CartItemModel(
+          id: json['id'],
+          product: product,
+          quantity: json['quantity'],
+        );
+      }).whereType<CartItemModel>().toList();
+    } catch (e) {
+      print('Error fetching cart: $e');
+      return [];
+    }
   }
 
   static Future<void> addToCart(String productId, int quantity) async {
@@ -517,7 +578,7 @@ class SupabaseService {
     var query = client.from('products').select('*').neq('id', productId);
 
     if (subcategoryId != null) {
-      query = query.eq('subcategory_id', subcategoryId);
+      query = query.eq('sub_category_id', subcategoryId);
     } else if (categoryId != null) {
       query = query.eq('category_id', categoryId);
     }
@@ -637,5 +698,24 @@ class SupabaseService {
     await client.from('support_tickets').update({
       'updated_at': DateTime.now().toIso8601String(),
     }).eq('id', ticketId);
+  }
+
+  // --- Coupons ---
+  static Future<CouponModel?> validateCoupon(String code) async {
+    try {
+      final response = await client
+          .from('coupons')
+          .select('*')
+          .eq('code', code)
+          .eq('active', true)
+          .gte('expiry', DateTime.now().toIso8601String())
+          .maybeSingle();
+
+      if (response == null) return null;
+      return CouponModel.fromJson(response);
+    } catch (e) {
+      print('Error validating coupon: $e');
+      return null;
+    }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop/models/product_model.dart';
 
 import '../../constants.dart';
 import '../network_image_with_loader.dart';
@@ -24,6 +25,7 @@ class ProductCard extends StatelessWidget {
     this.isBookmarked = false,
     this.onBookmarkTap,
     required this.press,
+    this.product,
   });
   final String productId, image, brandName, title;
   final double price;
@@ -36,6 +38,7 @@ class ProductCard extends StatelessWidget {
   final bool isBookmarked;
   final VoidCallback? onBookmarkTap;
   final VoidCallback press;
+  final ProductModel? product;
 
   String? get discountLabel {
     // Only show discount if priceAfterDiscount is genuinely lower than price

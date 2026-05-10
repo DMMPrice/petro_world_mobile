@@ -68,7 +68,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
   switch (settings.name) {
     case onbordingScreenRoute:
       return MaterialPageRoute(
-        builder: (context) => const OnBordingScreen(),
+        builder: (context) => const EntryPoint(),
       );
     // case preferredLanuageScreenRoute:
     //   return MaterialPageRoute(
@@ -330,7 +330,7 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     default:
       return MaterialPageRoute(
         // Make a screen for undefine
-        builder: (context) => const OnBordingScreen(),
+        builder: (context) => const EntryPoint(),
       );
   }
 }

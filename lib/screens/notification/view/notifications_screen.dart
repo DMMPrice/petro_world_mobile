@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import '../../../constants.dart';
+import '../../../models/notification_model.dart';
+import '../../../services/notification_service.dart';
 import 'no_notification_screen.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -11,164 +14,190 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  // Dummy notification data
-  List<Map<String, dynamic>> notifications = [
-    {
-      "iconSrc": "assets/icons/Discount.svg",
-      "color": const Color(0xFFEA6262), // Red
-      "title": "Molestie libero neque sem cras enim, amet.",
-      "time": "2 min ago",
-      "isUnread": true,
-    },
-    {
-      "iconSrc": "assets/icons/Shop.svg",
-      "color": const Color(0xFFF1B721), // Yellow/Orange
-      "title": "Egestas nisl sapien amet lectus molestie id euismod.",
-      "time": "6 hours ago",
-      "isUnread": true,
-    },
-    {
-      "iconSrc": "assets/icons/Setting.svg",
-      "color": const Color(0xFF407BFF), // Blue
-      "title": "Ullamcorper ac ornare ipsum ut sed integer turpis felis viverra...",
-      "time": "4 days ago",
-      "isUnread": true,
-    },
-    {
-      "iconSrc": "assets/icons/Location.svg",
-      "color": const Color(0xFF90C24B), // Green
-      "title": "Facilisis in proin ultrices in tincidunt adipiscing turpis praesent non.",
-      "time": "5 day ago",
-      "isUnread": true,
-    },
-    {
-      "iconSrc": "assets/icons/Bag.svg",
-      "color": const Color(0xFFFA8B4E), // Orange
-      "title": "Pellentesque proin risus pellentesque odio a.",
-      "time": "1 week ago",
-      "isUnread": true,
-    },
-    {
-      "iconSrc": "assets/icons/Discount.svg",
-      "color": const Color(0xFFEA6262), // Red
-      "title": "Enim, proin ac ut nullam nec.",
-      "time": "1 week ago",
-      "isUnread": true,
-    },
-    {
-      "iconSrc": "assets/icons/Discount.svg",
-      "color": const Color(0xFFEA6262), // Red
-      "title": "Molestie libero neque sem cras enim, amet.",
-      "time": "1 week ago",
-      "isUnread": true,
-    },
-  ];
+  List<NotificationModel> notifications = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchNotifications();
+  }
+
+  Future<void> _fetchNotifications() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final data = await NotificationService.getNotifications();
+      setState(() {
+        notifications = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error fetching notifications: $e")),
+        );
+      }
+    }
+  }
+
+  Future<void> _markAsRead(NotificationModel notification) async {
+    if (notification.isRead) return;
+    
+    try {
+      await NotificationService.markAsRead(notification.id, notification.type);
+      // Update local state
+      setState(() {
+        final index = notifications.indexWhere((n) => n.id == notification.id);
+        if (index != -1) {
+          notifications[index] = NotificationModel(
+            id: notification.id,
+            title: notification.title,
+            message: notification.message,
+            type: notification.type,
+            userId: notification.userId,
+            isRead: true,
+            createdAt: notification.createdAt,
+          );
+        }
+      });
+    } catch (e) {
+      print("Error marking as read: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Notifications"),
+        centerTitle: true,
         actions: [
-          if (notifications.isNotEmpty)
+          if (notifications.any((n) => !n.isRead))
             TextButton(
-              onPressed: () {
-                setState(() {
-                  notifications.clear();
-                });
+              onPressed: () async {
+                await NotificationService.markAllAsRead();
+                _fetchNotifications();
               },
-              child: const Text("Clear all"),
+              child: const Text("Mark all read"),
             ),
         ],
       ),
-      body: notifications.isEmpty
-          ? const NoNotificationScreen()
-          : ListView.builder(
-              itemCount: notifications.length,
-              itemBuilder: (context, index) {
-                final notif = notifications[index];
-                return _buildNotificationTile(
-                  context,
-                  iconSrc: notif["iconSrc"],
-                  color: notif["color"],
-                  title: notif["title"],
-                  time: notif["time"],
-                  isUnread: notif["isUnread"],
-                  showBorder: index != notifications.length - 1,
-                );
-              },
-            ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : notifications.isEmpty
+              ? const NoNotificationScreen()
+              : RefreshIndicator(
+                  onRefresh: _fetchNotifications,
+                  child: ListView.builder(
+                    itemCount: notifications.length,
+                    itemBuilder: (context, index) {
+                      final notif = notifications[index];
+                      return GestureDetector(
+                        onTap: () => _markAsRead(notif),
+                        child: _buildNotificationTile(
+                          context,
+                          type: notif.type,
+                          title: notif.title,
+                          message: notif.message,
+                          time: timeago.format(notif.createdAt),
+                          isRead: notif.isRead,
+                          showBorder: index != notifications.length - 1,
+                        ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 
   Widget _buildNotificationTile(
     BuildContext context, {
-    required String iconSrc,
-    required Color color,
+    required NotificationType type,
     required String title,
+    required String message,
     required String time,
-    bool isUnread = false,
+    bool isRead = false,
     bool showBorder = true,
   }) {
+    // Determine icon and color based on type or content (simplified for now)
+    final Color color = type == NotificationType.global ? primaryColor : navyColor;
+    final String iconSrc = type == NotificationType.global ? "assets/icons/Notification.svg" : "assets/icons/Info.svg";
+
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: defaultPadding, vertical: defaultPadding / 2),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: color,
-                    child: SvgPicture.asset(
-                      iconSrc,
-                      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                      height: 20,
+        Container(
+          color: isRead ? null : primaryColor.withOpacity(0.03),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: defaultPadding, vertical: defaultPadding),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: color.withOpacity(0.1),
+                      child: SvgPicture.asset(
+                        iconSrc,
+                        colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                        height: 24,
+                      ),
                     ),
-                  ),
-                  if (isUnread)
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        height: 12,
-                        width: 12,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEA6262), // Red dot
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                    if (!isRead)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: Container(
+                          height: 12,
+                          width: 12,
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                          ),
                         ),
                       ),
-                    ),
-                ],
-              ),
-              const SizedBox(width: defaultPadding),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                            fontWeight: FontWeight.w500,
-                            height: 1.3,
-                          ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      time,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.5),
-                      ),
-                    ),
                   ],
                 ),
-              ),
-            ],
+                const SizedBox(width: defaultPadding),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                              fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
+                              color: isRead ? null : navyColor,
+                              height: 1.3,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        message,
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              color: blackColor60,
+                            ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        time,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
         if (showBorder)
@@ -176,10 +205,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             padding: const EdgeInsets.only(left: defaultPadding * 3.5 + 16, right: defaultPadding),
             child: Divider(
               color: Theme.of(context).dividerColor.withOpacity(0.05),
-              height: 16,
+              height: 1,
             ),
           ),
       ],
     );
   }
 }
+

@@ -55,71 +55,94 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Image.asset(
-              "assets/images/login_dark.png",
-              fit: BoxFit.cover,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(defaultPadding),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Welcome back!",
-                    style: Theme.of(context).textTheme.headlineSmall,
-                  ),
-                  const SizedBox(height: defaultPadding / 2),
-                  const Text(
-                    "Log in with your data that you entered during your registration.",
-                  ),
-                  const SizedBox(height: defaultPadding),
-                  LogInForm(
-                    formKey: _formKey,
-                    onEmailSaved: (value) => _email = value,
-                    onPasswordSaved: (value) => _password = value,
-                  ),
-                  Align(
-                    child: TextButton(
-                      child: const Text("Forgot password"),
-                      onPressed: () {
-                        Navigator.pushNamed(
-                            context, passwordRecoveryScreenRoute);
-                      },
+      backgroundColor: whiteColor,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: defaultPadding),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+              ),
+              const SizedBox(height: defaultPadding),
+              Center(
+                child: Image.asset(
+                  "assets/logo/logo.png",
+                  height: 100,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              const SizedBox(height: defaultPadding * 3),
+              Text(
+                "Welcome Back",
+                style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: navyColor,
                     ),
+              ),
+              const SizedBox(height: defaultPadding / 2),
+              Text(
+                "Login to your PETRO WORLD account",
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: blackColor60,
+                    ),
+              ),
+              const SizedBox(height: defaultPadding * 2),
+              LogInForm(
+                formKey: _formKey,
+                onEmailSaved: (value) => _email = value,
+                onPasswordSaved: (value) => _password = value,
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  child: const Text(
+                    "Forgot password?",
+                    style: TextStyle(color: primaryColor),
                   ),
-                  SizedBox(
-                    height: size.height > 700
-                        ? size.height * 0.1
-                        : defaultPadding,
-                  ),
-                  _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : ElevatedButton(
-                          onPressed: _login,
-                          child: const Text("Log in"),
+                  onPressed: () {
+                    Navigator.pushNamed(context, passwordRecoveryScreenRoute);
+                  },
+                ),
+              ),
+              const SizedBox(height: defaultPadding),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : ElevatedButton(
+                      onPressed: _login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: whiteColor,
+                        minimumSize: const Size(double.infinity, 56),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(defaultBorderRadius),
                         ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Don't have an account?"),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, signUpScreenRoute);
-                        },
-                        child: const Text("Sign up"),
-                      )
-                    ],
-                  ),
+                      ),
+                      child: const Text("Log in"),
+                    ),
+              const SizedBox(height: defaultPadding),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Don't have an account?"),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, signUpScreenRoute);
+                    },
+                    child: const Text(
+                      "Sign up",
+                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                    ),
+                  )
                 ],
               ),
-            )
-          ],
+              const SizedBox(height: defaultPadding),
+            ],
+          ),
         ),
       ),
     );

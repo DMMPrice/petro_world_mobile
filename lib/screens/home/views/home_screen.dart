@@ -8,6 +8,7 @@ import 'package:shop/components/shimmer_wrapper.dart';
 
 import 'components/banner_carousel_and_categories.dart';
 import 'package:shop/providers/providers.dart';
+import 'package:shop/services/supabase_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -83,7 +84,7 @@ class HomeScreen extends ConsumerWidget {
                           reviewCount: product.reviewCount,
                           isBookmarked: isBookmarked,
                           onBookmarkTap: () {
-                            ref.read(wishlistProvider.notifier).toggleWishlist(product.id);
+                            ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
                           },
                           press: () {
                             Navigator.pushNamed(
@@ -92,6 +93,7 @@ class HomeScreen extends ConsumerWidget {
                               arguments: product
                             );
                           },
+                          product: product,
                         );
                       },
                       childCount: products.length,

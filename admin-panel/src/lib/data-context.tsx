@@ -173,24 +173,35 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         pincode: o.addresses?.pincode
       })) || []);
 
-      const customersWithStats = (profilesData as any[])?.map((p: any) => {
+      const allProfiles = (profilesRes.status === 'fulfilled' ? profilesRes.value.data : []) as any[];
+      console.log('Fetched Profiles:', allProfiles);
+      
+      const processedProfiles = allProfiles.map((p: any) => {
         const customerOrders = (ordersData as any[] || []).filter((o: any) => o.user_id === p.id);
-        const totalSpent = customerOrders.reduce((sum: number, o: any) => sum + o.total_amount, 0);
+        const totalSpent = customerOrders.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0);
+        
+        const name = `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.email?.split('@')[0] || 'No Name';
         
         return {
           id: p.id,
-          name: `${p.first_name || ''} ${p.last_name || ''}`.trim() || 'No Name',
-          email: 'N/A',
+          name: name,
+          email: p.email || 'N/A',
           phone: p.phone_number || 'N/A',
           totalOrders: customerOrders.length,
           totalSpent: totalSpent,
-          joinDate: new Date(p.created_at).toISOString().split('T')[0],
-          role: p.role || 'customer'
+          joinDate: p.created_at ? new Date(p.created_at).toISOString().split('T')[0] : 'N/A',
+          role: (p.role === 'admin' ? 'admin' : 'customer') as 'admin' | 'customer'
         };
-      }) || [];
+      });
       
-      setCustomers(customersWithStats.filter((c: any) => c.role === 'customer'));
-      setAdmins(customersWithStats.filter((c: any) => c.role === 'admin'));
+      const filteredCustomers = processedProfiles.filter((c: any) => c.role === 'customer');
+      const filteredAdmins = processedProfiles.filter((c: any) => c.role === 'admin');
+      
+      console.log('Processed Customers:', filteredCustomers);
+      console.log('Processed Admins:', filteredAdmins);
+      
+      setCustomers(filteredCustomers);
+      setAdmins(filteredAdmins);
 
       setCoupons((couponsData as any[])?.map((c: any) => ({
         id: c.id,
@@ -232,32 +243,48 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     fetchData();
 
-    // Subscribe to new orders
-    const channel = supabase
+    // Subscriptions
+    const ordersSubscription = supabase
       .channel('public:orders')
       .on(
         'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'orders',
-        },
+        { event: 'INSERT', schema: 'public', table: 'orders' },
         (payload) => {
-          console.log('New order received via Realtime:', payload);
-          toast.success('New Order Received!', {
-            description: `Order #${payload.new.order_number} has been placed.`,
-            action: {
-              label: 'Refresh',
-              onClick: () => fetchData(true)
-            }
-          });
+          console.log('New order received:', payload);
+          toast.success('New Order Received!');
+          fetchData(true);
+        }
+      )
+      .subscribe();
+
+    const productsSubscription = supabase
+      .channel('public:products')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          console.log('Product change detected');
+          fetchData(true);
+        }
+      )
+      .subscribe();
+
+    const profilesSubscription = supabase
+      .channel('public:profiles')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          console.log('Profile change detected');
           fetchData(true);
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(ordersSubscription);
+      supabase.removeChannel(productsSubscription);
+      supabase.removeChannel(profilesSubscription);
     };
   }, [fetchData]);
 
@@ -474,17 +501,36 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   // Coupon management
   const addCoupon = async (coupon: Omit<Coupon, 'id'>) => {
-    const { error } = await supabase.from('coupons').insert({
-      code: coupon.code,
-      discount: coupon.discount,
-      type: coupon.type,
-      expiry: coupon.expiry,
-      active: coupon.active
-    });
-    if (error) toast.error(error.message);
-    else {
-      toast.success('Coupon created');
-      fetchData();
+    console.log('Attempting to add coupon:', coupon);
+    try {
+      // Add a timeout to the supabase request
+      const insertPromise = supabase.from('coupons').insert({
+        code: coupon.code,
+        discount: coupon.discount,
+        type: coupon.type,
+        expiry: coupon.expiry,
+        active: coupon.active
+      });
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timed out')), 15000)
+      );
+
+      const { error } = await Promise.race([insertPromise, timeoutPromise]) as any;
+
+      if (error) {
+        console.error('Supabase coupon insert error:', error);
+        toast.error(`Failed to create coupon: ${error.message}`);
+        throw error;
+      }
+
+      toast.success('Coupon created successfully');
+      await fetchData(true);
+      return true;
+    } catch (error: any) {
+      console.error('Unexpected error in addCoupon:', error);
+      toast.error(error.message || 'An unexpected error occurred');
+      throw error;
     }
   };
 
@@ -512,32 +558,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Banner management
-  const addBanner = async (banner: Omit<Banner, 'id'>) => {
+  const addBanner = async (banner: Omit<Banner, 'id'>): Promise<boolean> => {
     const { error } = await supabase.from('banners').insert({
       image_url: banner.imageUrl,
       title: banner.title,
       link_to: banner.linkTo,
       active: banner.active
     });
-    if (error) toast.error(error.message);
-    else {
+    if (error) {
+      toast.error(error.message);
+      return false;
+    } else {
       toast.success('Banner added');
       fetchData();
+      return true;
     }
   };
 
-  const updateBanner = async (id: string, banner: Partial<Banner>) => {
+  const updateBanner = async (id: string, banner: Partial<Banner>): Promise<boolean> => {
     const { error } = await supabase.from('banners').update({
       image_url: banner.imageUrl,
       title: banner.title,
       link_to: banner.linkTo,
       active: banner.active
     }).eq('id', id);
-    if (error) toast.error(error.message);
-    else {
+    if (error) {
+      toast.error(error.message);
+      return false;
+    } else {
       toast.success('Banner updated');
       fetchData();
+      return true;
     }
   };
 

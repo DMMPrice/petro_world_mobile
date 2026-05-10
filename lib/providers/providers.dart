@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/models/banner_model.dart';
-import 'package:shop/models/category_model.dart';
-import 'package:shop/models/product_model.dart';
-import 'package:shop/models/cart_item_model.dart';
-import 'package:shop/models/review_model.dart';
-import 'package:shop/services/supabase_service.dart';
-import 'package:shop/services/logistics_service.dart';
+import '../models/banner_model.dart';
+import '../models/category_model.dart';
+import '../models/product_model.dart';
+import '../models/cart_item_model.dart';
+import '../models/review_model.dart';
+import '../models/coupon_model.dart';
+import '../services/supabase_service.dart';
+import '../services/logistics_service.dart';
 
 // Reviews Provider
 final reviewsProvider = FutureProvider.family<List<ReviewModel>, String>((ref, productId) async {
@@ -46,29 +47,81 @@ final trendingProductsProvider = FutureProvider<List<ProductModel>>((ref) async 
 
 // Cart State Management
 class CartNotifier extends AsyncNotifier<List<CartItemModel>> {
+  List<CartItemModel> _guestCart = [];
+
   @override
   Future<List<CartItemModel>> build() async {
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) return _guestCart;
     return SupabaseService.getCart();
   }
 
   Future<void> addToCart(String productId, int quantity) async {
-    await SupabaseService.addToCart(productId, quantity);
-    ref.invalidateSelf(); // refresh the cart
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) {
+      // Find product first to add to guest cart
+      final products = await ref.read(productsProvider.future);
+      final product = products.firstWhere((p) => p.id == productId);
+      
+      final index = _guestCart.indexWhere((item) => item.product.id == productId);
+      if (index >= 0) {
+        _guestCart[index] = CartItemModel(
+          id: _guestCart[index].id,
+          product: product,
+          quantity: _guestCart[index].quantity + quantity,
+        );
+      } else {
+        _guestCart.add(CartItemModel(
+          id: DateTime.now().toString(),
+          product: product,
+          quantity: quantity,
+        ));
+      }
+      state = AsyncData(List.from(_guestCart));
+    } else {
+      await SupabaseService.addToCart(productId, quantity);
+      ref.invalidateSelf();
+    }
   }
 
   Future<void> updateQuantity(String cartItemId, int quantity) async {
-    await SupabaseService.updateCartQuantity(cartItemId, quantity);
-    ref.invalidateSelf();
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) {
+      final index = _guestCart.indexWhere((item) => item.id == cartItemId);
+      if (index >= 0) {
+        _guestCart[index] = CartItemModel(
+          id: cartItemId,
+          product: _guestCart[index].product,
+          quantity: quantity,
+        );
+      }
+      state = AsyncData(List.from(_guestCart));
+    } else {
+      await SupabaseService.updateCartQuantity(cartItemId, quantity);
+      ref.invalidateSelf();
+    }
   }
 
   Future<void> removeFromCart(String cartItemId) async {
-    await SupabaseService.removeFromCart(cartItemId);
-    ref.invalidateSelf();
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) {
+      _guestCart.removeWhere((item) => item.id == cartItemId);
+      state = AsyncData(List.from(_guestCart));
+    } else {
+      await SupabaseService.removeFromCart(cartItemId);
+      ref.invalidateSelf();
+    }
   }
 
   Future<void> clearCart() async {
-    await SupabaseService.clearCart();
-    ref.invalidateSelf();
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) {
+      _guestCart = [];
+      state = AsyncData(_guestCart);
+    } else {
+      await SupabaseService.clearCart();
+      ref.invalidateSelf();
+    }
   }
 }
 
@@ -78,21 +131,54 @@ final cartProvider = AsyncNotifierProvider<CartNotifier, List<CartItemModel>>(
 
 // Wishlist State Management
 class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
+  List<ProductModel> _guestWishlist = [];
+
   @override
   Future<List<ProductModel>> build() async {
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) return _guestWishlist;
     return SupabaseService.getWishlist();
   }
 
-  Future<void> toggleWishlist(String productId) async {
-    final wishlist = await future;
-    final isBookmarked = wishlist.any((p) => p.id == productId);
-
-    if (isBookmarked) {
-      await SupabaseService.removeFromWishlist(productId);
+  Future<void> toggleWishlist(String productId, {ProductModel? product}) async {
+    final user = SupabaseService.client.auth.currentUser;
+    if (user == null) {
+      final currentList = state.value ?? _guestWishlist;
+      final index = currentList.indexWhere((p) => p.id == productId);
+      
+      if (index >= 0) {
+        _guestWishlist = List.from(currentList)..removeAt(index);
+      } else {
+        if (product != null) {
+          _guestWishlist = List.from(currentList)..add(product);
+        } else {
+          try {
+            final products = await ref.read(productsProvider.future);
+            final foundProduct = products.firstWhere((p) => p.id == productId);
+            _guestWishlist = List.from(currentList)..add(foundProduct);
+          } catch (e) {
+            print('Error adding to guest wishlist: $e');
+            // If still not found, we can't add it without the model
+            return;
+          }
+        }
+      }
+      state = AsyncData(List.from(_guestWishlist));
     } else {
-      await SupabaseService.addToWishlist(productId);
+      try {
+        final wishlist = await future;
+        final isBookmarked = wishlist.any((p) => p.id == productId);
+
+        if (isBookmarked) {
+          await SupabaseService.removeFromWishlist(productId);
+        } else {
+          await SupabaseService.addToWishlist(productId);
+        }
+        ref.invalidateSelf();
+      } catch (e) {
+        state = AsyncError(e, StackTrace.current);
+      }
     }
-    ref.invalidateSelf();
   }
 }
 
@@ -285,4 +371,49 @@ final pincodeEstimateProvider = FutureProvider.family<Map<String, dynamic>?, Str
   
   // Fallback to local DB estimate if Shiprocket fails or not serviceable
   return SupabaseService.checkDeliveryEstimate(pincode);
+});
+
+// Coupon State Management
+class CouponNotifier extends Notifier<CouponModel?> {
+  @override
+  CouponModel? build() => null;
+
+  Future<String?> applyCoupon(String code) async {
+    final coupon = await SupabaseService.validateCoupon(code);
+    if (coupon == null) {
+      return "Invalid or expired coupon code";
+    }
+    state = coupon;
+    return null; // Success
+  }
+
+  void removeCoupon() {
+    state = null;
+  }
+}
+
+final couponProvider = NotifierProvider<CouponNotifier, CouponModel?>(() {
+  return CouponNotifier();
+});
+
+extension SettingsExtension on Map<String, String> {
+  double getDouble(String key, double defaultValue) {
+    final value = this[key];
+    if (value == null) return defaultValue;
+    return double.tryParse(value) ?? defaultValue;
+  }
+}
+
+class ShippingSettings {
+  final double fee;
+  final double threshold;
+  ShippingSettings({required this.fee, required this.threshold});
+}
+
+final shippingSettingsProvider = Provider<ShippingSettings>((ref) {
+  final settings = ref.watch(settingsProvider).value ?? {};
+  return ShippingSettings(
+    fee: settings.getDouble('shipping_fee', 50),
+    threshold: settings.getDouble('shipping_threshold', 999),
+  );
 });

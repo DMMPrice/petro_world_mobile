@@ -133,9 +133,27 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
 
                   final subtotal = cartItems.fold<double>(
                     0,
-                    (sum, item) => sum + ((item.product.priceAfterDiscount ?? item.product.price) * item.quantity),
+                    (sum, item) => sum + (item.product.price * item.quantity),
                   );
-                  final total = subtotal * 1.05; // 5% VAT
+                  final productDiscount = cartItems.fold<double>(
+                    0,
+                    (sum, item) => sum + ((item.product.price - (item.product.priceAfterDiscount ?? item.product.price)) * item.quantity),
+                  );
+                  
+                  final appliedCoupon = ref.read(couponProvider);
+                  final shippingSettings = ref.read(shippingSettingsProvider);
+                  double couponDiscount = 0.0;
+                  if (appliedCoupon != null) {
+                    if (appliedCoupon.type == 'percentage') {
+                      couponDiscount = (subtotal - productDiscount) * (appliedCoupon.discount / 100);
+                    } else {
+                      couponDiscount = appliedCoupon.discount;
+                    }
+                  }
+
+                  final totalAfterProductDiscount = subtotal - productDiscount;
+                  final shippingFee = totalAfterProductDiscount > shippingSettings.threshold ? 0.0 : shippingSettings.fee;
+                  final total = totalAfterProductDiscount + shippingFee - couponDiscount;
 
                   // Find the selected AddressModel to pass to PaymentScreen
                   final allAddresses = snapshot.data ?? [];
@@ -152,6 +170,10 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                       address: selectedAddress,
                       cartItems: cartItems,
                       total: total,
+                      subtotal: subtotal,
+                      productDiscount: productDiscount,
+                      couponId: appliedCoupon?.id,
+                      couponDiscount: couponDiscount,
                     ),
                   );
                 },

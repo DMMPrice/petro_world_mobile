@@ -20,6 +20,8 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState({
     shipping_info: '',
     return_policy: '',
+    shipping_fee: '50',
+    shipping_threshold: '999',
   });
   const [newEstimate, setNewEstimate] = useState({
     pincode_prefix: '',
@@ -34,6 +36,8 @@ export default function SettingsPage() {
       setFormData({
         shipping_info: settings.shipping_info || '',
         return_policy: settings.return_policy || '',
+        shipping_fee: settings.shipping_fee || '50',
+        shipping_threshold: settings.shipping_threshold || '999',
       });
     }
   }, [settings]);
@@ -78,7 +82,7 @@ export default function SettingsPage() {
         </Button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -86,15 +90,15 @@ export default function SettingsPage() {
               Global Shipping Info
             </CardTitle>
             <CardDescription>
-              This information will be displayed on all products unless overridden.
+              This info is displayed on product pages.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="shipping_info">Shipping Details</Label>
+              <Label htmlFor="shipping_info">Details</Label>
               <textarea
                 id="shipping_info"
-                rows={5}
+                rows={4}
                 className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="e.g. Standard shipping takes 3-5 business days..."
                 value={formData.shipping_info}
@@ -111,19 +115,51 @@ export default function SettingsPage() {
               Global Return Policy
             </CardTitle>
             <CardDescription>
-              This policy will be displayed on all products unless overridden.
+              This info is displayed on product pages.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="return_policy">Policy Details</Label>
+              <Label htmlFor="return_policy">Details</Label>
               <textarea
                 id="return_policy"
-                rows={5}
+                rows={4}
                 className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm ring-offset-white placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="e.g. Easy 7-day return policy for most items..."
                 value={formData.return_policy}
                 onChange={(e) => setFormData(prev => ({ ...prev, return_policy: e.target.value }))}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Truck className="w-5 h-5 text-amber-500" />
+              Shipping Logistics
+            </CardTitle>
+            <CardDescription>
+              Control delivery fees and free shipping thresholds.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="shipping_fee">Default Shipping Fee (₹)</Label>
+              <Input
+                id="shipping_fee"
+                type="number"
+                value={formData.shipping_fee}
+                onChange={(e) => setFormData(prev => ({ ...prev, shipping_fee: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="shipping_threshold">Free Shipping Above (₹)</Label>
+              <Input
+                id="shipping_threshold"
+                type="number"
+                value={formData.shipping_threshold}
+                onChange={(e) => setFormData(prev => ({ ...prev, shipping_threshold: e.target.value }))}
               />
             </div>
           </CardContent>

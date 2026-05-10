@@ -18,12 +18,20 @@ class PaymentScreenArgs {
   final AddressModel address;
   final List<CartItemModel> cartItems;
   final double total;
+  final String? couponId;
+  final double couponDiscount;
+  final double subtotal; // Original price sum
+  final double productDiscount;
 
   const PaymentScreenArgs({
     required this.addressId,
     required this.address,
     required this.cartItems,
     required this.total,
+    this.couponId,
+    this.couponDiscount = 0,
+    required this.subtotal,
+    required this.productDiscount,
   });
 }
 
@@ -77,8 +85,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         addressId: widget.args.addressId,
         total: widget.args.total,
         items: widget.args.cartItems,
+        couponId: widget.args.couponId,
+        couponDiscount: widget.args.couponDiscount,
       );
       ref.invalidate(cartProvider);
+      ref.read(couponProvider.notifier).removeCoupon();
       if (!mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,
@@ -170,8 +181,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         total: widget.args.total,
         items: widget.args.cartItems,
         paymentMethod: 'Cash on Delivery',
+        couponId: widget.args.couponId,
+        couponDiscount: widget.args.couponDiscount,
       );
       ref.invalidate(cartProvider);
+      ref.read(couponProvider.notifier).removeCoupon();
       if (!mounted) return;
       Navigator.pushNamedAndRemoveUntil(
         context,
@@ -239,11 +253,57 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                         ),
                       )),
                   const Divider(height: 20),
+                  
+                  // Subtotal
+                  _SummaryRow(label: 'Subtotal', value: args.subtotal),
+                  
+                  // Product Discount
+                  if (args.productDiscount > 0)
+                    _SummaryRow(
+                      label: 'Product Discount',
+                      value: -args.productDiscount,
+                      valueColor: successColor,
+                    ),
+                  
+                  const Divider(height: 20),
+                  
+                  // Bag Total
+                  _SummaryRow(
+                    label: 'Bag Total',
+                    value: args.subtotal - args.productDiscount,
+                    isBold: true,
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Shipping Fee
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final settings = ref.watch(shippingSettingsProvider);
+                      final bagTotal = args.subtotal - args.productDiscount;
+                      final shippingFee = bagTotal > settings.threshold ? 0.0 : settings.fee;
+                      return _SummaryRow(
+                        label: 'Shipping Fee',
+                        value: shippingFee,
+                        isShipping: true,
+                      );
+                    },
+                  ),
+                  
+                  // Coupon Discount
+                  if (args.couponDiscount > 0)
+                    _SummaryRow(
+                      label: 'Coupon Discount',
+                      value: -args.couponDiscount,
+                      valueColor: successColor,
+                    ),
+                    
+                  const Divider(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Total',
-                          style: theme.textTheme.titleSmall!
+                      Text('Grand Total',
+                          style: theme.textTheme.titleMedium!
                               .copyWith(fontWeight: FontWeight.bold)),
                       Text(
                         '₹${args.total.toStringAsFixed(0)}',
@@ -533,6 +593,51 @@ class _PaymentOption extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SummaryRow extends StatelessWidget {
+  final String label;
+  final double value;
+  final Color? valueColor;
+  final bool isBold;
+  final bool isShipping;
+
+  const _SummaryRow({
+    required this.label,
+    required this.value,
+    this.valueColor,
+    this.isBold = false,
+    this.isShipping = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                  fontWeight: isBold ? FontWeight.bold : null,
+                ),
+          ),
+          Text(
+            isShipping && value == 0
+                ? "Free"
+                : "₹${value.abs().toStringAsFixed(0)}",
+            style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                  color: isShipping && value == 0 ? successColor : valueColor,
+                  fontWeight: isBold || (isShipping && value == 0)
+                      ? FontWeight.bold
+                      : null,
+                ),
+          ),
+        ],
       ),
     );
   }

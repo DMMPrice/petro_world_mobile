@@ -66,12 +66,13 @@ class CategoryProductsScreen extends ConsumerWidget {
                       onBookmarkTap: () {
                         ref
                             .read(wishlistProvider.notifier)
-                            .toggleWishlist(product.id);
+                            .toggleWishlist(product.id, product: product);
                       },
                       press: () {
                         Navigator.pushNamed(context, productDetailsScreenRoute,
                             arguments: product);
                       },
+                      product: product,
                     );
                   },
                 );

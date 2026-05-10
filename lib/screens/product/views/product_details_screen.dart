@@ -9,6 +9,7 @@ import 'package:shop/constants.dart';
 import 'package:shop/screens/product/views/product_returns_screen.dart';
 import 'package:shop/route/screen_export.dart';
 import 'package:shop/providers/providers.dart';
+import 'package:shop/services/supabase_service.dart';
 import 'components/notify_me_card.dart';
 import 'components/product_images.dart';
 import 'components/product_info.dart';
@@ -42,20 +43,29 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   }
 
   Future<void> _addToCart({bool navigateToCart = false}) async {
+    final user = SupabaseService.client.auth.currentUser;
+    if (navigateToCart && user == null) {
+      Navigator.pushNamed(context, logInScreenRoute);
+      return;
+    }
     setState(() => _isAddingToCart = true);
     try {
       await ref.read(cartProvider.notifier).addToCart(widget.product.id, _quantity);
       if (!mounted) return;
 
       if (navigateToCart) {
-        Navigator.pushNamed(context, cartScreenRoute);
+        ref.read(navigationProvider.notifier).setIndex(3);
+        Navigator.popUntil(context, (route) => route.isFirst);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("${widget.product.title} added to cart"),
             action: SnackBarAction(
               label: "View Cart",
-              onPressed: () => Navigator.pushNamed(context, cartScreenRoute),
+              onPressed: () {
+                ref.read(navigationProvider.notifier).setIndex(3);
+                Navigator.popUntil(context, (route) => route.isFirst);
+              },
             ),
           ),
         );
@@ -163,7 +173,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               actions: [
                 IconButton(
                   onPressed: () {
-                    ref.read(wishlistProvider.notifier).toggleWishlist(widget.product.id);
+                    ref.read(wishlistProvider.notifier).toggleWishlist(widget.product.id, product: widget.product);
                   },
                   icon: SvgPicture.asset(
                     isBookmarked ? "assets/icons/heart-filled.svg" : "assets/icons/heart.svg",
@@ -340,7 +350,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       reviewCount: product.reviewCount,
                                       isBookmarked: isItemBookmarked,
                                       onBookmarkTap: () {
-                                        ref.read(wishlistProvider.notifier).toggleWishlist(product.id);
+                                        ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
                                       },
                                       press: () {
                                         Navigator.pushReplacementNamed(context, productDetailsScreenRoute,
@@ -412,7 +422,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       reviewCount: product.reviewCount,
                                       isBookmarked: isItemBookmarked,
                                       onBookmarkTap: () {
-                                        ref.read(wishlistProvider.notifier).toggleWishlist(product.id);
+                                        ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
                                       },
                                       press: () {
                                         Navigator.pushReplacementNamed(context, productDetailsScreenRoute,
@@ -489,7 +499,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       reviewCount: p.reviewCount,
                                       isBookmarked: isItemBookmarked,
                                       onBookmarkTap: () {
-                                        ref.read(wishlistProvider.notifier).toggleWishlist(p.id);
+                                        ref.read(wishlistProvider.notifier).toggleWishlist(p.id, product: p);
                                       },
                                       press: () {
                                         Navigator.pushReplacementNamed(context, productDetailsScreenRoute,
