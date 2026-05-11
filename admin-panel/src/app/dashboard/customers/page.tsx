@@ -239,6 +239,7 @@ function AddCustomerDialog({ onClose }: { onClose: () => void }) {
         totalOrders: 0,
         totalSpent: 0,
         joinDate: new Date().toISOString().split('T')[0],
+        role: 'customer',
       });
       reset();
       onClose();

@@ -15,9 +15,7 @@ import 'components/product_images.dart';
 import 'components/product_info.dart';
 import 'components/product_list_tile.dart';
 import '../../../components/review_card.dart';
-import 'product_details_info_screen.dart';
 import 'components/product_quantity.dart';
-import 'shipping_methods_screen.dart';
 
 class ProductDetailsScreen extends ConsumerStatefulWidget {
   const ProductDetailsScreen(

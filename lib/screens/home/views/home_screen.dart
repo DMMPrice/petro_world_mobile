@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/constants.dart';
-import 'package:shop/models/product_model.dart';
 import 'package:shop/components/product/product_card.dart';
 import 'package:shop/route/screen_export.dart';
 import 'package:shop/components/shimmer_wrapper.dart';
 
 import 'components/banner_carousel_and_categories.dart';
 import 'package:shop/providers/providers.dart';
-import 'package:shop/services/supabase_service.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});

@@ -111,9 +111,9 @@ export function BannerForm({ banner, onClose }: BannerFormProps) {
 
       let success = false;
       if (banner) {
-        success = await updateBanner(banner.id, bannerData) as boolean;
+        success = await updateBanner(banner.id, bannerData);
       } else {
-        success = await addBanner(bannerData) as boolean;
+        success = await addBanner(bannerData);
       }
       
       if (success) {
@@ -142,7 +142,7 @@ export function BannerForm({ banner, onClose }: BannerFormProps) {
             <Label>Banner Image</Label>
             <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed rounded-lg border-slate-200">
               {imagePreview ? (
-                <div className="relative w-full aspect-[2/1] rounded-md overflow-hidden">
+                <div className="relative w-full aspect-2/1 rounded-md overflow-hidden">
                   <img
                     src={imagePreview}
                     alt="Preview"

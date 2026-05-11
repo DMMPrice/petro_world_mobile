@@ -6,7 +6,6 @@ import 'package:shop/route/route_constants.dart';
 import 'components/search_form.dart';
 import 'components/filter_modal.dart';
 import 'package:shop/providers/providers.dart';
-import 'package:shop/services/supabase_service.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});

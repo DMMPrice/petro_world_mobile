@@ -35,14 +35,14 @@ interface DataContextType {
   
   // Coupons
   coupons: Coupon[];
-  addCoupon: (coupon: Omit<Coupon, 'id'>) => Promise<void>;
+  addCoupon: (coupon: Omit<Coupon, 'id'>) => Promise<boolean>;
   updateCoupon: (id: string, coupon: Partial<Coupon>) => Promise<void>;
   deleteCoupon: (id: string) => Promise<void>;
 
   // Banners
   banners: Banner[];
-  addBanner: (banner: Omit<Banner, 'id'>) => Promise<void>;
-  updateBanner: (id: string, banner: Partial<Banner>) => Promise<void>;
+  addBanner: (banner: Omit<Banner, 'id'>) => Promise<boolean>;
+  updateBanner: (id: string, banner: Partial<Banner>) => Promise<boolean>;
   deleteBanner: (id: string) => Promise<void>;
   
   // Delivery Estimates
@@ -348,7 +348,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const currentProduct = products.find(p => p.id === id);
       const pPrice = product.price ?? currentProduct?.price ?? 0;
       const pType = product.discount_type !== undefined ? product.discount_type : (currentProduct?.discount_type ?? null);
-      const pValue = product.discount_value !== undefined ? product.discount_value : (currentProduct?.discount_value ?? 0);
+      const pValue = (product.discount_value !== undefined ? product.discount_value : (currentProduct?.discount_value ?? 0)) ?? 0;
 
       let priceAfterDiscount = pPrice;
       let discountPercent = 0;

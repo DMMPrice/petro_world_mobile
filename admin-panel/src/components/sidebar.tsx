@@ -100,7 +100,7 @@ export function Sidebar() {
         )}
       >
         {/* Header */}
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 flex-shrink-0">
+        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-800 shrink-0">
           {open && (
             <div className="flex items-center gap-2">
               <img src="/logo.png" alt="PETRO WORLD Logo" className="w-10 h-10 object-contain" />
@@ -132,7 +132,7 @@ export function Sidebar() {
                 )}
               >
                 <Icon className={cn(
-                  "w-5 h-5 flex-shrink-0 transition-transform duration-200",
+                  "w-5 h-5 shrink-0 transition-transform duration-200",
                   !isActive && "group-hover:scale-110"
                 )} />
                 {open && <span className="text-sm font-medium whitespace-nowrap">{item.title}</span>}
@@ -142,7 +142,7 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/50 backdrop-blur-sm flex-shrink-0">
+        <div className="p-4 border-t border-slate-800 bg-slate-900/50 backdrop-blur-sm shrink-0">
           {open && user && (
             <div className="px-2 mb-3">
               <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-0.5">
@@ -160,7 +160,7 @@ export function Sidebar() {
               !open && "justify-center"
             )}
           >
-            <LogOut className="w-5 h-5 flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
+            <LogOut className="w-5 h-5 shrink-0 group-hover:-translate-x-1 transition-transform" />
             {open && <span className="font-medium">Logout</span>}
           </button>
         </div>

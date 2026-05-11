@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shop/entry_point.dart';
-import 'package:shop/screens/onbording/views/onbording_screnn.dart';
 
 class AuthGate extends StatefulWidget {
   const AuthGate({super.key});
