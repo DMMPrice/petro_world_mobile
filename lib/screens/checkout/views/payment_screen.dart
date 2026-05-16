@@ -584,11 +584,17 @@ class _PaymentOption extends StatelessWidget {
                   ],
                 ),
               ),
-              Radio<String>(
-                value: value,
+              RadioGroup<String>(
                 groupValue: groupValue,
-                onChanged: disabled ? null : onChanged,
-                activeColor: primaryColor,
+                onChanged: (val) {
+                  if (!disabled && onChanged != null) {
+                    onChanged!(val);
+                  }
+                },
+                child: Radio<String>(
+                  value: value,
+                  activeColor: primaryColor,
+                ),
               ),
             ],
           ),

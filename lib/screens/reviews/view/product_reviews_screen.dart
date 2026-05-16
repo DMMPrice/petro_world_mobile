@@ -337,7 +337,7 @@ class ProductReviewsScreen extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundColor: Theme.of(context).dividerColor.withOpacity(0.1),
+                backgroundColor: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                 child: Text(
                   name.isNotEmpty ? name.substring(0, 1) : "U",
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -360,7 +360,7 @@ class ProductReviewsScreen extends ConsumerWidget {
                             .textTheme
                             .bodyMedium!
                             .color!
-                            .withOpacity(0.5),
+                            .withValues(alpha: 0.5),
                       ),
                     ),
                   ],
@@ -374,7 +374,7 @@ class ProductReviewsScreen extends ConsumerWidget {
                     .textTheme
                     .bodyLarge!
                     .color!
-                    .withOpacity(0.08),
+                    .withValues(alpha: 0.08),
                 glow: false,
                 ignoreGestures: true,
                 onRatingUpdate: (value) {},

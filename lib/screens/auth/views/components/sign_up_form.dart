@@ -35,7 +35,7 @@ class SignUpForm extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: defaultPadding * 0.75),
                 child: Icon(
                   Icons.person_outline,
-                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.3),
+                  color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -51,7 +51,7 @@ class SignUpForm extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: defaultPadding * 0.75),
                 child: Icon(
                   Icons.person_outline,
-                  color: Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.3),
+                  color: Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.3),
                 ),
               ),
             ),
@@ -59,7 +59,7 @@ class SignUpForm extends StatelessWidget {
           const SizedBox(height: defaultPadding),
           TextFormField(
             onSaved: onEmailSaved,
-            validator: emaildValidator,
+            validator: emaildValidator.call,
             textInputAction: TextInputAction.next,
             keyboardType: TextInputType.emailAddress,
             decoration: InputDecoration(
@@ -71,7 +71,7 @@ class SignUpForm extends StatelessWidget {
                   height: 24,
                   width: 24,
                   colorFilter: ColorFilter.mode(
-                    Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.3) ?? Colors.grey,
+                    Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.3) ?? Colors.grey,
                     BlendMode.srcIn,
                   ),
                 ),
@@ -81,7 +81,7 @@ class SignUpForm extends StatelessWidget {
           const SizedBox(height: defaultPadding),
           TextFormField(
             onSaved: onPasswordSaved,
-            validator: passwordValidator,
+            validator: passwordValidator.call,
             obscureText: true,
             decoration: InputDecoration(
               hintText: "Password",
@@ -92,7 +92,7 @@ class SignUpForm extends StatelessWidget {
                   height: 24,
                   width: 24,
                   colorFilter: ColorFilter.mode(
-                    Theme.of(context).textTheme.bodyLarge?.color?.withOpacity(0.3) ?? Colors.grey,
+                    Theme.of(context).textTheme.bodyLarge?.color?.withValues(alpha: 0.3) ?? Colors.grey,
                     BlendMode.srcIn,
                   ),
                 ),

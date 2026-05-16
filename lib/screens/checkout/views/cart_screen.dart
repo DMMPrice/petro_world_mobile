@@ -137,7 +137,7 @@ class CartScreen extends ConsumerWidget {
                                     ),
                                     filled: true,
                                     fillColor: Theme.of(context).brightness == Brightness.dark
-                                        ? whiteColor.withOpacity(0.05)
+                                        ? whiteColor.withValues(alpha: 0.05)
                                         : lightGreyColor,
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(defaultBorderRadius),

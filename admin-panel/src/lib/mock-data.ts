@@ -15,6 +15,7 @@ export interface Product {
   image?: string;
   gallery?: string[];
   description?: string;
+  brand?: string;
   discount_type?: 'percentage' | 'fixed' | null;
   discount_value?: number | null;
 }
@@ -25,6 +26,10 @@ export interface Order {
   customerId: string;
   customerName: string;
   total: number;
+  subtotal?: number;
+  shippingFee?: number;
+  discount?: number;
+  couponDiscount?: number;
   status: 'ordered' | 'processing' | 'packed' | 'shipped' | 'delivered' | 'canceled' | 'returned' | 'awaitingPayment';
   date: string;
   items: number;
@@ -164,7 +169,7 @@ export const mockOrders: Order[] = [
     customerId: 'c4',
     customerName: 'Emily Davis',
     total: 56.75,
-    status: 'pending',
+    status: 'ordered',
     date: '2024-04-25',
     items: 1,
   },

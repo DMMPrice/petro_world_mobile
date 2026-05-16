@@ -11,7 +11,7 @@ export default function DashboardPage() {
   const { orders, products, customers, admins, loading } = useData();
   
   const lowStockCount = products.filter(p => p.stock < 100).length;
-  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+  const pendingOrders = orders.filter(o => o.status === 'ordered').length;
 
   const totalRevenue = orders.reduce((sum, o) => sum + o.total, 0);
   const averageOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;

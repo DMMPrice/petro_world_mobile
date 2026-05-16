@@ -64,7 +64,7 @@ class _FAQScreenState extends State<FAQScreen> {
                               .textTheme
                               .bodyMedium!
                               .color!
-                              .withOpacity(0.8),
+                              .withValues(alpha: 0.8),
                         ),
                       ),
                     );
@@ -98,7 +98,7 @@ class _CustomAccordionState extends State<CustomAccordion> {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(defaultBorderRadius),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.1),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
         ),
       ),
       child: Column(

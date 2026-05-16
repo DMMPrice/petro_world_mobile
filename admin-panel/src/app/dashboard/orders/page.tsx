@@ -379,7 +379,7 @@ export default function OrdersPage() {
               </div>
 
               <div className="p-6 space-y-6 bg-white">
-                {/* Status + Quick info */}
+                {/* Status & Quick info */}
                 <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Status</p>
@@ -389,14 +389,49 @@ export default function OrdersPage() {
                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Payment</p>
                     <span className="text-sm font-semibold text-slate-700">{selectedOrder.status === 'awaitingPayment' ? 'Pending' : 'Paid'}</span>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Items</p>
-                    <span className="text-sm font-semibold text-slate-700">{selectedOrder.items} unit{selectedOrder.items !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Total</p>
-                    <span className="text-sm font-bold text-amber-600">₹{selectedOrder.total.toLocaleString()}</span>
-                  </div>
+                </div>
+
+                {/* Order Summary Breakdown */}
+                <div className="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-3">
+                  <p className="text-xs font-bold text-slate-400 uppercase mb-4">Payment Breakdown</p>
+                  
+                  {(() => {
+                    const itemsTotal = selectedOrder.order_items?.reduce((sum: number, item: any) => sum + (Number(item.price_at_purchase) * item.quantity), 0) || 0;
+                    const cDiscount = Number(selectedOrder.couponDiscount || 0);
+                    const grandTotal = Number(selectedOrder.total);
+                    
+                    // Since we don't store shipping explicitly, we derive it.
+                    // If total > (items - coupon), the difference is shipping.
+                    const shipping = Math.max(0, grandTotal - (itemsTotal - cDiscount));
+                    
+                    return (
+                      <>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-500">Subtotal ({selectedOrder.items} items)</span>
+                          <span className="font-semibold text-slate-700">₹{itemsTotal.toLocaleString()}</span>
+                        </div>
+
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-500">Shipping Charges</span>
+                          <span className={cn("font-semibold", shipping === 0 ? "text-emerald-600" : "text-slate-700")}>
+                            {shipping === 0 ? 'FREE' : `₹${shipping.toLocaleString()}`}
+                          </span>
+                        </div>
+
+                        {cDiscount > 0 && (
+                          <div className="flex justify-between text-sm text-emerald-600 font-medium">
+                            <span>Coupon Discount</span>
+                            <span>-₹{cDiscount.toLocaleString()}</span>
+                          </div>
+                        )}
+
+                        <div className="pt-4 mt-2 border-t border-slate-200 flex justify-between items-center">
+                          <span className="text-base font-bold text-slate-900">Grand Total</span>
+                          <span className="text-xl font-black text-amber-600">₹{grandTotal.toLocaleString()}</span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
 
                 {/* Shipping Address */}

@@ -42,7 +42,6 @@ class _AuthGateState extends State<AuthGate> {
           );
         }
         
-        final session = snapshot.data?.session;
         return const EntryPoint();
       },
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/shipment_model.dart';
@@ -41,7 +42,7 @@ class LogisticsService {
         throw Exception(data['error'] ?? 'Unknown tracking error');
       }
     } catch (e) {
-      print('Tracking Error: $e');
+      debugPrint('Tracking Error: $e');
       // Fallback to mock for testing if needed, or rethrow
       return ShipmentTracking.fromMock(trackingNumber);
     }
@@ -78,7 +79,7 @@ class LogisticsService {
         };
       }
     } catch (e) {
-      print('Shiprocket Serviceability Error: $e');
+      debugPrint('Shiprocket Serviceability Error: $e');
       return {
         "status": "error",
         "message": "Service currently unavailable",
@@ -102,7 +103,7 @@ class LogisticsService {
         }
       }
     } catch (e) {
-      print('Pincode Lookup Error: $e');
+      debugPrint('Pincode Lookup Error: $e');
     }
     return null;
   }

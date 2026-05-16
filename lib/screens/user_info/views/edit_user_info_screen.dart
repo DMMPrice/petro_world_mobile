@@ -24,7 +24,6 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
   PhoneNumber _number = PhoneNumber(isoCode: 'IN');
   String? _selectedGender;
   
-  String? _selectedCountryCode;
   String? _avatarUrl;
   bool _isLoading = true;
 
@@ -224,7 +223,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                             decoration: InputDecoration(
                               hintText: "Full Name",
                               filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(defaultBorderRadius),
                                 borderSide: BorderSide.none,
@@ -244,7 +243,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                                   height: 24,
                                   width: 24,
                                   colorFilter: ColorFilter.mode(
-                                      Theme.of(context).textTheme.bodyLarge!.color!.withOpacity(0.7),
+                                      Theme.of(context).textTheme.bodyLarge!.color!.withValues(alpha: 0.7),
                                       BlendMode.srcIn),
                                 ),
                               ),
@@ -257,7 +256,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                             keyboardType: TextInputType.emailAddress,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(defaultBorderRadius),
                                 borderSide: BorderSide.none,
@@ -277,7 +276,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                                   height: 24,
                                   width: 24,
                                   colorFilter: ColorFilter.mode(
-                                      Theme.of(context).textTheme.bodyLarge!.color!.withOpacity(0.7),
+                                      Theme.of(context).textTheme.bodyLarge!.color!.withValues(alpha: 0.7),
                                       BlendMode.srcIn),
                                 ),
                               ),
@@ -291,7 +290,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                             decoration: InputDecoration(
                               hintText: "Date of birth",
                               filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(defaultBorderRadius),
                                 borderSide: BorderSide.none,
@@ -311,7 +310,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                                   height: 24,
                                   width: 24,
                                   colorFilter: ColorFilter.mode(
-                                      Theme.of(context).textTheme.bodyLarge!.color!.withOpacity(0.7),
+                                      Theme.of(context).textTheme.bodyLarge!.color!.withValues(alpha: 0.7),
                                       BlendMode.srcIn),
                                 ),
                               ),
@@ -327,7 +326,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                             decoration: InputDecoration(
                               hintText: "Gender",
                               filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(defaultBorderRadius),
                                 borderSide: BorderSide.none,
@@ -365,7 +364,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                             inputDecoration: InputDecoration(
                               hintText: "Phone Number",
                               filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(defaultBorderRadius),
                                 borderSide: BorderSide.none,

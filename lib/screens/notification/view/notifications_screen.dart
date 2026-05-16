@@ -66,7 +66,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         }
       });
     } catch (e) {
-      print("Error marking as read: $e");
+      debugPrint("Error marking as read: $e");
     }
   }
 
@@ -131,7 +131,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     return Column(
       children: [
         Container(
-          color: isRead ? null : primaryColor.withOpacity(0.03),
+          color: isRead ? null : primaryColor.withValues(alpha: 0.03),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: defaultPadding, vertical: defaultPadding),
             child: Row(
@@ -142,7 +142,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   children: [
                     CircleAvatar(
                       radius: 24,
-                      backgroundColor: color.withOpacity(0.1),
+                      backgroundColor: color.withValues(alpha: 0.1),
                       child: SvgPicture.asset(
                         iconSrc,
                         colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
@@ -190,7 +190,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         time,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.4),
+                          color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.4),
                         ),
                       ),
                     ],
@@ -204,7 +204,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           Padding(
             padding: const EdgeInsets.only(left: defaultPadding * 3.5 + 16, right: defaultPadding),
             child: Divider(
-              color: Theme.of(context).dividerColor.withOpacity(0.05),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
               height: 1,
             ),
           ),

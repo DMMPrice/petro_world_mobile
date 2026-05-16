@@ -33,7 +33,7 @@ const productSchema = z.object({
   price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
   stock: z.coerce.number().min(0, 'Stock cannot be negative'),
   description: z.string().optional(),
-  discount_type: z.string().nullable().optional(),
+  discount_type: z.enum(['percentage', 'fixed']).nullable().optional(),
   discount_value: z.coerce.number().min(0, 'Discount cannot be negative').nullable().optional(),
   category_id: z.string().optional(),
   sub_category_id: z.string().nullable().optional(),
@@ -78,15 +78,15 @@ export function ProductForm({ product, onClose }: ProductFormProps) {
     formState: { errors },
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
-    defaultValues: product || {
-      name: '',
-      category: categories[0]?.title || '',
-      price: 0,
-      stock: 0,
-      description: '',
-      discount_type: null,
-      discount_value: 0,
-      category_id: product?.category_id || categories[0]?.id || '',
+    defaultValues: {
+      name: product?.name || '',
+      category: product?.category || (categories.length > 0 ? categories[0].title : ''),
+      price: product?.price || 0,
+      stock: product?.stock || 0,
+      description: product?.description || '',
+      discount_type: product?.discount_type || null,
+      discount_value: product?.discount_value || 0,
+      category_id: product?.category_id || (categories.length > 0 ? categories[0].id : ''),
       sub_category_id: product?.sub_category_id || null,
       weight: product?.weight || 0.5,
       length: product?.length || 10,
@@ -168,6 +168,8 @@ export function ProductForm({ product, onClose }: ProductFormProps) {
         ...data,
         image: mainImageUrl,
         gallery: allGalleryUrls,
+        sub_category_id: data.sub_category_id || undefined,
+        category_id: data.category_id || undefined,
       };
 
       console.log('Submitting form with data:', submissionData);
@@ -383,7 +385,7 @@ export function ProductForm({ product, onClose }: ProductFormProps) {
                   <Label htmlFor="discount_type">Discount Type</Label>
                   <Select
                     value={watch('discount_type') || 'none'}
-                    onValueChange={(value) => setValue('discount_type', value === 'none' ? null : value)}
+                    onValueChange={(value) => setValue('discount_type', value === 'none' ? null : (value as 'percentage' | 'fixed'))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="No Discount" />

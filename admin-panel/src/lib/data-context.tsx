@@ -158,6 +158,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         customerId: o.user_id,
         customerName: o.profiles ? `${(o.profiles as any).first_name} ${(o.profiles as any).last_name}` : 'Unknown Customer',
         total: o.total_amount,
+        couponDiscount: o.coupon_discount,
         status: o.status.toLowerCase() as any,
         date: new Date(o.created_at).toISOString().split('T')[0],
         items: o.order_items?.length || 0,

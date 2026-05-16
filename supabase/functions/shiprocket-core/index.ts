@@ -1,5 +1,9 @@
+// @ts-ignore
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+// @ts-ignore
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+
+declare const Deno: any;
 
 const SHIPROCKET_API_URL = "https://apiv2.shiprocket.in/v1/external"
 const SHIPROCKET_EMAIL = Deno.env.get('SHIPROCKET_EMAIL') || ''
@@ -42,7 +46,7 @@ const STATUS_MAP: Record<string, string> = {
   'AWB Assigned':     'processing',
 }
 
-serve(async (req) => {
+serve(async (req: any) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   const url = new URL(req.url)

@@ -119,7 +119,7 @@ export default function InventoryPage() {
                 {products.map((product) => {
                   const stockPercentage = getStockPercentage(product.stock);
                   let status = 'In Stock';
-                  let statusVariant = 'default' as const;
+                  let statusVariant: 'default' | 'destructive' | 'secondary' | 'outline' = 'default';
 
                   if (product.stock < 50) {
                     status = 'Critical';

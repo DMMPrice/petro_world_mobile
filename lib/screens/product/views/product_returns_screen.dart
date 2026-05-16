@@ -37,14 +37,14 @@ class ProductReturnsScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          const Color(0xFF2ED573).withOpacity(0.05),
-                          const Color(0xFF2ED573).withOpacity(0.15),
+                          const Color(0xFF2ED573).withValues(alpha: 0.05),
+                          const Color(0xFF2ED573).withValues(alpha: 0.15),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFF2ED573).withOpacity(0.1)),
+                      border: Border.all(color: const Color(0xFF2ED573).withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,7 +54,7 @@ class ProductReturnsScreen extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF2ED573).withOpacity(0.2),
+                                color: const Color(0xFF2ED573).withValues(alpha: 0.2),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.assignment_return_outlined,
