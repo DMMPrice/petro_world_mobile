@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/route/route_constants.dart';
 
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'package:intl/intl.dart';
 
 class UserInfoScreen extends StatelessWidget {
@@ -26,13 +26,13 @@ class UserInfoScreen extends StatelessWidget {
         ],
       ),
       body: FutureBuilder<Map<String, dynamic>?>(
-        future: SupabaseService.getProfile(),
+        future: ApiService.instance.getProfile(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
           final profile = snapshot.data;
-          final user = SupabaseService.client.auth.currentUser;
+          final user = ApiService.instance.currentUser;
 
           return SingleChildScrollView(
             child: Column(

@@ -6,8 +6,7 @@ import 'package:shop/models/address_model.dart';
 import 'package:shop/models/cart_item_model.dart';
 import 'package:shop/providers/providers.dart';
 import 'package:shop/route/route_constants.dart';
-import 'package:shop/services/supabase_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shop/services/api_service.dart';
 
 // Only import razorpay on non-web platforms
 import 'payment_screen_native.dart' if (dart.library.html) 'payment_screen_web.dart';
@@ -78,15 +77,15 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      await SupabaseService.verifyRazorpayAndPlaceOrder(
-        razorpayOrderId: response['orderId'] ?? _pendingRazorpayOrderId ?? '',
+      await ApiService.instance.verifyRazorpayAndPlaceOrder(
+        razorpayOrderId:   response['orderId']   ?? _pendingRazorpayOrderId ?? '',
         razorpayPaymentId: response['paymentId'] ?? '',
         razorpaySignature: response['signature'] ?? '',
-        addressId: widget.args.addressId,
-        total: widget.args.total,
-        items: widget.args.cartItems,
-        couponId: widget.args.couponId,
-        couponDiscount: widget.args.couponDiscount,
+        addressId:         widget.args.addressId,
+        total:             widget.args.total,
+        items:             widget.args.cartItems,
+        couponId:          widget.args.couponId,
+        couponDiscount:    widget.args.couponDiscount,
       );
       ref.invalidate(cartProvider);
       ref.read(couponProvider.notifier).removeCoupon();
@@ -128,22 +127,22 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     setState(() => _isLoading = true);
     try {
       final receipt = 'pw_${DateTime.now().millisecondsSinceEpoch}';
-      final orderData = await SupabaseService.createRazorpayOrder(
+      final orderData = await ApiService.instance.createRazorpayOrder(
         totalAmount: widget.args.total,
-        receipt: receipt,
+        receipt:     receipt,
       );
 
-      _pendingRazorpayOrderId = orderData['razorpay_order_id'] as String;
+      _pendingRazorpayOrderId = orderData['razorpay_order_id']?.toString() ?? '';
 
       // Prefill customer info
-      final profile = await SupabaseService.getProfile();
-      final user = Supabase.instance.client.auth.currentUser;
+      final profile = await ApiService.instance.getProfile();
+      final user = ApiService.instance.currentUser;
 
       final String prefillName =
-          profile?['full_name'] as String? ?? widget.args.address.name;
+          profile?['full_name']?.toString() ?? widget.args.address.name;
       final String prefillEmail = user?.email ?? '';
       final String prefillContact =
-          profile?['phone'] as String? ?? widget.args.address.phoneNumber;
+          profile?['phone']?.toString() ?? widget.args.address.phoneNumber;
 
       final options = <String, dynamic>{
         'key': orderData['key_id'],
@@ -176,7 +175,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   Future<void> _placeCodOrder() async {
     setState(() => _isLoading = true);
     try {
-      await SupabaseService.placeOrder(
+      await ApiService.instance.placeOrder(
         addressId: widget.args.addressId,
         total: widget.args.total,
         items: widget.args.cartItems,

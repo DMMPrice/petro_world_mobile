@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/route/route_constants.dart';
 import 'package:shop/providers/providers.dart';
+import 'package:shop/services/api_service.dart';
 import 'components/cart_item_card.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -17,7 +17,8 @@ class CartScreen extends ConsumerWidget {
     return Scaffold(
       body: cartAsyncValue.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error loading cart: $error')),
+        error: (error, stack) =>
+            Center(child: Text('Error loading cart: $error')),
         data: (cartItems) {
           if (cartItems.isEmpty) {
             return Padding(
@@ -54,10 +55,15 @@ class CartScreen extends ConsumerWidget {
             0,
             (sum, item) => sum + (item.product.price * item.quantity),
           );
-          
+
           final productDiscount = cartItems.fold<double>(
             0,
-            (sum, item) => sum + ((item.product.price - (item.product.priceAfterDiscount ?? item.product.price)) * item.quantity),
+            (sum, item) =>
+                sum +
+                ((item.product.price -
+                        (item.product.priceAfterDiscount ??
+                            item.product.price)) *
+                    item.quantity),
           );
 
           return RefreshIndicator(
@@ -91,17 +97,23 @@ class CartScreen extends ConsumerWidget {
                         quantity: item.quantity,
                         onIncrement: () {
                           if (item.id != null) {
-                            ref.read(cartProvider.notifier).updateQuantity(item.id!, item.quantity + 1);
+                            ref
+                                .read(cartProvider.notifier)
+                                .updateQuantity(item.id!, item.quantity + 1);
                           }
                         },
                         onDecrement: () {
                           if (item.quantity > 1 && item.id != null) {
-                            ref.read(cartProvider.notifier).updateQuantity(item.id!, item.quantity - 1);
+                            ref
+                                .read(cartProvider.notifier)
+                                .updateQuantity(item.id!, item.quantity - 1);
                           }
                         },
                         onRemove: () {
                           if (item.id != null) {
-                            ref.read(cartProvider.notifier).removeFromCart(item.id!);
+                            ref
+                                .read(cartProvider.notifier)
+                                .removeFromCart(item.id!);
                           }
                         },
                       );
@@ -116,8 +128,9 @@ class CartScreen extends ConsumerWidget {
                   Consumer(
                     builder: (context, ref, child) {
                       final appliedCoupon = ref.watch(couponProvider);
-                      final controller = TextEditingController(text: appliedCoupon?.code);
-                      
+                      final controller =
+                          TextEditingController(text: appliedCoupon?.code);
+
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -130,17 +143,21 @@ class CartScreen extends ConsumerWidget {
                                   decoration: InputDecoration(
                                     hintText: "Type coupon code",
                                     prefixIcon: Padding(
-                                      padding: const EdgeInsets.all(defaultPadding * 0.75),
-                                      child: SvgPicture.asset("assets/icons/Coupon.svg",
+                                      padding: const EdgeInsets.all(
+                                          defaultPadding * 0.75),
+                                      child: SvgPicture.asset(
+                                          "assets/icons/Coupon.svg",
                                           colorFilter: const ColorFilter.mode(
                                               blackColor40, BlendMode.srcIn)),
                                     ),
                                     filled: true,
-                                    fillColor: Theme.of(context).brightness == Brightness.dark
+                                    fillColor: Theme.of(context).brightness ==
+                                            Brightness.dark
                                         ? whiteColor.withValues(alpha: 0.05)
                                         : lightGreyColor,
                                     border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(defaultBorderRadius),
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
                                       borderSide: BorderSide.none,
                                     ),
                                   ),
@@ -153,26 +170,38 @@ class CartScreen extends ConsumerWidget {
                                 child: ElevatedButton(
                                   onPressed: () async {
                                     if (appliedCoupon == null) {
-                                      final error = await ref.read(couponProvider.notifier).applyCoupon(controller.text.trim());
+                                      final error = await ref
+                                          .read(couponProvider.notifier)
+                                          .applyCoupon(controller.text.trim());
                                       if (error != null && context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
                                           SnackBar(content: Text(error)),
                                         );
                                       } else if (context.mounted) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(content: Text("Coupon applied successfully!")),
+                                        ScaffoldMessenger.of(context)
+                                            .showSnackBar(
+                                          const SnackBar(
+                                              content: Text(
+                                                  "Coupon applied successfully!")),
                                         );
                                       }
                                     } else {
-                                      ref.read(couponProvider.notifier).removeCoupon();
+                                      ref
+                                          .read(couponProvider.notifier)
+                                          .removeCoupon();
                                       controller.clear();
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: appliedCoupon == null ? primaryColor : errorColor,
+                                    backgroundColor: appliedCoupon == null
+                                        ? primaryColor
+                                        : errorColor,
                                     padding: EdgeInsets.zero,
                                   ),
-                                  child: Text(appliedCoupon == null ? "Apply" : "Remove"),
+                                  child: Text(appliedCoupon == null
+                                      ? "Apply"
+                                      : "Remove"),
                                 ),
                               ),
                             ],
@@ -181,7 +210,9 @@ class CartScreen extends ConsumerWidget {
                             const SizedBox(height: 8),
                             Text(
                               "Applied: ${appliedCoupon.code} (${appliedCoupon.type == 'percentage' ? '${appliedCoupon.discount}%' : '₹${appliedCoupon.discount}'} off)",
-                              style: const TextStyle(color: successColor, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                  color: successColor,
+                                  fontWeight: FontWeight.bold),
                             ),
                           ],
                         ],
@@ -198,86 +229,101 @@ class CartScreen extends ConsumerWidget {
                     child: Consumer(
                       builder: (context, ref, child) {
                         final appliedCoupon = ref.watch(couponProvider);
-                        final shippingSettings = ref.watch(shippingSettingsProvider);
-                        
+                        final shippingSettings =
+                            ref.watch(shippingSettingsProvider);
+
                         double couponDiscount = 0.0;
                         if (appliedCoupon != null) {
                           if (appliedCoupon.type == 'percentage') {
-                            couponDiscount = (subtotal - productDiscount) * (appliedCoupon.discount / 100);
+                            couponDiscount = (subtotal - productDiscount) *
+                                (appliedCoupon.discount / 100);
                           } else {
                             couponDiscount = appliedCoupon.discount;
                           }
                         }
 
-                        final totalAfterProductDiscount = subtotal - productDiscount;
-                        final shippingFee = totalAfterProductDiscount > shippingSettings.threshold ? 0.0 : shippingSettings.fee;
-                        final total = totalAfterProductDiscount + shippingFee - couponDiscount;
+                        final totalAfterProductDiscount =
+                            subtotal - productDiscount;
+                        final shippingFee = totalAfterProductDiscount >
+                                shippingSettings.threshold
+                            ? 0.0
+                            : shippingSettings.fee;
+                        final total = totalAfterProductDiscount +
+                            shippingFee -
+                            couponDiscount;
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               "Order Summary",
-                              style: Theme.of(context).textTheme.titleSmall!.copyWith(fontWeight: FontWeight.bold),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleSmall!
+                                  .copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: defaultPadding),
-                            
+
                             // Subtotal
                             _SummaryRow(label: "Subtotal", value: subtotal),
-                            
+
                             // Product Discount
                             if (productDiscount > 0)
                               _SummaryRow(
-                                label: "Product Discount", 
-                                value: -productDiscount, 
-                                valueColor: successColor
-                              ),
-                            
+                                  label: "Product Discount",
+                                  value: -productDiscount,
+                                  valueColor: successColor),
+
                             const Divider(height: 24),
-                            
+
                             // Total (Bag Total)
                             _SummaryRow(
-                              label: "Bag Total", 
+                              label: "Bag Total",
                               value: totalAfterProductDiscount,
                               isBold: true,
                             ),
-                            
+
                             const SizedBox(height: 8),
-                            
+
                             // Shipping Fee
                             _SummaryRow(
-                              label: "Shipping Fee", 
+                              label: "Shipping Fee",
                               value: shippingFee,
                               isShipping: true,
                             ),
-                            
+
                             // Coupon Discount
                             if (couponDiscount > 0)
                               _SummaryRow(
-                                label: "Coupon Discount", 
-                                value: -couponDiscount, 
-                                valueColor: successColor
-                              ),
+                                  label: "Coupon Discount",
+                                  value: -couponDiscount,
+                                  valueColor: successColor),
 
                             const Padding(
-                              padding: EdgeInsets.symmetric(vertical: defaultPadding),
+                              padding: EdgeInsets.symmetric(
+                                  vertical: defaultPadding),
                               child: Divider(height: 1),
                             ),
-                            
+
                             // Grand Total
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
                                   "Grand Total",
-                                  style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium!
+                                      .copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
                                   "₹${total.toStringAsFixed(0)}",
-                                  style: Theme.of(context).textTheme.titleMedium!.copyWith(
-                                    color: primaryColor, 
-                                    fontWeight: FontWeight.bold
-                                  ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium!
+                                      .copyWith(
+                                          color: primaryColor,
+                                          fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -297,20 +343,97 @@ class CartScreen extends ConsumerWidget {
         data: (cartItems) => cartItems.isEmpty
             ? null
             : SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: defaultPadding, vertical: defaultPadding / 2),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final user = Supabase.instance.client.auth.currentUser;
-                      if (user == null) {
-                        Navigator.pushNamed(context, logInScreenRoute);
-                      } else {
-                        Navigator.pushNamed(context, addressesScreenRoute);
-                      }
-                    },
-                    child: const Text("Continue"),
-                  ),
+                child: Consumer(
+                  builder: (context, ref, _) {
+                    final appliedCoupon = ref.watch(couponProvider);
+                    final shippingSettings =
+                        ref.watch(shippingSettingsProvider);
+                    final subtotal = cartItems.fold<double>(
+                      0,
+                      (sum, item) => sum + (item.product.price * item.quantity),
+                    );
+                    final productDiscount = cartItems.fold<double>(
+                      0,
+                      (sum, item) =>
+                          sum +
+                          ((item.product.price -
+                                  (item.product.priceAfterDiscount ??
+                                      item.product.price)) *
+                              item.quantity),
+                    );
+                    final discountedSubtotal = subtotal - productDiscount;
+                    final couponDiscount = appliedCoupon == null
+                        ? 0.0
+                        : appliedCoupon.type == 'percentage'
+                            ? discountedSubtotal *
+                                (appliedCoupon.discount / 100)
+                            : appliedCoupon.discount;
+                    final shippingFee =
+                        discountedSubtotal > shippingSettings.threshold
+                            ? 0.0
+                            : shippingSettings.fee;
+                    final total =
+                        discountedSubtotal + shippingFee - couponDiscount;
+                    final itemCount = cartItems.fold<int>(
+                        0, (sum, item) => sum + item.quantity);
+
+                    return Container(
+                      padding: const EdgeInsets.fromLTRB(
+                        defaultPadding,
+                        10,
+                        defaultPadding,
+                        10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, -4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$itemCount item${itemCount == 1 ? '' : 's'}',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                ),
+                                Text(
+                                  '₹${total.toStringAsFixed(0)}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium!
+                                      .copyWith(fontWeight: FontWeight.bold),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            width: 180,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (!ApiService.instance.isLoggedIn) {
+                                  Navigator.pushNamed(
+                                      context, logInScreenRoute);
+                                } else {
+                                  Navigator.pushNamed(
+                                      context, addressesScreenRoute);
+                                }
+                              },
+                              child: const Text("Proceed to Checkout"),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ),
         orElse: () => null,

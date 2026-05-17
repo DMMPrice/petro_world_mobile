@@ -193,7 +193,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '₹${(product['price'] as num?)?.toStringAsFixed(0) ?? '—'}',
+                      '₹${(() { final r = product['price']; if (r == null) return '—'; if (r is num) return r.toStringAsFixed(0); return (double.tryParse(r.toString()) ?? 0).toStringAsFixed(0); })()}',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: primaryColor),
                     ),
                   ],

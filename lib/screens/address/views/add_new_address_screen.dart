@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/models/address_model.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'package:shop/services/logistics_service.dart';
 
 class AddNewAddressScreen extends StatefulWidget {
@@ -80,9 +80,9 @@ class _AddNewAddressScreenState extends State<AddNewAddressScreen> {
         );
 
         if (widget.address == null) {
-          await SupabaseService.addAddress(address);
+          await ApiService.instance.addAddress(address);
         } else {
-          await SupabaseService.updateAddress(address);
+          await ApiService.instance.updateAddress(address);
         }
 
         if (mounted) {

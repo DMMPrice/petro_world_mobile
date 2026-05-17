@@ -6,12 +6,12 @@ import '../models/product_model.dart';
 import '../models/cart_item_model.dart';
 import '../models/review_model.dart';
 import '../models/coupon_model.dart';
-import '../services/supabase_service.dart';
+import '../services/api_service.dart';
 import '../services/logistics_service.dart';
 
 // Reviews Provider
 final reviewsProvider = FutureProvider.family<List<ReviewModel>, String>((ref, productId) async {
-  return SupabaseService.getProductReviews(productId);
+  return ApiService.instance.getProductReviews(productId);
 });
 
 enum ReviewSort { mostRecent, highestRated, lowestRated }
@@ -28,22 +28,22 @@ final reviewSortProvider = NotifierProvider<ReviewSortNotifier, ReviewSort>(() {
 
 // Banners Provider
 final bannersProvider = FutureProvider<List<BannerModel>>((ref) async {
-  return SupabaseService.getBanners();
+  return ApiService.instance.getBanners();
 });
 
 // Categories Provider
 final categoriesProvider = FutureProvider<List<CategoryModel>>((ref) async {
-  return SupabaseService.getCategories();
+  return ApiService.instance.getCategories();
 });
 
 // Products Provider
 final productsProvider = FutureProvider<List<ProductModel>>((ref) async {
-  return SupabaseService.getProducts();
+  return ApiService.instance.getProducts();
 });
 
 // Trending Products Provider
 final trendingProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
-  return SupabaseService.getTrendingProducts();
+  return ApiService.instance.getTrendingProducts();
 });
 
 // Cart State Management
@@ -52,18 +52,16 @@ class CartNotifier extends AsyncNotifier<List<CartItemModel>> {
 
   @override
   Future<List<CartItemModel>> build() async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (user == null) return _guestCart;
-    return SupabaseService.getCart();
+    if (!ApiService.instance.isLoggedIn) return _guestCart;
+    return ApiService.instance.getCart();
   }
 
   Future<void> addToCart(String productId, int quantity) async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (user == null) {
+    if (!ApiService.instance.isLoggedIn) {
       // Find product first to add to guest cart
       final products = await ref.read(productsProvider.future);
       final product = products.firstWhere((p) => p.id == productId);
-      
+
       final index = _guestCart.indexWhere((item) => item.product.id == productId);
       if (index >= 0) {
         _guestCart[index] = CartItemModel(
@@ -80,14 +78,13 @@ class CartNotifier extends AsyncNotifier<List<CartItemModel>> {
       }
       state = AsyncData(List.from(_guestCart));
     } else {
-      await SupabaseService.addToCart(productId, quantity);
+      await ApiService.instance.addToCart(productId, quantity);
       ref.invalidateSelf();
     }
   }
 
   Future<void> updateQuantity(String cartItemId, int quantity) async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (user == null) {
+    if (!ApiService.instance.isLoggedIn) {
       final index = _guestCart.indexWhere((item) => item.id == cartItemId);
       if (index >= 0) {
         _guestCart[index] = CartItemModel(
@@ -98,29 +95,27 @@ class CartNotifier extends AsyncNotifier<List<CartItemModel>> {
       }
       state = AsyncData(List.from(_guestCart));
     } else {
-      await SupabaseService.updateCartQuantity(cartItemId, quantity);
+      await ApiService.instance.updateCartQuantity(cartItemId, quantity);
       ref.invalidateSelf();
     }
   }
 
   Future<void> removeFromCart(String cartItemId) async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (user == null) {
+    if (!ApiService.instance.isLoggedIn) {
       _guestCart.removeWhere((item) => item.id == cartItemId);
       state = AsyncData(List.from(_guestCart));
     } else {
-      await SupabaseService.removeFromCart(cartItemId);
+      await ApiService.instance.removeFromCart(cartItemId);
       ref.invalidateSelf();
     }
   }
 
   Future<void> clearCart() async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (user == null) {
+    if (!ApiService.instance.isLoggedIn) {
       _guestCart = [];
       state = AsyncData(_guestCart);
     } else {
-      await SupabaseService.clearCart();
+      await ApiService.instance.clearCart();
       ref.invalidateSelf();
     }
   }
@@ -136,17 +131,15 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
 
   @override
   Future<List<ProductModel>> build() async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (user == null) return _guestWishlist;
-    return SupabaseService.getWishlist();
+    if (!ApiService.instance.isLoggedIn) return _guestWishlist;
+    return ApiService.instance.getWishlist();
   }
 
   Future<void> toggleWishlist(String productId, {ProductModel? product}) async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (user == null) {
+    if (!ApiService.instance.isLoggedIn) {
       final currentList = state.value ?? _guestWishlist;
       final index = currentList.indexWhere((p) => p.id == productId);
-      
+
       if (index >= 0) {
         _guestWishlist = List.from(currentList)..removeAt(index);
       } else {
@@ -159,7 +152,6 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
             _guestWishlist = List.from(currentList)..add(foundProduct);
           } catch (e) {
             debugPrint('Error adding to guest wishlist: $e');
-            // If still not found, we can't add it without the model
             return;
           }
         }
@@ -171,9 +163,9 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
         final isBookmarked = wishlist.any((p) => p.id == productId);
 
         if (isBookmarked) {
-          await SupabaseService.removeFromWishlist(productId);
+          await ApiService.instance.removeFromWishlist(productId);
         } else {
-          await SupabaseService.addToWishlist(productId);
+          await ApiService.instance.addToWishlist(productId);
         }
         ref.invalidateSelf();
       } catch (e) {
@@ -235,16 +227,16 @@ final searchParamsProvider = NotifierProvider<SearchNotifier, SearchState>(() {
 class SearchHistoryNotifier extends AsyncNotifier<List<String>> {
   @override
   Future<List<String>> build() async {
-    return SupabaseService.getSearchHistory();
+    return ApiService.instance.getSearchHistory();
   }
 
   Future<void> addQuery(String query) async {
-    await SupabaseService.saveSearchQuery(query);
+    await ApiService.instance.saveSearchQuery(query);
     ref.invalidateSelf();
   }
 
   Future<void> clearHistory() async {
-    await SupabaseService.clearSearchHistory();
+    await ApiService.instance.clearSearchHistory();
     ref.invalidateSelf();
   }
 }
@@ -257,16 +249,16 @@ final searchHistoryProvider = AsyncNotifierProvider<SearchHistoryNotifier, List<
 class RecentlyViewedNotifier extends AsyncNotifier<List<ProductModel>> {
   @override
   Future<List<ProductModel>> build() async {
-    return SupabaseService.getRecentlyViewed();
+    return ApiService.instance.getRecentlyViewed();
   }
 
   Future<void> addProduct(String productId) async {
-    await SupabaseService.saveRecentlyViewed(productId);
+    await ApiService.instance.saveRecentlyViewed(productId);
     ref.invalidateSelf();
   }
 
   Future<void> clearHistory() async {
-    await SupabaseService.clearRecentlyViewed();
+    await ApiService.instance.clearRecentlyViewed();
     ref.invalidateSelf();
   }
 }
@@ -276,7 +268,7 @@ final recentlyViewedProvider = AsyncNotifierProvider<RecentlyViewedNotifier, Lis
 );
 
 final relatedProductsProvider = FutureProvider.family<List<ProductModel>, ProductModel>((ref, product) async {
-  return SupabaseService.getRelatedProducts(
+  return ApiService.instance.getRelatedProducts(
     productId: product.id,
     subcategoryId: product.subCategoryId,
     categoryId: product.category,
@@ -284,9 +276,7 @@ final relatedProductsProvider = FutureProvider.family<List<ProductModel>, Produc
 });
 
 final collaborativeRecommendationsProvider = FutureProvider.family<List<ProductModel>, ProductModel>((ref, product) async {
-  return SupabaseService.getCollaborativeRecommendations(
-    productId: product.id,
-  );
+  return ApiService.instance.getRelatedProducts(productId: product.id);
 });
 
 final filteredProductsProvider = Provider<AsyncValue<List<ProductModel>>>((ref) {
@@ -347,12 +337,12 @@ final navigationProvider = NotifierProvider<NavigationNotifier, int>(() {
   return NavigationNotifier();
 });
 final userIdProvider = Provider<String?>((ref) {
-  return SupabaseService.client.auth.currentUser?.id;
+  return ApiService.instance.currentUser?.id;
 });
 
 // Settings Provider
 final settingsProvider = FutureProvider<Map<String, String>>((ref) async {
-  return SupabaseService.getSettings();
+  return ApiService.instance.getSettings();
 });
 
 // Pincode Estimate Provider
@@ -370,8 +360,8 @@ final pincodeEstimateProvider = FutureProvider.family<Map<String, dynamic>?, Str
     };
   }
   
-  // Fallback to local DB estimate if Shiprocket fails or not serviceable
-  return SupabaseService.checkDeliveryEstimate(pincode);
+  // Fallback to API estimate
+  return ApiService.instance.checkDeliveryEstimate(pincode);
 });
 
 // Coupon State Management
@@ -380,7 +370,7 @@ class CouponNotifier extends Notifier<CouponModel?> {
   CouponModel? build() => null;
 
   Future<String?> applyCoupon(String code) async {
-    final coupon = await SupabaseService.validateCoupon(code);
+    final coupon = await ApiService.instance.validateCoupon(code);
     if (coupon == null) {
       return "Invalid or expired coupon code";
     }

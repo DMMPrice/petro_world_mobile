@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/shipment_model.dart';
-import 'supabase_service.dart';
 
 class LogisticsService {
   static final LogisticsService _instance = LogisticsService._internal();
@@ -20,71 +19,24 @@ class LogisticsService {
     return pincode.length == 6; // Mock: Any 6 digit pincode is serviceable
   }
 
-  /// Fetches tracking details from Shiprocket
+  /// Fetches tracking details.
+  /// Shiprocket Edge Function has been removed — falls back to mock data.
   Future<ShipmentTracking> getTrackingDetails(String orderId, String trackingNumber) async {
-    try {
-      final response = await SupabaseService.client.functions.invoke(
-        'shiprocket-core/sync',
-        body: {
-          'order_id': orderId,
-          'tracking_number': trackingNumber,
-        },
-      );
-
-      if (response.status != 200) {
-        throw Exception('Tracking fetch failed');
-      }
-
-      final data = response.data;
-      if (data['success'] == true) {
-        return ShipmentTracking.fromJson(trackingNumber, data);
-      } else {
-        throw Exception(data['error'] ?? 'Unknown tracking error');
-      }
-    } catch (e) {
-      debugPrint('Tracking Error: $e');
-      // Fallback to mock for testing if needed, or rethrow
-      return ShipmentTracking.fromMock(trackingNumber);
-    }
+    debugPrint('LogisticsService: Shiprocket sync not implemented — returning mock');
+    return ShipmentTracking.fromMock(trackingNumber);
   }
 
-  /// Calculates estimated delivery days via Shiprocket
+  /// Calculates estimated delivery days.
+  /// Shiprocket serviceability Edge Function has been removed — returns a generic estimate.
   Future<Map<String, dynamic>> getEstimatedDelivery(String destinationPincode, {double weight = 0.5}) async {
-    try {
-      final response = await SupabaseService.client.functions.invoke(
-        'shiprocket-serviceability',
-        body: {
-          'pincode': destinationPincode,
-          'weight': weight,
-        },
-      );
-
-      if (response.status != 200) {
-        throw Exception('Serviceability check failed');
-      }
-
-      final data = response.data;
-      if (data['success'] == true) {
-        return {
-          "status": "success",
-          "etd": data['etd'],
-          "days": data['estimated_delivery_days'],
-          "courier": data['courier_name'],
-          "provider": "Shiprocket",
-        };
-      } else {
-        return {
-          "status": "error",
-          "message": data['message'] ?? "Not serviceable",
-        };
-      }
-    } catch (e) {
-      debugPrint('Shiprocket Serviceability Error: $e');
-      return {
-        "status": "error",
-        "message": "Service currently unavailable",
-      };
-    }
+    // No Shiprocket integration on the mobile side. Return a generic estimate.
+    return {
+      'status':  'success',
+      'etd':     '5-7 business days',
+      'days':    7,
+      'courier': 'Standard Courier',
+      'provider': 'PetroWorld Logistics',
+    };
   }
 
   /// Looks up city and state from pincode using postalpincode.in API

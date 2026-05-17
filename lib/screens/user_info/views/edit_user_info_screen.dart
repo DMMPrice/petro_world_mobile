@@ -3,9 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shop/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 class EditUserInfoScreen extends StatefulWidget {
@@ -34,8 +33,8 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
   }
 
   Future<void> _loadProfile() async {
-    final profile = await SupabaseService.getProfile();
-    final user = SupabaseService.client.auth.currentUser;
+    final profile = await ApiService.instance.getProfile();
+    final user = ApiService.instance.currentUser;
     
     PhoneNumber? parsedNumber;
     if (profile != null && profile['phone_number'] != null && profile['phone_number'].toString().isNotEmpty) {
@@ -102,32 +101,24 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
 
   Future<void> _pickImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    
+    // imageQuality: 70 keeps the base64 payload reasonable in size
+    final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery, imageQuality: 70, maxWidth: 800);
+
     if (image != null) {
       setState(() => _isLoading = true);
       try {
-        String fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.png';
-        String? url;
-        
-        if (kIsWeb) {
-          final bytes = await image.readAsBytes();
-          url = await SupabaseService.uploadAvatar(bytes, fileName);
-        } else {
-          url = await SupabaseService.uploadAvatar(File(image.path), fileName);
-        }
-        
-        if (url != null) {
-          setState(() {
-            _avatarUrl = url;
-          });
-          // Update profile immediately with new avatar URL
-          await SupabaseService.updateProfile({'avatar_url': url});
+        final bytes    = await image.readAsBytes();
+        final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final url      = await ApiService.instance.uploadAvatar(bytes, fileName);
+
+        if (url != null && mounted) {
+          setState(() => _avatarUrl = url);
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Error uploading image: $e")),
+            SnackBar(content: Text('Error uploading image: $e')),
           );
         }
       } finally {
@@ -155,7 +146,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
           }
         }
 
-        await SupabaseService.updateProfile({
+        await ApiService.instance.updateProfile({
           'first_name': firstName,
           'last_name': lastName,
           'dob': dbDob,

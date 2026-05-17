@@ -16,12 +16,16 @@ class CouponModel {
   });
 
   factory CouponModel.fromJson(Map<String, dynamic> json) {
+    final raw = json['discount'];
+    final discount = raw is num
+        ? raw.toDouble()
+        : double.tryParse(raw?.toString() ?? '') ?? 0.0;
     return CouponModel(
-      id: json['id'],
-      code: json['code'],
-      discount: (json['discount'] as num).toDouble(),
-      type: json['type'],
-      expiry: DateTime.parse(json['expiry']),
+      id: json['id']?.toString() ?? '',
+      code: json['code']?.toString() ?? '',
+      discount: discount,
+      type: json['type']?.toString() ?? 'percentage',
+      expiry: DateTime.parse(json['expiry'].toString()),
       active: json['active'] ?? true,
     );
   }

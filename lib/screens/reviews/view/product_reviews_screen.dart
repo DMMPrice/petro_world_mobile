@@ -6,7 +6,7 @@ import 'package:shop/models/product_model.dart';
 import 'package:shop/models/review_model.dart';
 import 'package:shop/providers/providers.dart';
 import 'package:intl/intl.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import '../../../components/review_card.dart';
 import '../../../constants.dart';
 
@@ -280,7 +280,7 @@ class ProductReviewsScreen extends ConsumerWidget {
                     });
 
                     try {
-                      await SupabaseService.addReview(
+                      await ApiService.instance.addReview(
                         product.id,
                         selectedRating,
                         comment.isEmpty ? "" : comment, // Send empty string if no comment

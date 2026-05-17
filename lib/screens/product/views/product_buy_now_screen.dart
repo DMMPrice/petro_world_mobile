@@ -9,7 +9,7 @@ import 'package:shop/screens/product/views/location_permission_store_availabilit
 import 'package:shop/screens/product/views/size_guide_screen.dart';
 
 import 'package:shop/models/product_model.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import '../../../constants.dart';
 import 'components/product_quantity.dart';
 import 'components/selected_colors.dart';
@@ -36,7 +36,7 @@ class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
         subTitle: "Total price",
         press: () async {
           try {
-            await SupabaseService.addToCart(widget.product.id, _quantity);
+            await ApiService.instance.addToCart(widget.product.id, _quantity);
             if (!context.mounted) return;
             customModalBottomSheet(
               context,

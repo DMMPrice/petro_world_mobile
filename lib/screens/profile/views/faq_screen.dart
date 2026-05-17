@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shop/constants.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 
 class FAQScreen extends StatefulWidget {
   const FAQScreen({super.key});
@@ -21,7 +21,7 @@ class _FAQScreenState extends State<FAQScreen> {
 
   Future<void> _loadFaqs() async {
     try {
-      final faqs = await SupabaseService.getFaqs();
+      final faqs = await ApiService.instance.getFaqs();
       setState(() {
         _faqs = faqs;
         _isLoading = false;

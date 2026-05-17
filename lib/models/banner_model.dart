@@ -15,10 +15,11 @@ class BannerModel {
 
   factory BannerModel.fromJson(Map<String, dynamic> json) {
     return BannerModel(
-      id: json['id'],
-      imageUrl: json['image_url'],
-      title: json['title'],
-      linkTo: json['link_to'],
+      id: json['id']?.toString() ?? '',
+      imageUrl: json['image_url']?.toString() ?? '',
+      title: json['title']?.toString(),
+      // Backend schema uses 'link', not 'link_to'
+      linkTo: (json['link'] ?? json['link_to'])?.toString(),
       active: json['active'] ?? true,
     );
   }
@@ -28,7 +29,7 @@ class BannerModel {
       'id': id,
       'image_url': imageUrl,
       'title': title,
-      'link_to': linkTo,
+      'link': linkTo,
       'active': active,
     };
   }

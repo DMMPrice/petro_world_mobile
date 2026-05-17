@@ -1,87 +1,74 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:async';
 import '../models/notification_model.dart';
+import 'api_service.dart';
 
+/// Notification service backed entirely by the Express/Neon backend.
+/// All Supabase Realtime has been replaced with periodic polling.
 class NotificationService {
-  static final client = Supabase.instance.client;
+  // ── Read notifications ────────────────────────────────────────────────────
 
   static Future<List<NotificationModel>> getNotifications() async {
-    final user = client.auth.currentUser;
-    if (user == null) return [];
-
-    final response = await client
-        .from('user_notifications')
-        .select('*')
-        .order('created_at', ascending: false);
-    
-    return (response as List).map((json) => NotificationModel.fromJson(json)).toList();
+    return ApiService.instance.getNotifications();
   }
 
-  static Future<void> markAsRead(String notificationId, NotificationType type) async {
-    final user = client.auth.currentUser;
-    if (user == null) return;
+  // ── Mark read ─────────────────────────────────────────────────────────────
 
-    if (type == NotificationType.individual) {
-      await client
-          .from('notifications')
-          .update({'is_read': true})
-          .eq('id', notificationId);
-    } else {
-      await client
-          .from('notification_reads')
-          .upsert({
-            'notification_id': notificationId,
-            'user_id': user.id,
-          });
-    }
+  static Future<void> markAsRead(String notificationId, NotificationType type) async {
+    await ApiService.instance.markNotificationRead(notificationId);
   }
 
   static Future<void> markAllAsRead() async {
-    final user = client.auth.currentUser;
-    if (user == null) return;
-
-    final notifications = await getNotifications();
-    final unread = notifications.where((n) => !n.isRead).toList();
-
-    for (var n in unread) {
-      await markAsRead(n.id, n.type);
-    }
+    await ApiService.instance.markAllNotificationsRead();
   }
 
   static Future<int> getUnreadCount() async {
-    final notifications = await getNotifications();
-    return notifications.where((n) => !n.isRead).length;
+    return ApiService.instance.getUnreadNotificationCount();
   }
 
-  // Admin-only method
+  // ── Polled stream (replaces Supabase Realtime) ────────────────────────────
+
+  /// Emits the unread notification count immediately and then every 30 seconds.
+  static Stream<int> get unreadCountStream async* {
+    if (!ApiService.instance.isLoggedIn) {
+      yield 0;
+      return;
+    }
+    while (true) {
+      try {
+        yield await getUnreadCount();
+      } catch (_) {
+        yield 0;
+      }
+      await Future.delayed(const Duration(seconds: 30));
+    }
+  }
+
+  /// Emits the full notification list immediately and then every 30 seconds.
+  static Stream<List<Map<String, dynamic>>> get realtimeNotifications async* {
+    if (!ApiService.instance.isLoggedIn) {
+      yield [];
+      return;
+    }
+    while (true) {
+      try {
+        final list = await getNotifications();
+        yield list.map((n) => n.toJson()).toList();
+      } catch (_) {
+        yield [];
+      }
+      await Future.delayed(const Duration(seconds: 30));
+    }
+  }
+
+  // ── Admin helpers (no-ops — admin panel handles these via its own backend calls) ──
+
   static Future<void> sendGlobalNotification(String title, String message) async {
-    await client.from('notifications').insert({
-      'title': title,
-      'message': message,
-      'type': 'global',
-    });
+    // Admin panel sends notifications via POST /api/v1/admin/notifications
+    // This method is left as a no-op on the mobile side.
   }
 
-  static Future<void> sendIndividualNotification(String userId, String title, String message) async {
-    await client.from('notifications').insert({
-      'user_id': userId,
-      'title': title,
-      'message': message,
-      'type': 'individual',
-    });
-  }
-
-  static Stream<int> get unreadCountStream {
-    // We listen to both notifications and notification_reads
-    return client
-        .from('notifications')
-        .stream(primaryKey: ['id'])
-        .asyncMap((_) => getUnreadCount());
-  }
-
-  static Stream<List<Map<String, dynamic>>> get realtimeNotifications {
-     return client
-        .from('notifications')
-        .stream(primaryKey: ['id'])
-        .order('created_at', ascending: false);
+  static Future<void> sendIndividualNotification(
+      String userId, String title, String message) async {
+    // Same as above — handled by admin panel, not the mobile app.
   }
 }

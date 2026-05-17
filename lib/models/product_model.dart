@@ -36,15 +36,12 @@ class ProductModel {
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    double price = (json['price'] as num).toDouble();
-    String? discountType = json['discount_type'];
-    double? discountValue = json['discount_value'] != null ? (json['discount_value'] as num).toDouble() : null;
+    double price = _toDouble(json['price']) ?? 0.0;
+    String? discountType = json['discount_type']?.toString();
+    double? discountValue = _toDouble(json['discount_value']);
 
-    double? priceAfterDiscount = json['price_after_discount'] != null 
-        ? (json['price_after_discount'] as num).toDouble() 
-        : null;
-    
-    int? discountPercent = json['discount_percent'];
+    double? priceAfterDiscount = _toDouble(json['price_after_discount']);
+    int? discountPercent = _toInt(json['discount_percent']);
 
     // Local calculation if missing from DB
     if (priceAfterDiscount == null && discountType != null && discountValue != null) {
@@ -63,31 +60,74 @@ class ProductModel {
       }
     }
 
+    // image_url is the canonical column; fall back to images[] or gallery_urls[]
+    // which is where the seed data stores URLs.
+    String rawImage = json['image_url']?.toString() ?? '';
+    if (rawImage.isEmpty) {
+      final imgs = json['images'];
+      if (imgs is List && imgs.isNotEmpty) rawImage = imgs.first?.toString() ?? '';
+    }
+    if (rawImage.isEmpty) {
+      final gal = json['gallery_urls'];
+      if (gal is List && gal.isNotEmpty) rawImage = gal.first?.toString() ?? '';
+    }
+
+    // Gallery: merge images[] + gallery_urls[] deduplicated
+    final Set<String> gallerySet = {};
+    for (final src in [json['images'], json['gallery_urls']]) {
+      if (src is List) {
+        for (final u in src) {
+          final s = u?.toString() ?? '';
+          if (s.isNotEmpty) gallerySet.add(s);
+        }
+      }
+    }
+    final gallery = gallerySet.toList();
+
     return ProductModel(
-      id: json['id'],
-      title: json['title'],
-      brandName: json['brand_name'] ?? '',
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      brandName: json['brand_name']?.toString() ?? '',
       price: price,
       priceAfterDiscount: priceAfterDiscount,
       discountPercent: discountPercent,
-      image: json['image_url'] ?? '',
-      gallery: json['gallery_urls'] != null 
-          ? List<String>.from(json['gallery_urls']) 
-          : [],
-      category: json['category_id'],
-      categoryTitle: json['categories'] != null ? json['categories']['title'] : null,
-      subCategoryId: json['sub_category_id'],
-      subCategoryTitle: json['sub_categories'] != null 
-          ? (json['sub_categories'] is List 
-              ? (json['sub_categories'].isNotEmpty ? (json['sub_categories'][0]['name'] ?? json['sub_categories'][0]['title']) : null)
-              : (json['sub_categories']['name'] ?? json['sub_categories']['title']))
-          : null,
-      description: json['description'],
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
-      reviewCount: json['review_count'] != null ? json['review_count'] as int : null,
+      image: rawImage,
+      gallery: gallery,
+      category: json['category_id']?.toString(),
+      categoryTitle: json['categories'] != null
+          ? (json['categories'] as Map<String, dynamic>)['title']?.toString()
+          : json['category_title']?.toString(),
+      subCategoryId: json['sub_category_id']?.toString(),
+      subCategoryTitle: json['sub_categories'] != null
+          ? (json['sub_categories'] is List
+              ? (json['sub_categories'].isNotEmpty
+                  ? (json['sub_categories'][0]['name'] ?? json['sub_categories'][0]['title'])?.toString()
+                  : null)
+              : (json['sub_categories']['name'] ?? json['sub_categories']['title'])?.toString())
+          : json['sub_category_title']?.toString(),
+      description: json['description']?.toString(),
+      rating: _toDouble(json['rating']),
+      reviewCount: _toInt(json['review_count']),
       discountType: discountType,
       discountValue: discountValue,
     );
+  }
+
+  /// Safely parse a value that may be num, String, or null into double.
+  static double? _toDouble(dynamic v) {
+    if (v == null) return null;
+    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v);
+    return null;
+  }
+
+  /// Safely parse a value that may be int, String, or null into int.
+  static int? _toInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    if (v is String) return int.tryParse(v);
+    return null;
   }
 
   double get effectivePrice {

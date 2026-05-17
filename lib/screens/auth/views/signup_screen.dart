@@ -1,19 +1,21 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/screens/auth/views/components/sign_up_form.dart';
 import 'package:shop/route/route_constants.dart';
+import 'package:shop/providers/auth_provider.dart';
+import 'package:shop/services/api_service.dart';
 
 import '../../../constants.dart';
 
-class SignUpScreen extends StatefulWidget {
+class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
 
   @override
-  State<SignUpScreen> createState() => _SignUpScreenState();
+  ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
-class _SignUpScreenState extends State<SignUpScreen> {
+class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   String? _firstName;
   String? _lastName;
@@ -25,53 +27,60 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _signUp() async {
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('You must agree to the Terms of service & privacy policy.'), backgroundColor: Theme.of(context).colorScheme.error),
+        SnackBar(
+          content: const Text('You must agree to the Terms of service & privacy policy.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
       );
       return;
     }
 
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      setState(() {
-        _isLoading = true;
-      });
+      setState(() => _isLoading = true);
 
       try {
-        final response = await Supabase.instance.client.auth.signUp(
+        await ref.read(authProvider.notifier).register(
           email: _email!,
           password: _password!,
-          data: {
-            'first_name': _firstName,
-            'last_name': _lastName,
-          },
+          firstName: _firstName!,
+          lastName: _lastName ?? '',
         );
-        if (response.session == null && mounted) {
+
+        final authState = ref.read(authProvider);
+        if (authState.hasError) {
+          final error = authState.error;
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(error is ApiException ? error.message : 'Registration failed'),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          }
+        } else if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Registration successful! Please check your email for a confirmation link.'),
+              content: Text('Welcome to PETRO WORLD!'),
               backgroundColor: successColor,
             ),
           );
-        }
-        // AuthGate will handle redirection if session is not null
-      } on AuthException catch (error) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.message), backgroundColor: Theme.of(context).colorScheme.error),
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            entryPointScreenRoute,
+            (route) => false,
           );
         }
       } catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: const Text('Unexpected error occurred'), backgroundColor: Theme.of(context).colorScheme.error),
+            SnackBar(
+              content: Text(error is ApiException ? error.message : 'Unexpected error occurred'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
           );
         }
       } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+        if (mounted) setState(() => _isLoading = false);
       }
     }
   }
@@ -150,8 +159,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           TextSpan(
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                Navigator.pushNamed(
-                                    context, termsOfServicesScreenRoute);
+                                Navigator.pushNamed(context, termsOfServicesScreenRoute);
                               },
                             text: "Terms of service",
                             style: const TextStyle(

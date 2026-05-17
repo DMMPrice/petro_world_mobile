@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shop/constants.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'package:shop/route/route_constants.dart';
 
 class GetHelpScreen extends StatefulWidget {
@@ -26,7 +26,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
 
   Future<void> _fetchTickets() async {
     try {
-      final tickets = await SupabaseService.getUserSupportTickets();
+      final tickets = await ApiService.instance.getUserSupportTickets();
       setState(() {
         _tickets = tickets;
         _isFetching = false;
@@ -51,7 +51,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
     });
 
     try {
-      final ticketId = await SupabaseService.createSupportTicket(
+      final ticketId = await ApiService.instance.createSupportTicket(
         _messageController.text,
         subject: _subjectController.text,
       );

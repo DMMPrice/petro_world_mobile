@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/route/screen_export.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'components/profile_card.dart';
 import 'components/profile_menu_item_list_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,12 +17,10 @@ class ProfileScreen extends ConsumerWidget {
       body: ListView(
         children: [
           FutureBuilder<Map<String, dynamic>?>(
-            future: SupabaseService.getProfile(),
+            future: ApiService.instance.getProfile(),
             builder: (context, snapshot) {
               final profile = snapshot.data;
-              final user = SupabaseService.client.auth.currentUser;
-              
-              if (user == null) {
+              if (!ApiService.instance.isLoggedIn) {
                 return ProfileCard(
                   name: "Guest User",
                   email: "Log in to place orders",
@@ -36,7 +33,7 @@ class ProfileScreen extends ConsumerWidget {
 
               return ProfileCard(
                 name: profile?['first_name'] ?? "User",
-                email: user.email ?? "No email",
+                email: ApiService.instance.currentUser?.email ?? "No email",
                 imageSrc: profile?['avatar_url'] ?? "",
                 press: () {
                   Navigator.pushNamed(context, userInfoScreenRoute);
@@ -57,7 +54,7 @@ class ProfileScreen extends ConsumerWidget {
             text: "Orders",
             svgSrc: "assets/icons/Order.svg",
             press: () {
-              if (SupabaseService.client.auth.currentUser == null) {
+              if (!ApiService.instance.isLoggedIn) {
                 Navigator.pushNamed(context, logInScreenRoute);
               } else {
                 Navigator.pushNamed(context, ordersScreenRoute);
@@ -68,7 +65,7 @@ class ProfileScreen extends ConsumerWidget {
             text: "Wishlist",
             svgSrc: "assets/icons/Wishlist.svg",
             press: () {
-              if (SupabaseService.client.auth.currentUser == null) {
+              if (!ApiService.instance.isLoggedIn) {
                 Navigator.pushNamed(context, logInScreenRoute);
               } else {
                 ref.read(navigationProvider.notifier).setIndex(2);
@@ -79,7 +76,7 @@ class ProfileScreen extends ConsumerWidget {
             text: "Addresses",
             svgSrc: "assets/icons/Address.svg",
             press: () {
-              if (SupabaseService.client.auth.currentUser == null) {
+              if (!ApiService.instance.isLoggedIn) {
                 Navigator.pushNamed(context, logInScreenRoute);
               } else {
                 Navigator.pushNamed(context, addressesScreenRoute);
@@ -115,28 +112,28 @@ class ProfileScreen extends ConsumerWidget {
           // Log Out / Log In
           ListTile(
             onTap: () async {
-              if (SupabaseService.client.auth.currentUser == null) {
+              if (!ApiService.instance.isLoggedIn) {
                 Navigator.pushNamed(context, logInScreenRoute);
               } else {
-                await Supabase.instance.client.auth.signOut();
+                await ApiService.instance.logout();
               }
             },
             minLeadingWidth: 24,
             leading: SvgPicture.asset(
-              SupabaseService.client.auth.currentUser == null 
+              !ApiService.instance.isLoggedIn 
                 ? "assets/icons/Edit Square.svg" 
                 : "assets/icons/Logout.svg",
               height: 24,
               width: 24,
               colorFilter: ColorFilter.mode(
-                SupabaseService.client.auth.currentUser == null ? primaryColor : errorColor,
+                !ApiService.instance.isLoggedIn ? primaryColor : errorColor,
                 BlendMode.srcIn,
               ),
             ),
             title: Text(
-              SupabaseService.client.auth.currentUser == null ? "Log In" : "Log Out",
+              !ApiService.instance.isLoggedIn ? "Log In" : "Log Out",
               style: TextStyle(
-                color: SupabaseService.client.auth.currentUser == null ? primaryColor : errorColor, 
+                color: !ApiService.instance.isLoggedIn ? primaryColor : errorColor, 
                 fontSize: 14, 
                 height: 1
               ),

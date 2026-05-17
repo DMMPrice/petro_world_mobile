@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shop/constants.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'package:shop/screens/order/views/components/order_status_tracker.dart';
 import 'package:intl/intl.dart';
 
@@ -50,7 +50,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   Future<void> _syncStatus() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final result = await SupabaseService.syncOrder(widget.orderId);
+      final result = await ApiService.instance.syncOrder(widget.orderId);
       if (result != null && mounted) {
         setState(() {
           _courierStatus = result['current_status']?.toString() ?? _courierStatus;
@@ -85,7 +85,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
     setState(() => _actionLoading = true);
     try {
-      await SupabaseService.cancelOrder(widget.orderId);
+      await ApiService.instance.cancelOrder(widget.orderId);
       if (mounted) {
         setState(() => _currentStatus = OrderStatus.canceled);
         ScaffoldMessenger.of(context).showSnackBar(
@@ -115,7 +115,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
 
     setState(() => _actionLoading = true);
     try {
-      await SupabaseService.requestReturn(widget.orderId);
+      await ApiService.instance.requestReturn(widget.orderId);
       if (mounted) {
         setState(() => _currentStatus = OrderStatus.returned);
         ScaffoldMessenger.of(context).showSnackBar(

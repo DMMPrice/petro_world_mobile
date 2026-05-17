@@ -4,7 +4,7 @@ import 'package:shop/constants.dart';
 import 'package:shop/providers/providers.dart';
 import 'components/address_card.dart';
 import 'package:shop/models/address_model.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'package:shop/route/route_constants.dart';
 import 'package:shop/screens/checkout/views/payment_screen.dart';
 
@@ -38,7 +38,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
         ],
       ),
       body: FutureBuilder<List<AddressModel>>(
-        future: SupabaseService.getAddresses(),
+        future: ApiService.instance.getAddresses(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -101,7 +101,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
                 onDelete: () async {
                   final confirm = await _confirmDelete(context);
                   if (confirm == true) {
-                    await SupabaseService.deleteAddress(address.id!);
+                    await ApiService.instance.deleteAddress(address.id!);
                     _refresh();
                   }
                 },
@@ -111,7 +111,7 @@ class _AddressesScreenState extends ConsumerState<AddressesScreen> {
         },
       ),
       bottomNavigationBar: FutureBuilder<List<AddressModel>>(
-        future: SupabaseService.getAddresses(),
+        future: ApiService.instance.getAddresses(),
         builder: (context, snapshot) {
           final addresses = snapshot.data ?? [];
           if (addresses.isEmpty) return const SizedBox.shrink();

@@ -3,13 +3,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/components/app_bottom_navigation_bar.dart';
 import 'package:shop/models/product_model.dart';
+import 'package:shop/models/cart_item_model.dart';
 import 'package:shop/components/custom_modal_bottom_sheet.dart';
 import 'package:shop/components/product/product_card.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/screens/product/views/product_returns_screen.dart';
 import 'package:shop/route/screen_export.dart';
 import 'package:shop/providers/providers.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'components/notify_me_card.dart';
 import 'components/product_images.dart';
 import 'components/product_info.dart';
@@ -25,12 +26,20 @@ class ProductDetailsScreen extends ConsumerStatefulWidget {
   final bool isProductAvailable;
 
   @override
-  ConsumerState<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+  ConsumerState<ProductDetailsScreen> createState() =>
+      _ProductDetailsScreenState();
 }
 
 class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   int _quantity = 1;
   bool _isAddingToCart = false;
+
+  CartItemModel? _cartItem(List<CartItemModel> cart) {
+    for (final item in cart) {
+      if (item.product.id == widget.product.id) return item;
+    }
+    return null;
+  }
 
   @override
   void initState() {
@@ -41,32 +50,20 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   }
 
   Future<void> _addToCart({bool navigateToCart = false}) async {
-    final user = SupabaseService.client.auth.currentUser;
-    if (navigateToCart && user == null) {
+    if (navigateToCart && !ApiService.instance.isLoggedIn) {
       Navigator.pushNamed(context, logInScreenRoute);
       return;
     }
     setState(() => _isAddingToCart = true);
     try {
-      await ref.read(cartProvider.notifier).addToCart(widget.product.id, _quantity);
+      await ref
+          .read(cartProvider.notifier)
+          .addToCart(widget.product.id, _quantity);
       if (!mounted) return;
 
       if (navigateToCart) {
         ref.read(navigationProvider.notifier).setIndex(3);
         Navigator.popUntil(context, (route) => route.isFirst);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("${widget.product.title} added to cart"),
-            action: SnackBarAction(
-              label: "View Cart",
-              onPressed: () {
-                ref.read(navigationProvider.notifier).setIndex(3);
-                Navigator.popUntil(context, (route) => route.isFirst);
-              },
-            ),
-          ),
-        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -80,6 +77,32 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     }
   }
 
+  Future<void> _incrementCart(CartItemModel item) async {
+    setState(() => _isAddingToCart = true);
+    try {
+      await ref
+          .read(cartProvider.notifier)
+          .updateQuantity(item.id!, item.quantity + 1);
+    } finally {
+      if (mounted) setState(() => _isAddingToCart = false);
+    }
+  }
+
+  Future<void> _decrementCart(CartItemModel item) async {
+    setState(() => _isAddingToCart = true);
+    try {
+      if (item.quantity <= 1) {
+        await ref.read(cartProvider.notifier).removeFromCart(item.id!);
+      } else {
+        await ref
+            .read(cartProvider.notifier)
+            .updateQuantity(item.id!, item.quantity - 1);
+      }
+    } finally {
+      if (mounted) setState(() => _isAddingToCart = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final wishlistAsyncValue = ref.watch(wishlistProvider);
@@ -89,10 +112,13 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
     );
 
     final reviewsAsyncValue = ref.watch(reviewsProvider(widget.product.id));
+    final cartItems = ref.watch(cartProvider).value ?? const <CartItemModel>[];
+    final cartItem = _cartItem(cartItems);
     final dynamicRating = reviewsAsyncValue.maybeWhen(
-      data: (reviews) => reviews.isEmpty 
-          ? 0.0 
-          : reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length,
+      data: (reviews) => reviews.isEmpty
+          ? 0.0
+          : reviews.map((r) => r.rating).reduce((a, b) => a + b) /
+              reviews.length,
       orElse: () => widget.product.rating ?? 0.0,
     );
     final dynamicReviewCount = reviewsAsyncValue.maybeWhen(
@@ -107,8 +133,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
           widget.isProductAvailable
               ? Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: defaultPadding,
-                      vertical: defaultPadding / 2),
+                      horizontal: defaultPadding, vertical: defaultPadding / 2),
                   decoration: BoxDecoration(
                     color: Theme.of(context).scaffoldBackgroundColor,
                     boxShadow: [
@@ -119,41 +144,118 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                       )
                     ],
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _isAddingToCart ? null : () => _addToCart(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: warningColor,
-                            foregroundColor: blackColor,
-                            minimumSize: const Size(double.infinity, 48),
-                          ),
-                          child: _isAddingToCart
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: blackColor),
-                                )
-                              : const Text("Add to Cart"),
+                  child: cartItem == null
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed:
+                                    _isAddingToCart ? null : () => _addToCart(),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: warningColor,
+                                  foregroundColor: blackColor,
+                                  minimumSize: const Size(double.infinity, 48),
+                                ),
+                                child: _isAddingToCart
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: blackColor,
+                                        ),
+                                      )
+                                    : const Text("Add to Cart"),
+                              ),
+                            ),
+                            const SizedBox(width: defaultPadding),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _isAddingToCart
+                                    ? null
+                                    : () => _addToCart(navigateToCart: true),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(double.infinity, 48),
+                                ),
+                                child: const Text("Buy Now"),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: Container(
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0C831F),
+                                  borderRadius: BorderRadius.circular(
+                                      defaultBorderRadius),
+                                ),
+                                child: Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: _isAddingToCart
+                                          ? null
+                                          : () => _decrementCart(cartItem),
+                                      icon: const Icon(Icons.remove),
+                                      color: Colors.white,
+                                    ),
+                                    Expanded(
+                                      child: Center(
+                                        child: _isAddingToCart
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white,
+                                                ),
+                                              )
+                                            : Text(
+                                                '${cartItem.quantity}',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: _isAddingToCart
+                                          ? null
+                                          : () => _incrementCart(cartItem),
+                                      icon: const Icon(Icons.add),
+                                      color: Colors.white,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: defaultPadding),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  ref
+                                      .read(navigationProvider.notifier)
+                                      .setIndex(3);
+                                  Navigator.popUntil(
+                                      context, (route) => route.isFirst);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: Colors.white,
+                                  minimumSize: const Size(double.infinity, 48),
+                                ),
+                                child: const Text("View Cart"),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: defaultPadding),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: _isAddingToCart
-                              ? null
-                              : () => _addToCart(navigateToCart: true),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
-                            minimumSize: const Size(double.infinity, 48),
-                          ),
-                          child: const Text("Buy Now"),
-                        ),
-                      ),
-                    ],
-                  ),
                 )
               : NotifyMeCard(
                   isNotify: false,
@@ -171,12 +273,18 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               actions: [
                 IconButton(
                   onPressed: () {
-                    ref.read(wishlistProvider.notifier).toggleWishlist(widget.product.id, product: widget.product);
+                    ref.read(wishlistProvider.notifier).toggleWishlist(
+                        widget.product.id,
+                        product: widget.product);
                   },
                   icon: SvgPicture.asset(
-                    isBookmarked ? "assets/icons/heart-filled.svg" : "assets/icons/heart.svg",
+                    isBookmarked
+                        ? "assets/icons/heart-filled.svg"
+                        : "assets/icons/heart.svg",
                     colorFilter: ColorFilter.mode(
-                      isBookmarked ? const Color.fromARGB(255, 255, 0, 0) : Theme.of(context).textTheme.bodyLarge!.color!,
+                      isBookmarked
+                          ? const Color.fromARGB(255, 255, 0, 0)
+                          : Theme.of(context).textTheme.bodyLarge!.color!,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -205,7 +313,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             if (widget.isProductAvailable)
               SliverToBoxAdapter(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: defaultPadding),
                   child: ProductQuantity(
                     numOfItem: _quantity,
                     onIncrement: () => setState(() => _quantity++),
@@ -288,7 +397,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
               isShowBottomBorder: true,
               press: () {
                 Navigator.pushNamed(
-                  context, 
+                  context,
                   productReviewsScreenRoute,
                   arguments: widget.product,
                 );
@@ -300,7 +409,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             SliverToBoxAdapter(
               child: Consumer(
                 builder: (context, ref, child) {
-                  final collaborativeProductsAsync = ref.watch(collaborativeRecommendationsProvider(widget.product));
+                  final collaborativeProductsAsync = ref.watch(
+                      collaborativeRecommendationsProvider(widget.product));
                   final wishlistAsyncValue = ref.watch(wishlistProvider);
 
                   return collaborativeProductsAsync.when(
@@ -310,7 +420,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: defaultPadding),
                             child: Text(
                               "Customers also viewed",
                               style: Theme.of(context).textTheme.titleSmall,
@@ -321,17 +432,21 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                             height: 240,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: defaultPadding),
                               itemCount: products.length,
                               itemBuilder: (context, index) {
                                 final product = products[index];
-                                final isItemBookmarked = wishlistAsyncValue.maybeWhen(
-                                  data: (wishlist) => wishlist.any((p) => p.id == product.id),
+                                final isItemBookmarked =
+                                    wishlistAsyncValue.maybeWhen(
+                                  data: (wishlist) =>
+                                      wishlist.any((p) => p.id == product.id),
                                   orElse: () => false,
                                 );
 
                                 return Padding(
-                                  padding: const EdgeInsets.only(right: defaultPadding),
+                                  padding: const EdgeInsets.only(
+                                      right: defaultPadding),
                                   child: SizedBox(
                                     width: 140,
                                     child: ProductCard(
@@ -340,7 +455,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       brandName: product.brandName,
                                       title: product.title,
                                       price: product.price,
-                                      priceAfterDiscount: product.priceAfterDiscount,
+                                      priceAfterDiscount:
+                                          product.priceAfterDiscount,
                                       discountPercent: product.discountPercent,
                                       discountType: product.discountType,
                                       discountValue: product.discountValue,
@@ -348,10 +464,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       reviewCount: product.reviewCount,
                                       isBookmarked: isItemBookmarked,
                                       onBookmarkTap: () {
-                                        ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
+                                        ref
+                                            .read(wishlistProvider.notifier)
+                                            .toggleWishlist(product.id,
+                                                product: product);
                                       },
                                       press: () {
-                                        Navigator.pushReplacementNamed(context, productDetailsScreenRoute,
+                                        Navigator.pushReplacementNamed(
+                                            context, productDetailsScreenRoute,
                                             arguments: product);
                                       },
                                     ),
@@ -373,7 +493,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             SliverToBoxAdapter(
               child: Consumer(
                 builder: (context, ref, child) {
-                  final relatedProductsAsync = ref.watch(relatedProductsProvider(widget.product));
+                  final relatedProductsAsync =
+                      ref.watch(relatedProductsProvider(widget.product));
 
                   return relatedProductsAsync.when(
                     data: (products) {
@@ -382,7 +503,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: defaultPadding),
                             child: Text(
                               "You may also like",
                               style: Theme.of(context).textTheme.titleSmall,
@@ -393,17 +515,21 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                             height: 240,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: defaultPadding),
                               itemCount: products.length,
                               itemBuilder: (context, index) {
                                 final product = products[index];
-                                final isItemBookmarked = wishlistAsyncValue.maybeWhen(
-                                  data: (wishlist) => wishlist.any((p) => p.id == product.id),
+                                final isItemBookmarked =
+                                    wishlistAsyncValue.maybeWhen(
+                                  data: (wishlist) =>
+                                      wishlist.any((p) => p.id == product.id),
                                   orElse: () => false,
                                 );
 
                                 return Padding(
-                                  padding: const EdgeInsets.only(right: defaultPadding),
+                                  padding: const EdgeInsets.only(
+                                      right: defaultPadding),
                                   child: SizedBox(
                                     width: 140,
                                     child: ProductCard(
@@ -412,7 +538,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       brandName: product.brandName,
                                       title: product.title,
                                       price: product.price,
-                                      priceAfterDiscount: product.priceAfterDiscount,
+                                      priceAfterDiscount:
+                                          product.priceAfterDiscount,
                                       discountPercent: product.discountPercent,
                                       discountType: product.discountType,
                                       discountValue: product.discountValue,
@@ -420,10 +547,14 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       reviewCount: product.reviewCount,
                                       isBookmarked: isItemBookmarked,
                                       onBookmarkTap: () {
-                                        ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
+                                        ref
+                                            .read(wishlistProvider.notifier)
+                                            .toggleWishlist(product.id,
+                                                product: product);
                                       },
                                       press: () {
-                                        Navigator.pushReplacementNamed(context, productDetailsScreenRoute,
+                                        Navigator.pushReplacementNamed(
+                                            context, productDetailsScreenRoute,
                                             arguments: product);
                                       },
                                     ),
@@ -451,15 +582,20 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   return recentlyViewedAsync.when(
                     data: (products) {
                       // Filter out the current product from recently viewed
-                      final filteredProducts = products.where((p) => p.id != widget.product.id).toList();
-                      if (filteredProducts.isEmpty) return const SizedBox.shrink();
+                      final filteredProducts = products
+                          .where((p) => p.id != widget.product.id)
+                          .toList();
+                      if (filteredProducts.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: defaultPadding),
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: defaultPadding),
                             child: Text(
                               "Recently Viewed",
                               style: Theme.of(context).textTheme.titleSmall,
@@ -470,17 +606,21 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                             height: 240,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: defaultPadding),
                               itemCount: filteredProducts.length,
                               itemBuilder: (context, index) {
                                 final p = filteredProducts[index];
-                                final isItemBookmarked = wishlistAsyncValue.maybeWhen(
-                                  data: (wishlist) => wishlist.any((item) => item.id == p.id),
+                                final isItemBookmarked =
+                                    wishlistAsyncValue.maybeWhen(
+                                  data: (wishlist) =>
+                                      wishlist.any((item) => item.id == p.id),
                                   orElse: () => false,
                                 );
 
                                 return Padding(
-                                  padding: const EdgeInsets.only(right: defaultPadding),
+                                  padding: const EdgeInsets.only(
+                                      right: defaultPadding),
                                   child: SizedBox(
                                     width: 140,
                                     child: ProductCard(
@@ -497,10 +637,13 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                       reviewCount: p.reviewCount,
                                       isBookmarked: isItemBookmarked,
                                       onBookmarkTap: () {
-                                        ref.read(wishlistProvider.notifier).toggleWishlist(p.id, product: p);
+                                        ref
+                                            .read(wishlistProvider.notifier)
+                                            .toggleWishlist(p.id, product: p);
                                       },
                                       press: () {
-                                        Navigator.pushReplacementNamed(context, productDetailsScreenRoute,
+                                        Navigator.pushReplacementNamed(
+                                            context, productDetailsScreenRoute,
                                             arguments: p);
                                       },
                                     ),
@@ -518,7 +661,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 },
               ),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: defaultPadding * 2)),
+            const SliverToBoxAdapter(
+                child: SizedBox(height: defaultPadding * 2)),
           ],
         ),
       ),

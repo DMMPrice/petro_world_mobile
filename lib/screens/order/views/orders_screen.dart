@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/route/route_constants.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
@@ -14,7 +14,7 @@ class OrdersScreen extends StatelessWidget {
         title: const Text("Orders"),
       ),
       body: FutureBuilder<Map<String, int>>(
-        future: SupabaseService.getOrderCounts(),
+        future: ApiService.instance.getOrderCounts(),
         builder: (context, snapshot) {
           final counts = snapshot.data ?? {};
           

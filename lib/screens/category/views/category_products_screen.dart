@@ -7,7 +7,7 @@ import 'package:shop/providers/providers.dart';
 
 import '../../../constants.dart';
 
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 
 class CategoryProductsScreen extends ConsumerWidget {
   const CategoryProductsScreen({super.key, required this.category});
@@ -23,7 +23,7 @@ class CategoryProductsScreen extends ConsumerWidget {
         title: Text(category),
       ),
       body: FutureBuilder<List<ProductModel>>(
-        future: SupabaseService.getProducts(categoryName: category),
+        future: ApiService.instance.getProducts(categoryName: category),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

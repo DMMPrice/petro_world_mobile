@@ -8,7 +8,7 @@ import 'components/app_bottom_navigation_bar.dart';
 import 'components/notification_badge.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers/providers.dart';
-import 'services/supabase_service.dart';
+import 'services/api_service.dart';
 
 class EntryPoint extends ConsumerStatefulWidget {
   const EntryPoint({super.key});
@@ -46,7 +46,7 @@ class _EntryPointState extends ConsumerState<EntryPoint> {
             children: [
               IconButton(
                 onPressed: () {
-                  if (SupabaseService.client.auth.currentUser == null) {
+                  if (!ApiService.instance.isLoggedIn) {
                     Navigator.pushNamed(context, logInScreenRoute);
                   } else {
                     Navigator.pushNamed(context, notificationsScreenRoute);

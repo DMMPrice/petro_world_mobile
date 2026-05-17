@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shop/models/product_model.dart';
+import 'package:shop/models/cart_item_model.dart';
 
 import '../../constants.dart';
 import '../network_image_with_loader.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/providers.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerStatefulWidget {
   const ProductCard({
     super.key,
     required this.productId,
@@ -27,6 +28,7 @@ class ProductCard extends StatelessWidget {
     required this.press,
     this.product,
   });
+
   final String productId, image, brandName, title;
   final double price;
   final double? priceAfterDiscount;
@@ -40,42 +42,97 @@ class ProductCard extends StatelessWidget {
   final VoidCallback press;
   final ProductModel? product;
 
+  @override
+  ConsumerState<ProductCard> createState() => _ProductCardState();
+}
+
+class _ProductCardState extends ConsumerState<ProductCard> {
+  bool _addingToCart = false;
+
   String? get discountLabel {
-    // Only show discount if priceAfterDiscount is genuinely lower than price
-    if (priceAfterDiscount == null || priceAfterDiscount! >= price) {
+    final priceAfterDiscount = widget.priceAfterDiscount;
+    if (priceAfterDiscount == null || priceAfterDiscount >= widget.price) return null;
+
+    if (widget.discountPercent != null && widget.discountPercent! > 0) {
+      return '${widget.discountPercent}% OFF';
+    }
+    if (widget.discountType == 'percentage' &&
+        widget.discountValue != null &&
+        widget.discountValue! > 0) {
+      return '${widget.discountValue!.toInt()}% OFF';
+    }
+    if (widget.discountType == 'fixed' &&
+        widget.discountValue != null &&
+        widget.discountValue! > 0) {
+      return '₹${widget.discountValue!.toInt()} OFF';
+    }
+    final pct = (((widget.price - priceAfterDiscount) / widget.price) * 100).round();
+    if (pct > 0) return '$pct% OFF';
+    return null;
+  }
+
+  /// Returns the CartItemModel for this product if it is already in the cart.
+  CartItemModel? _cartItem(List<CartItemModel> cart) {
+    try {
+      return cart.firstWhere((i) => i.product.id == widget.productId);
+    } catch (_) {
       return null;
     }
+  }
 
-    if (discountPercent != null && discountPercent! > 0) {
-      return "$discountPercent% OFF";
+  Future<void> _increment(List<CartItemModel> cart) async {
+    setState(() => _addingToCart = true);
+    try {
+      final item = _cartItem(cart);
+      if (item == null) {
+        await ref.read(cartProvider.notifier).addToCart(widget.productId, 1);
+      } else {
+        await ref
+            .read(cartProvider.notifier)
+            .updateQuantity(item.id!, item.quantity + 1);
+      }
+    } finally {
+      if (mounted) setState(() => _addingToCart = false);
     }
-    if (discountType == 'percentage' && discountValue != null && discountValue! > 0) {
-      return "${discountValue!.toInt()}% OFF";
+  }
+
+  Future<void> _decrement(List<CartItemModel> cart) async {
+    final item = _cartItem(cart);
+    if (item == null) return;
+    setState(() => _addingToCart = true);
+    try {
+      if (item.quantity <= 1) {
+        await ref.read(cartProvider.notifier).removeFromCart(item.id!);
+      } else {
+        await ref
+            .read(cartProvider.notifier)
+            .updateQuantity(item.id!, item.quantity - 1);
+      }
+    } finally {
+      if (mounted) setState(() => _addingToCart = false);
     }
-    if (discountType == 'fixed' && discountValue != null && discountValue! > 0) {
-      return "₹${discountValue!.toInt()} OFF";
-    }
-    
-    // Final fallback: calculate percent from price difference
-    int calculatedPercent = (((price - priceAfterDiscount!) / price) * 100).round();
-    if (calculatedPercent > 0) return "$calculatedPercent% OFF";
-    
-    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final cartAsync = ref.watch(cartProvider);
+    final cart = cartAsync.value ?? [];
+    final cartItem = _cartItem(cart);
+    final qty = cartItem?.quantity ?? 0;
+
     return InkWell(
-      onTap: press,
+      onTap: widget.press,
       borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: blackColor10),
-          borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
+          borderRadius:
+              const BorderRadius.all(Radius.circular(defaultBorderRadius)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // ── Image + overlays ──────────────────────────────────────
             AspectRatio(
               aspectRatio: 1,
               child: Stack(
@@ -84,17 +141,21 @@ class ProductCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(defaultBorderRadius),
                     ),
-                    child: NetworkImageWithLoader(image, radius: 0),
+                    child: NetworkImageWithLoader(widget.image, radius: 0),
                   ),
+
+                  // Discount badge
                   if (discountLabel != null)
                     Positioned(
                       left: 8,
                       top: 8,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
                         decoration: const BoxDecoration(
                           color: errorColor,
-                          borderRadius: BorderRadius.all(Radius.circular(4)),
+                          borderRadius:
+                              BorderRadius.all(Radius.circular(4)),
                         ),
                         child: Text(
                           discountLabel!,
@@ -106,13 +167,15 @@ class ProductCard extends StatelessWidget {
                         ),
                       ),
                     ),
+
+                  // Wishlist button
                   Positioned(
                     right: 8,
                     top: 8,
                     child: Material(
                       color: Colors.transparent,
                       child: InkWell(
-                        onTap: onBookmarkTap,
+                        onTap: widget.onBookmarkTap,
                         customBorder: const CircleBorder(),
                         child: Container(
                           padding: const EdgeInsets.all(8),
@@ -128,23 +191,39 @@ class ProductCard extends StatelessWidget {
                             ],
                           ),
                           child: SvgPicture.asset(
-                            isBookmarked 
-                              ? "assets/icons/heart-filled.svg" 
-                              : "assets/icons/heart.svg",
+                            widget.isBookmarked
+                                ? 'assets/icons/heart-filled.svg'
+                                : 'assets/icons/heart.svg',
                             height: 20,
                             width: 20,
                             colorFilter: ColorFilter.mode(
-                              isBookmarked ? const Color.fromARGB(255, 255, 0, 0) : blackColor, 
-                              BlendMode.srcIn
+                              widget.isBookmarked
+                                  ? const Color.fromARGB(255, 255, 0, 0)
+                                  : blackColor,
+                              BlendMode.srcIn,
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
+
+                  // ── Blinkit-style quantity stepper (bottom-right of image) ──
+                  Positioned(
+                    bottom: 8,
+                    right: 8,
+                    child: _QuantityStepper(
+                      qty: qty,
+                      loading: _addingToCart,
+                      onAdd: () => _increment(cart),
+                      onDecrement: () => _decrement(cart),
+                    ),
+                  ),
                 ],
               ),
             ),
+
+            // ── Text section ─────────────────────────────────────────
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8),
@@ -152,15 +231,15 @@ class ProductCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      brandName,
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: blackColor40,
-                            fontSize: 11,
-                          ),
+                      widget.brandName,
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall!
+                          .copyWith(color: blackColor40, fontSize: 11),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      title,
+                      widget.title,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -170,26 +249,31 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+
+                    // Rating + price row
                     Row(
                       children: [
                         Consumer(
-                          builder: (context, ref, child) {
-                            final reviewsAsync = ref.watch(reviewsProvider(productId));
+                          builder: (context, ref, _) {
+                            final reviewsAsync =
+                                ref.watch(reviewsProvider(widget.productId));
                             final currentRating = reviewsAsync.maybeWhen(
-                              data: (reviews) => reviews.isEmpty 
-                                  ? 0.0 
-                                  : reviews.map((r) => r.rating).reduce((a, b) => a + b) / reviews.length,
-                              orElse: () => rating ?? 0.0,
+                              data: (reviews) => reviews.isEmpty
+                                  ? 0.0
+                                  : reviews
+                                          .map((r) => r.rating)
+                                          .reduce((a, b) => a + b) /
+                                      reviews.length,
+                              orElse: () => widget.rating ?? 0.0,
                             );
-                            final currentReviewCount = reviewsAsync.maybeWhen(
+                            final currentCount = reviewsAsync.maybeWhen(
                               data: (reviews) => reviews.length,
-                              orElse: () => reviewCount ?? 0,
+                              orElse: () => widget.reviewCount ?? 0,
                             );
-
                             return Row(
                               children: [
                                 SvgPicture.asset(
-                                  "assets/icons/Star_filled.svg",
+                                  'assets/icons/Star_filled.svg',
                                   height: 12,
                                   colorFilter: const ColorFilter.mode(
                                       Color(0xFFFFAD33), BlendMode.srcIn),
@@ -198,25 +282,17 @@ class ProductCard extends StatelessWidget {
                                 Text(
                                   currentRating.toStringAsFixed(1),
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    color: blackColor60,
-                                  ),
+                                      fontSize: 12, color: blackColor60),
                                 ),
                                 const SizedBox(width: 4),
-                                const Text(
-                                  "|",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: blackColor20,
-                                  ),
-                                ),
+                                const Text('|',
+                                    style: TextStyle(
+                                        fontSize: 12, color: blackColor20)),
                                 const SizedBox(width: 4),
                                 Text(
-                                  "$currentReviewCount",
+                                  '$currentCount',
                                   style: const TextStyle(
-                                    fontSize: 12,
-                                    color: blackColor60,
-                                  ),
+                                      fontSize: 12, color: blackColor60),
                                 ),
                               ],
                             );
@@ -228,7 +304,7 @@ class ProductCard extends StatelessWidget {
                           children: [
                             if (discountLabel != null) ...[
                               Text(
-                                "₹$price",
+                                '₹${widget.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: blackColor40,
                                   decoration: TextDecoration.lineThrough,
@@ -236,7 +312,7 @@ class ProductCard extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "₹${priceAfterDiscount!.toStringAsFixed(0)}",
+                                '₹${widget.priceAfterDiscount!.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: Color(0xFF5DA085),
                                   fontWeight: FontWeight.bold,
@@ -245,7 +321,7 @@ class ProductCard extends StatelessWidget {
                               ),
                             ] else
                               Text(
-                                "₹${price.toStringAsFixed(0)}",
+                                '₹${widget.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: blackColor,
                                   fontWeight: FontWeight.bold,
@@ -262,6 +338,125 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// ── Blinkit-style quantity stepper ────────────────────────────────────────────
+
+class _QuantityStepper extends StatelessWidget {
+  const _QuantityStepper({
+    required this.qty,
+    required this.loading,
+    required this.onAdd,
+    required this.onDecrement,
+  });
+
+  final int qty;
+  final bool loading;
+  final VoidCallback onAdd;
+  final VoidCallback onDecrement;
+
+  static const _h = 34.0;
+  static const _green = Color(0xFF0C831F); // Blinkit green
+
+  @override
+  Widget build(BuildContext context) {
+    if (loading) {
+      return Container(
+        height: _h,
+        width: _h,
+        decoration: BoxDecoration(
+          color: _green,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (qty == 0) {
+      // Single "+" button
+      return GestureDetector(
+        onTap: onAdd,
+        child: Container(
+          height: _h,
+          width: _h,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: _green, width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.add, color: _green, size: 20),
+        ),
+      );
+    }
+
+    // "-  qty  +" stepper
+    return Container(
+      height: _h,
+      decoration: BoxDecoration(
+        color: _green,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Minus
+          GestureDetector(
+            onTap: onDecrement,
+            child: const SizedBox(
+              width: 30,
+              height: _h,
+              child: Icon(Icons.remove, color: Colors.white, size: 16),
+            ),
+          ),
+          // Count
+          Container(
+            constraints: const BoxConstraints(minWidth: 26),
+            alignment: Alignment.center,
+            child: Text(
+              '$qty',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          // Plus
+          GestureDetector(
+            onTap: onAdd,
+            child: const SizedBox(
+              width: 30,
+              height: _h,
+              child: Icon(Icons.add, color: Colors.white, size: 16),
+            ),
+          ),
+        ],
       ),
     );
   }

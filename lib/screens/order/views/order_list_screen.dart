@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'components/order_card.dart';
 import 'components/order_status_tracker.dart';
-import 'package:shop/services/supabase_service.dart';
+import 'package:shop/services/api_service.dart';
 import 'package:intl/intl.dart';
 import 'package:shop/constants.dart' as constants;
 
@@ -20,7 +20,7 @@ class OrderListScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: SupabaseService.getOrders(),
+        future: ApiService.instance.getOrders(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -61,12 +61,17 @@ class OrderListScreen extends StatelessWidget {
               final items = order['order_items'] as List? ?? [];
 
               final List<Map<String, dynamic>> products = items.map((item) {
-                final p = item['products'] ?? {};
+                // orders query uses json_build_object(...'product', row_to_json(p.*))
+                final p = (item['product'] ?? item['products'] ?? {}) as Map<String, dynamic>;
+                final rawPrice = p['price'];
+                final price = rawPrice is num
+                    ? rawPrice.toDouble()
+                    : double.tryParse(rawPrice?.toString() ?? '') ?? 0.0;
                 return {
-                  'image':              p['image_url'],
-                  'brandName':          p['brand_name'] ?? '',
-                  'title':              p['title'] ?? 'Product',
-                  'price':              (p['price'] as num?)?.toDouble() ?? 0.0,
+                  'image':     p['image_url'],
+                  'brandName': p['brand_name'] ?? '',
+                  'title':     p['title'] ?? 'Product',
+                  'price':     price,
                 };
               }).toList();
 
@@ -93,7 +98,12 @@ class OrderListScreen extends StatelessWidget {
                 date:              formattedDate,
                 status:            currentStatus,
                 products:          products,
-                totalAmount:       (order['total_amount'] as num?)?.toDouble(),
+                totalAmount: () {
+                  final raw = order['total_amount'];
+                  if (raw == null) return null;
+                  if (raw is num) return raw.toDouble();
+                  return double.tryParse(raw.toString());
+                }(),
                 shiprocketOrderId: order['shiprocket_order_id']?.toString(),
                 shipmentId:        order['shipment_id']?.toString(),
                 trackingNumber:    order['tracking_number']?.toString(),

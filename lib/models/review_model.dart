@@ -20,18 +20,23 @@ class ReviewModel {
   });
 
   factory ReviewModel.fromJson(Map<String, dynamic> json) {
-    final profile = json['profiles'] as Map<String, dynamic>?;
+    final profile = json['profiles'] as Map<String, dynamic>?
+        ?? json['user'] as Map<String, dynamic>?;
+    final rawRating = json['rating'];
+    final rating = rawRating is int
+        ? rawRating
+        : (rawRating is num ? rawRating.toInt() : int.tryParse(rawRating?.toString() ?? '') ?? 0);
     return ReviewModel(
-      id: json['id'],
-      productId: json['product_id'],
-      userId: json['user_id'],
-      rating: json['rating'],
-      comment: json['comment'],
-      createdAt: DateTime.parse(json['created_at']),
-      userName: profile != null 
-          ? "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim() 
+      id: json['id']?.toString() ?? '',
+      productId: json['product_id']?.toString() ?? '',
+      userId: json['user_id']?.toString() ?? '',
+      rating: rating,
+      comment: json['comment']?.toString() ?? '',
+      createdAt: DateTime.parse(json['created_at'].toString()),
+      userName: profile != null
+          ? "${profile['first_name'] ?? profile['firstName'] ?? ''} ${profile['last_name'] ?? profile['lastName'] ?? ''}".trim()
           : "User",
-      userAvatar: profile?['avatar_url'],
+      userAvatar: profile?['avatar_url']?.toString(),
     );
   }
 }

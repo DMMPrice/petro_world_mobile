@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shop/constants.dart';
 import 'package:shop/route/route_constants.dart';
+import 'package:shop/providers/auth_provider.dart';
+import 'package:shop/services/api_service.dart';
 
 import 'components/login_form.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   String? _email;
   String? _password;
@@ -21,34 +23,40 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      setState(() {
-        _isLoading = true;
-      });
+      setState(() => _isLoading = true);
 
       try {
-        await Supabase.instance.client.auth.signInWithPassword(
-          email: _email!,
-          password: _password!,
-        );
-        // AuthGate will handle redirection automatically upon auth state change
-      } on AuthException catch (error) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.message), backgroundColor: Theme.of(context).colorScheme.error),
+        await ref.read(authProvider.notifier).login(_email!, _password!);
+
+        final authState = ref.read(authProvider);
+        if (authState.hasError) {
+          final error = authState.error;
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(error is ApiException ? error.message : 'Login failed'),
+                backgroundColor: Theme.of(context).colorScheme.error,
+              ),
+            );
+          }
+        } else if (mounted) {
+          // Navigate to home on success
+          Navigator.of(context).pushNamedAndRemoveUntil(
+            entryPointScreenRoute,
+            (route) => false,
           );
         }
       } catch (error) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: const Text('Unexpected error occurred'), backgroundColor: Theme.of(context).colorScheme.error),
+            SnackBar(
+              content: Text(error is ApiException ? error.message : 'Unexpected error occurred'),
+              backgroundColor: Theme.of(context).colorScheme.error,
+            ),
           );
         }
       } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+        if (mounted) setState(() => _isLoading = false);
       }
     }
   }
