@@ -68,7 +68,7 @@ class OrderCard extends StatelessWidget {
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -212,7 +212,7 @@ class OrderCard extends StatelessWidget {
           // ── Actions Row ───────────────────────────────────────────
           Container(
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.grey.withOpacity(0.12))),
+              border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.12))),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(

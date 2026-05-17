@@ -87,7 +87,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         child: InputChip(
                           label: Text(searchParams.category!),
                           onDeleted: () => ref.read(searchParamsProvider.notifier).setCategory(null),
-                          backgroundColor: primaryColor.withOpacity(0.1),
+                          backgroundColor: primaryColor.withValues(alpha: 0.1),
                           deleteIconColor: Colors.black54,
                         ),
                       ),
@@ -97,7 +97,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         child: InputChip(
                           label: Text(searchParams.sortOption!),
                           onDeleted: () => ref.read(searchParamsProvider.notifier).setSortOption(null),
-                          backgroundColor: primaryColor.withOpacity(0.1),
+                          backgroundColor: primaryColor.withValues(alpha: 0.1),
                           deleteIconColor: Colors.black54,
                         ),
                       ),

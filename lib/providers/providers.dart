@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/banner_model.dart';
 import '../models/category_model.dart';
@@ -157,7 +158,7 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
             final foundProduct = products.firstWhere((p) => p.id == productId);
             _guestWishlist = List.from(currentList)..add(foundProduct);
           } catch (e) {
-            print('Error adding to guest wishlist: $e');
+            debugPrint('Error adding to guest wishlist: $e');
             // If still not found, we can't add it without the model
             return;
           }

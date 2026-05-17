@@ -33,21 +33,21 @@ class AddressCard extends StatelessWidget {
             border: Border.all(
               color: isActive
                   ? primaryColor
-                  : Theme.of(context).dividerColor.withOpacity(0.1),
+                  : Theme.of(context).dividerColor.withValues(alpha: 0.1),
               width: isActive ? 2 : 1,
             ),
             borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
             boxShadow: isActive 
               ? [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.1),
+                    color: primaryColor.withValues(alpha: 0.1),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   )
                 ] 
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
+                    color: Colors.black.withValues(alpha: 0.03),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   )
@@ -59,7 +59,7 @@ class AddressCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isActive ? primaryColor.withOpacity(0.1) : Theme.of(context).dividerColor.withOpacity(0.05),
+                  color: isActive ? primaryColor.withValues(alpha: 0.1) : Theme.of(context).dividerColor.withValues(alpha: 0.05),
                   shape: BoxShape.circle,
                 ),
                 child: SvgPicture.asset(
@@ -67,7 +67,7 @@ class AddressCard extends StatelessWidget {
                   height: 20,
                   width: 20,
                   colorFilter: ColorFilter.mode(
-                    isActive ? primaryColor : Theme.of(context).iconTheme.color!.withOpacity(0.5),
+                    isActive ? primaryColor : Theme.of(context).iconTheme.color!.withValues(alpha: 0.5),
                     BlendMode.srcIn,
                   ),
                 ),
@@ -114,7 +114,7 @@ class AddressCard extends StatelessWidget {
                     Text(
                       address,
                       style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.7),
+                        color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
                       ),
                     ),
                     const SizedBox(height: 8),

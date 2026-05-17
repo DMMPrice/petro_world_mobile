@@ -60,8 +60,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
           final statusStr = _courierStatus.toLowerCase();
           if (statusStr.contains('deliver')) {
             _currentStatus = OrderStatus.delivered;
-          } else if (statusStr.contains('cancel')) _currentStatus = OrderStatus.canceled;
-          else if (statusStr.contains('transit') || statusStr.contains('ship') || statusStr.contains('delivery')) {
+          } else if (statusStr.contains('cancel')) {
+            _currentStatus = OrderStatus.canceled;
+          } else if (statusStr.contains('transit') || statusStr.contains('ship') || statusStr.contains('delivery')) {
             _currentStatus = OrderStatus.shipped;
           }
         });
@@ -243,7 +244,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         children: [
@@ -280,7 +281,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: _statusColor(_currentStatus).withOpacity(0.1),
+                  color: _statusColor(_currentStatus).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -355,9 +356,9 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
+          color: color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.2)),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -377,7 +378,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
       ),
       child: Column(
         children: [
@@ -400,7 +401,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8)],
       ),
       child: ListView.builder(
         shrinkWrap: true,
@@ -436,7 +437,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                       Container(
                         width: 2,
                         height: 20,
-                        color: isFirst ? Colors.transparent : Colors.grey.withOpacity(0.2),
+                        color: isFirst ? Colors.transparent : Colors.grey.withValues(alpha: 0.2),
                       ),
                       Container(
                         width: isFirst ? 14 : 10,
@@ -445,14 +446,14 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                           color: isFirst ? primaryColor : Colors.grey[300],
                           shape: BoxShape.circle,
                           boxShadow: isFirst
-                              ? [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 8, spreadRadius: 2)]
+                              ? [BoxShadow(color: primaryColor.withValues(alpha: 0.3), blurRadius: 8, spreadRadius: 2)]
                               : null,
                         ),
                       ),
                       Container(
                         width: 2,
                         height: isLast ? 0 : 40,
-                        color: Colors.grey.withOpacity(0.2),
+                        color: Colors.grey.withValues(alpha: 0.2),
                       ),
                     ],
                   ),

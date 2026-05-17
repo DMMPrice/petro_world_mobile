@@ -21,7 +21,7 @@ class ProductBuyNowScreen extends StatefulWidget {
   const ProductBuyNowScreen({super.key, required this.product});
 
   @override
-  _ProductBuyNowScreenState createState() => _ProductBuyNowScreenState();
+  State<ProductBuyNowScreen> createState() => _ProductBuyNowScreenState();
 }
 
 class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
@@ -37,19 +37,17 @@ class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
         press: () async {
           try {
             await SupabaseService.addToCart(widget.product.id, _quantity);
-            if (mounted) {
-              customModalBottomSheet(
-                context,
-                isDismissible: false,
-                child: const AddedToCartMessageScreen(),
-              );
-            }
+            if (!context.mounted) return;
+            customModalBottomSheet(
+              context,
+              isDismissible: false,
+              child: const AddedToCartMessageScreen(),
+            );
           } catch (e) {
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error adding to cart: $e')),
-              );
-            }
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Error adding to cart: $e')),
+            );
           }
         },
       ),
@@ -74,7 +72,7 @@ class _ProductBuyNowScreenState extends State<ProductBuyNowScreen> {
                 IconButton(
                   onPressed: () {},
                   icon: SvgPicture.asset("assets/icons/heart.svg",
-                      color: Theme.of(context).textTheme.bodyLarge!.color),
+                      colorFilter: ColorFilter.mode(Theme.of(context).textTheme.bodyLarge!.color!, BlendMode.srcIn)),
                 ),
               ],
             ),

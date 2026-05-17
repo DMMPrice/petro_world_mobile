@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
@@ -157,7 +158,7 @@ class SupabaseService {
       );
       return response.data as Map<String, dynamic>?;
     } catch (e) {
-      print('Sync error (non-fatal): $e');
+      debugPrint('Sync error (non-fatal): $e');
       return null;
     }
   }
@@ -248,14 +249,12 @@ class SupabaseService {
         // Fallback to manual update if RPC fails
         try {
           final productData = await client.from('products').select('stock_quantity').eq('id', item.product.id).single();
-          if (productData != null) {
-            final int currentStock = productData['stock_quantity'] as int;
-            await client.from('products').update({
-              'stock_quantity': (currentStock - item.quantity).clamp(0, 999999)
-            }).eq('id', item.product.id);
-          }
-        } catch (innerE) {
-          print('Failed to decrement stock for ${item.product.id}: $innerE');
+          final int currentStock = productData['stock_quantity'] as int;
+          await client.from('products').update({
+            'stock_quantity': (currentStock - item.quantity).clamp(0, 999999)
+          }).eq('id', item.product.id);
+                } catch (innerE) {
+          debugPrint('Failed to decrement stock for ${item.product.id}: $innerE');
         }
       }
     }
@@ -266,7 +265,7 @@ class SupabaseService {
         'order_id': orderId,
       });
     } catch (e) {
-      print("Shiprocket Auto-Push Error: $e");
+      debugPrint("Shiprocket Auto-Push Error: $e");
     }
 
     // 4. Clear cart
@@ -384,7 +383,7 @@ class SupabaseService {
         return ProductModel.fromJson(productData);
       }).whereType<ProductModel>().toList();
     } catch (e) {
-      print('Error fetching wishlist: $e');
+      debugPrint('Error fetching wishlist: $e');
       return [];
     }
   }
@@ -432,7 +431,7 @@ class SupabaseService {
         );
       }).whereType<CartItemModel>().toList();
     } catch (e) {
-      print('Error fetching cart: $e');
+      debugPrint('Error fetching cart: $e');
       return [];
     }
   }
@@ -603,7 +602,7 @@ class SupabaseService {
       );
       return (response as List).map((json) => ProductModel.fromJson(json)).toList();
     } catch (e) {
-      print('Collaborative Filtering Error: $e');
+      debugPrint('Collaborative Filtering Error: $e');
       return [];
     }
   }
@@ -628,7 +627,7 @@ class SupabaseService {
       if (data.isEmpty) return null;
       return data.first as Map<String, dynamic>;
     } catch (e) {
-      print('Delivery Estimate Error: $e');
+      debugPrint('Delivery Estimate Error: $e');
       return null;
     }
   }
@@ -713,7 +712,7 @@ class SupabaseService {
       if (response == null) return null;
       return CouponModel.fromJson(response);
     } catch (e) {
-      print('Error validating coupon: $e');
+      debugPrint('Error validating coupon: $e');
       return null;
     }
   }

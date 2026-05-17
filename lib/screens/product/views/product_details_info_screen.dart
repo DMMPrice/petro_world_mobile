@@ -43,7 +43,7 @@ class ProductDetailsInfoScreen extends StatelessWidget {
                     Text(
                       "A cool gray cap in soft corduroy. Watch me.' By buying cotton products from Lindex, you’re supporting more responsibly...",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.7),
+                        color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
                         height: 1.5,
                       ),
                     ),
@@ -72,7 +72,7 @@ class ProductDetailsInfoScreen extends StatelessWidget {
                     Text(
                       "Style: Summer Hat\nDesign: Plain\nFabric: Jersey",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.7),
+                        color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
                         height: 1.5,
                       ),
                     ),
@@ -97,14 +97,14 @@ class ProductDetailsInfoScreen extends StatelessWidget {
             padding: const EdgeInsets.only(top: 6.0, right: 8.0, left: 4.0),
             child: CircleAvatar(
               radius: 2.5,
-              backgroundColor: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.5),
+              backgroundColor: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.5),
             ),
           ),
           Expanded(
             child: Text(
               text,
               style: TextStyle(
-                color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.7),
+                color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.7),
                 height: 1.5,
               ),
             ),

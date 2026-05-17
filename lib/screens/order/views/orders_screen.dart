@@ -75,7 +75,7 @@ class OrdersScreen extends StatelessWidget {
                   },
                 ),
                 Container(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                   child: OrderHistoryListTile(
                     title: "Canceled",
                     svgSrc: "assets/icons/Close-Circle.svg",
@@ -154,7 +154,7 @@ class OrderHistoryListTile extends StatelessWidget {
                 "assets/icons/miniRight.svg",
                 height: 16,
                 colorFilter: ColorFilter.mode(
-                  Theme.of(context).iconTheme.color!.withOpacity(0.4),
+                  Theme.of(context).iconTheme.color!.withValues(alpha: 0.4),
                   BlendMode.srcIn,
                 ),
               ),

@@ -67,14 +67,14 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      primaryColor.withOpacity(0.05),
-                      primaryColor.withOpacity(0.12),
+                      primaryColor.withValues(alpha: 0.05),
+                      primaryColor.withValues(alpha: 0.12),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: primaryColor.withOpacity(0.1)),
+                  border: Border.all(color: primaryColor.withValues(alpha: 0.1)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +84,7 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.2),
+                            color: primaryColor.withValues(alpha: 0.2),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(Icons.auto_awesome_outlined,
@@ -108,7 +108,7 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
                           "PetroWorld Global Shipping: Standard delivery in 3-5 days. Free for orders over ₹1000.",
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.black.withOpacity(0.7),
+                        color: Colors.black.withValues(alpha: 0.7),
                         height: 1.6,
                       ),
                     ),
@@ -150,7 +150,7 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 20,
                           offset: const Offset(0, 8),
                         ),
@@ -163,7 +163,7 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
                         Container(
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.1),
+                            color: primaryColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: const Icon(Icons.location_on, color: primaryColor, size: 20),
@@ -284,12 +284,12 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.08),
+            color: color.withValues(alpha: 0.08),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
         ],
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -299,7 +299,7 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(icon, color: color, size: 28),
@@ -320,9 +320,9 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.green.withOpacity(0.1),
+                              color: Colors.green.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
-                              border: Border.all(color: Colors.green.withOpacity(0.2)),
+                              border: Border.all(color: Colors.green.withValues(alpha: 0.2)),
                             ),
                             child: const Text(
                               "LIVE",
@@ -362,7 +362,7 @@ class _ShippingMethodsScreenState extends ConsumerState<ShippingMethodsScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.05),
+                  color: color.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(

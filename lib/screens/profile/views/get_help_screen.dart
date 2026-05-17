@@ -141,7 +141,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
                   Text(
                     "${_tickets.length} Total",
                     style: TextStyle(
-                        color: blackColor.withOpacity(0.5), fontSize: 12),
+                        color: blackColor.withValues(alpha: 0.5), fontSize: 12),
                   ),
               ],
             ),
@@ -176,7 +176,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
         borderRadius: BorderRadius.circular(defaultBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: blackColor.withOpacity(0.03),
+            color: blackColor.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -194,7 +194,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
+                    color: color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 24),
@@ -212,13 +212,13 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
                       Text(
                         subtitle,
                         style: TextStyle(
-                            color: blackColor.withOpacity(0.5), fontSize: 13),
+                            color: blackColor.withValues(alpha: 0.5), fontSize: 13),
                       ),
                     ],
                   ),
                 ),
                 Icon(Icons.arrow_forward_ios_rounded,
-                    size: 16, color: blackColor.withOpacity(0.3)),
+                    size: 16, color: blackColor.withValues(alpha: 0.3)),
               ],
             ),
           ),
@@ -234,7 +234,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
         borderRadius: BorderRadius.circular(defaultBorderRadius),
         boxShadow: [
           BoxShadow(
-            color: blackColor.withOpacity(0.03),
+            color: blackColor.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -247,9 +247,9 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
             controller: _subjectController,
             decoration: InputDecoration(
               hintText: "Subject",
-              hintStyle: TextStyle(color: blackColor.withOpacity(0.3)),
+              hintStyle: TextStyle(color: blackColor.withValues(alpha: 0.3)),
               filled: true,
-              fillColor: lightGreyColor.withOpacity(0.5),
+              fillColor: lightGreyColor.withValues(alpha: 0.5),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide.none,
@@ -264,9 +264,9 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
             maxLines: 4,
             decoration: InputDecoration(
               hintText: "Describe your issue...",
-              hintStyle: TextStyle(color: blackColor.withOpacity(0.3)),
+              hintStyle: TextStyle(color: blackColor.withValues(alpha: 0.3)),
               filled: true,
-              fillColor: lightGreyColor.withOpacity(0.5),
+              fillColor: lightGreyColor.withValues(alpha: 0.5),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide.none,
@@ -324,12 +324,12 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
         child: Column(
           children: [
             Icon(Icons.confirmation_number_outlined,
-                size: 48, color: blackColor.withOpacity(0.1)),
+                size: 48, color: blackColor.withValues(alpha: 0.1)),
             const SizedBox(height: 12),
             Text(
               "No tickets yet",
               style: TextStyle(
-                  color: blackColor.withOpacity(0.4),
+                  color: blackColor.withValues(alpha: 0.4),
                   fontWeight: FontWeight.w500),
             ),
           ],
@@ -353,7 +353,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
             borderRadius: BorderRadius.circular(defaultBorderRadius),
             boxShadow: [
               BoxShadow(
-                color: blackColor.withOpacity(0.03),
+                color: blackColor.withValues(alpha: 0.03),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -388,7 +388,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
-                            color: color.withOpacity(0.1),
+                            color: color.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -405,7 +405,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
                     Text(
                       ticket['message'] ?? '',
                       style: TextStyle(
-                          color: blackColor.withOpacity(0.6), fontSize: 13),
+                          color: blackColor.withValues(alpha: 0.6), fontSize: 13),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -416,7 +416,7 @@ class _GetHelpScreenState extends State<GetHelpScreen> {
                         Text(
                           _formatDate(ticket['created_at']),
                           style: TextStyle(
-                              color: blackColor.withOpacity(0.3), fontSize: 11),
+                              color: blackColor.withValues(alpha: 0.3), fontSize: 11),
                         ),
                         const Row(
                           children: [

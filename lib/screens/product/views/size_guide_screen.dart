@@ -64,7 +64,7 @@ class _SizeGuideScreenState extends State<SizeGuideScreen> {
                     Container(
                       height: 48,
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+                        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -119,14 +119,14 @@ class _SizeGuideScreenState extends State<SizeGuideScreen> {
                     // Table
                     Container(
                       decoration: BoxDecoration(
-                        border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+                        border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Table(
                           border: TableBorder.all(
-                            color: Theme.of(context).dividerColor.withOpacity(0.1),
+                            color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
                           ),
                           columnWidths: const {
                             0: FlexColumnWidth(1),
@@ -138,7 +138,7 @@ class _SizeGuideScreenState extends State<SizeGuideScreen> {
                           children: [
                             TableRow(
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.4),
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
                               ),
                               children: [
                                 _buildTableCell("", isHeader: true, hasStripes: true),
@@ -175,7 +175,7 @@ class _SizeGuideScreenState extends State<SizeGuideScreen> {
                     Text(
                       "Measure under your arms at the fullest part of your bust. Be sure to go over your shoulder blades.",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6),
+                        color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.6),
                         height: 1.5,
                       ),
                     ),
@@ -188,7 +188,7 @@ class _SizeGuideScreenState extends State<SizeGuideScreen> {
                     Text(
                       "Measure around the narrowest part of your waistline with one forefinger between your body and the measuring tape.",
                       style: TextStyle(
-                        color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.6),
+                        color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.6),
                         height: 1.5,
                       ),
                     ),
@@ -221,7 +221,7 @@ class _SizeGuideScreenState extends State<SizeGuideScreen> {
       return Container(
         height: 48,
         decoration: BoxDecoration(
-          color: Theme.of(context).dividerColor.withOpacity(0.05),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
         ),
       );
     }

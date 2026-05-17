@@ -70,13 +70,12 @@ class OrderStatusTracker extends StatelessWidget {
   Widget _buildStep(BuildContext context, String title, int stepIndex, int currentStep) {
     bool isCompleted = stepIndex < currentStep;
     bool isActive = stepIndex == currentStep;
-    bool isPending = stepIndex > currentStep;
 
     Color color;
     if (isCompleted || isActive) {
       color = successColor;
     } else {
-      color = Theme.of(context).disabledColor.withOpacity(0.2);
+      color = Theme.of(context).disabledColor.withValues(alpha: 0.2);
     }
 
     return Column(
@@ -124,7 +123,7 @@ class OrderStatusTracker extends StatelessWidget {
       child: Container(
         height: 2,
         margin: const EdgeInsets.only(bottom: 20),
-        color: isCompleted ? successColor : Theme.of(context).disabledColor.withOpacity(0.2),
+        color: isCompleted ? successColor : Theme.of(context).disabledColor.withValues(alpha: 0.2),
       ),
     );
   }

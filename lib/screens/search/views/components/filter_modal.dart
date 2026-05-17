@@ -197,15 +197,17 @@ class _FilterModalState extends ConsumerState<FilterModal> {
       separatorBuilder: (context, index) => const Divider(height: 1),
       itemBuilder: (context, index) {
         final option = sortOptions[index];
-        return RadioListTile<String>(
-          title: Text(option),
-          value: option,
+        return RadioGroup<String>(
           groupValue: params.sortOption,
           onChanged: (val) {
             ref.read(searchParamsProvider.notifier).setSortOption(val);
           },
-          controlAffinity: ListTileControlAffinity.leading,
-          contentPadding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+          child: RadioListTile<String>(
+            title: Text(option),
+            value: option,
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+          ),
         );
       },
     );

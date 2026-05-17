@@ -150,7 +150,7 @@ class _NotificationOptionsScreenState extends State<NotificationOptionsScreen> {
                         subtitle,
                         style: TextStyle(
                           fontSize: 13,
-                          color: Theme.of(context).textTheme.bodyMedium!.color!.withOpacity(0.4),
+                          color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.4),
                           height: 1.4,
                         ),
                       ),
@@ -162,8 +162,8 @@ class _NotificationOptionsScreenState extends State<NotificationOptionsScreen> {
               Switch.adaptive(
                 value: value,
                 onChanged: onChanged,
-                activeColor: Colors.white,
-                activeTrackColor: const Color(0xFF7B61FF),
+                activeTrackColor: Colors.white,
+                inactiveTrackColor: const Color(0xFF7B61FF),
               ),
             ],
           ),

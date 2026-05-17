@@ -50,7 +50,7 @@ class SearchForm extends StatelessWidget {
             child: SvgPicture.asset(
               "assets/icons/Search.svg",
               height: 24,
-              color: Theme.of(context).iconTheme.color!.withOpacity(0.3),
+              colorFilter: ColorFilter.mode(Theme.of(context).iconTheme.color!.withValues(alpha: 0.3), BlendMode.srcIn),
             ),
           ),
           suffixIcon: SizedBox(
@@ -67,7 +67,7 @@ class SearchForm extends StatelessWidget {
                     icon: SvgPicture.asset(
                       "assets/icons/Filter.svg",
                       height: 24,
-                      color: Theme.of(context).iconTheme.color,
+                      colorFilter: ColorFilter.mode(Theme.of(context).iconTheme.color!, BlendMode.srcIn),
                     ),
                   ),
                 ),

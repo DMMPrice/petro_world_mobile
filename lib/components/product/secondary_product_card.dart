@@ -28,7 +28,7 @@ class SecondaryProductCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(defaultPadding / 2),
         decoration: BoxDecoration(
-          border: Border.all(color: Theme.of(context).dividerColor.withOpacity(0.1)),
+          border: Border.all(color: Theme.of(context).dividerColor.withValues(alpha: 0.1)),
           borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
         ),
         child: Row(
@@ -80,7 +80,7 @@ class SecondaryProductCard extends StatelessWidget {
                                 .textTheme
                                 .bodyMedium!
                                 .color!
-                                .withOpacity(0.5),
+                                .withValues(alpha: 0.5),
                             fontSize: 10,
                             decoration: TextDecoration.lineThrough,
                           ),
