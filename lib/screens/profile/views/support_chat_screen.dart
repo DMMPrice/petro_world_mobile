@@ -4,7 +4,6 @@ import 'package:shop/constants.dart';
 import 'package:shop/services/api_service.dart';
 import 'package:intl/intl.dart';
 
-
 class SupportChatScreen extends StatefulWidget {
   const SupportChatScreen({super.key, required this.ticket});
 
@@ -27,7 +26,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   void initState() {
     super.initState();
     _loadMessages();
-    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _loadMessages());
+    _pollTimer =
+        Timer.periodic(const Duration(seconds: 5), (_) => _loadMessages());
   }
 
   @override
@@ -40,7 +40,8 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   Future<void> _loadMessages() async {
     try {
-      final messages = await ApiService.instance.getSupportMessages(widget.ticket['id']);
+      final messages =
+          await ApiService.instance.getSupportMessages(widget.ticket['id']);
       if (mounted) {
         final prevCount = _messages.length;
         setState(() {
@@ -61,6 +62,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
 
   void _scrollToBottom() {
     Future.delayed(const Duration(milliseconds: 100), () {
+      if (!mounted) return;
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
@@ -160,8 +162,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
           children: [
             Text(
               message,
-              style:
-                  TextStyle(color: isAdmin ? Colors.black87 : Colors.white),
+              style: TextStyle(color: isAdmin ? Colors.black87 : Colors.white),
             ),
             const SizedBox(height: 4),
             Text(

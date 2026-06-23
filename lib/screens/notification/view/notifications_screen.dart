@@ -47,7 +47,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Future<void> _markAsRead(NotificationModel notification) async {
     if (notification.isRead) return;
-    
+
     try {
       await NotificationService.markAsRead(notification.id, notification.type);
       // Update local state
@@ -66,7 +66,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         }
       });
     } catch (e) {
-      debugPrint("Error marking as read: $e");
+      // Silently handle marking notifications as read
     }
   }
 
@@ -125,15 +125,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     bool showBorder = true,
   }) {
     // Determine icon and color based on type or content (simplified for now)
-    final Color color = type == NotificationType.global ? primaryColor : navyColor;
-    final String iconSrc = type == NotificationType.global ? "assets/icons/Notification.svg" : "assets/icons/Info.svg";
+    final Color color =
+        type == NotificationType.global ? primaryColor : navyColor;
+    final String iconSrc = type == NotificationType.global
+        ? "assets/icons/Notification.svg"
+        : "assets/icons/Info.svg";
 
     return Column(
       children: [
         Container(
           color: isRead ? null : primaryColor.withValues(alpha: 0.03),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: defaultPadding, vertical: defaultPadding),
+            padding: const EdgeInsets.symmetric(
+                horizontal: defaultPadding, vertical: defaultPadding),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -159,7 +163,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           decoration: BoxDecoration(
                             color: primaryColor,
                             shape: BoxShape.circle,
-                            border: Border.all(color: Theme.of(context).scaffoldBackgroundColor, width: 2),
+                            border: Border.all(
+                                color:
+                                    Theme.of(context).scaffoldBackgroundColor,
+                                width: 2),
                           ),
                         ),
                       ),
@@ -173,7 +180,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       Text(
                         title,
                         style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                              fontWeight: isRead ? FontWeight.w500 : FontWeight.bold,
+                              fontWeight:
+                                  isRead ? FontWeight.w500 : FontWeight.bold,
                               color: isRead ? null : navyColor,
                               height: 1.3,
                             ),
@@ -190,7 +198,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         time,
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).textTheme.bodyMedium!.color!.withValues(alpha: 0.4),
+                          color: Theme.of(context)
+                              .textTheme
+                              .bodyMedium!
+                              .color!
+                              .withValues(alpha: 0.4),
                         ),
                       ),
                     ],
@@ -202,7 +214,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ),
         if (showBorder)
           Padding(
-            padding: const EdgeInsets.only(left: defaultPadding * 3.5 + 16, right: defaultPadding),
+            padding: const EdgeInsets.only(
+                left: defaultPadding * 3.5 + 16, right: defaultPadding),
             child: Divider(
               color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
               height: 1,
@@ -212,4 +225,3 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 }
-

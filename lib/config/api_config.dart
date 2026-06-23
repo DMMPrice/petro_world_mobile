@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Base URL for the Express backend.
@@ -13,14 +14,14 @@ class ApiConfig {
     final envUrl = dotenv.env['API_URL'];
     if (envUrl != null && envUrl.isNotEmpty) {
       // On Android emulator 'localhost' won't resolve – swap it automatically
-      if (Platform.isAndroid && envUrl.contains('localhost')) {
+      if (!kIsWeb && Platform.isAndroid && envUrl.contains('localhost')) {
         return envUrl.replaceFirst('localhost', '10.0.2.2');
       }
       return envUrl;
     }
 
     // Fallback defaults
-    if (Platform.isAndroid) {
+    if (!kIsWeb && Platform.isAndroid) {
       return 'http://10.0.2.2:3002/api/v1';
     }
     return 'http://localhost:3002/api/v1';

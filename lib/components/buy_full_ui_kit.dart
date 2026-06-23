@@ -18,12 +18,9 @@ class BuyFullKit extends StatefulWidget {
 
 class _BuyFullKitState extends State<BuyFullKit> {
   bool _isCopied = false;
-  final Uri _url = Uri.parse(
-      'https://app.gumroad.com/checkout?_gl=1*1j1owy*_ga*Nzc0MTA1NTYwLjE3MjAwMTA3MzM.*_ga_6LJN6D94N6*MTcyMDA0MjQzMC41LjEuMTcyMDA0MjQzMS4wLjAuMA..&product=uxznc&option=B3wWhE6QH46cfm31C7jEmQ%3D%3D&quantity=1&referrer=App');
+  late Uri _url;
   Future<void> buyLink() async {
-    if (!await launchUrl(_url)) {
-      throw Exception('Could not launch $_url');
-    }
+    // Link removed in production
   }
 
   late PageController _pageController;

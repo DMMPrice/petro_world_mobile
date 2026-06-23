@@ -45,6 +45,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(recentlyViewedProvider.notifier).addProduct(widget.product.id);
     });
   }

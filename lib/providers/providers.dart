@@ -10,7 +10,8 @@ import '../services/api_service.dart';
 import '../services/logistics_service.dart';
 
 // Reviews Provider
-final reviewsProvider = FutureProvider.family<List<ReviewModel>, String>((ref, productId) async {
+final reviewsProvider =
+    FutureProvider.family<List<ReviewModel>, String>((ref, productId) async {
   return ApiService.instance.getProductReviews(productId);
 });
 
@@ -42,7 +43,8 @@ final productsProvider = FutureProvider<List<ProductModel>>((ref) async {
 });
 
 // Trending Products Provider
-final trendingProductsProvider = FutureProvider<List<ProductModel>>((ref) async {
+final trendingProductsProvider =
+    FutureProvider<List<ProductModel>>((ref) async {
   return ApiService.instance.getTrendingProducts();
 });
 
@@ -62,7 +64,8 @@ class CartNotifier extends AsyncNotifier<List<CartItemModel>> {
       final products = await ref.read(productsProvider.future);
       final product = products.firstWhere((p) => p.id == productId);
 
-      final index = _guestCart.indexWhere((item) => item.product.id == productId);
+      final index =
+          _guestCart.indexWhere((item) => item.product.id == productId);
       if (index >= 0) {
         _guestCart[index] = CartItemModel(
           id: _guestCart[index].id,
@@ -151,7 +154,6 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
             final foundProduct = products.firstWhere((p) => p.id == productId);
             _guestWishlist = List.from(currentList)..add(foundProduct);
           } catch (e) {
-            debugPrint('Error adding to guest wishlist: $e');
             return;
           }
         }
@@ -175,7 +177,8 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
   }
 }
 
-final wishlistProvider = AsyncNotifierProvider<WishlistNotifier, List<ProductModel>>(
+final wishlistProvider =
+    AsyncNotifierProvider<WishlistNotifier, List<ProductModel>>(
   () => WishlistNotifier(),
 );
 
@@ -213,8 +216,10 @@ class SearchNotifier extends Notifier<SearchState> {
   SearchState build() => SearchState();
 
   void setQuery(String query) => state = state.copyWith(query: query);
-  void setCategory(String? category) => state = state.copyWith(category: () => category);
-  void setSortOption(String? sortOption) => state = state.copyWith(sortOption: () => sortOption);
+  void setCategory(String? category) =>
+      state = state.copyWith(category: () => category);
+  void setSortOption(String? sortOption) =>
+      state = state.copyWith(sortOption: () => sortOption);
   void setInStock(bool val) => state = state.copyWith(availableInStock: val);
   void clearAll() => state = SearchState();
 }
@@ -241,7 +246,8 @@ class SearchHistoryNotifier extends AsyncNotifier<List<String>> {
   }
 }
 
-final searchHistoryProvider = AsyncNotifierProvider<SearchHistoryNotifier, List<String>>(
+final searchHistoryProvider =
+    AsyncNotifierProvider<SearchHistoryNotifier, List<String>>(
   () => SearchHistoryNotifier(),
 );
 
@@ -263,11 +269,14 @@ class RecentlyViewedNotifier extends AsyncNotifier<List<ProductModel>> {
   }
 }
 
-final recentlyViewedProvider = AsyncNotifierProvider<RecentlyViewedNotifier, List<ProductModel>>(
+final recentlyViewedProvider =
+    AsyncNotifierProvider<RecentlyViewedNotifier, List<ProductModel>>(
   () => RecentlyViewedNotifier(),
 );
 
-final relatedProductsProvider = FutureProvider.family<List<ProductModel>, ProductModel>((ref, product) async {
+final relatedProductsProvider =
+    FutureProvider.family<List<ProductModel>, ProductModel>(
+        (ref, product) async {
   return ApiService.instance.getRelatedProducts(
     productId: product.id,
     subcategoryId: product.subCategoryId,
@@ -275,28 +284,37 @@ final relatedProductsProvider = FutureProvider.family<List<ProductModel>, Produc
   );
 });
 
-final collaborativeRecommendationsProvider = FutureProvider.family<List<ProductModel>, ProductModel>((ref, product) async {
+final collaborativeRecommendationsProvider =
+    FutureProvider.family<List<ProductModel>, ProductModel>(
+        (ref, product) async {
   return ApiService.instance.getRelatedProducts(productId: product.id);
 });
 
-final filteredProductsProvider = Provider<AsyncValue<List<ProductModel>>>((ref) {
+final filteredProductsProvider =
+    Provider<AsyncValue<List<ProductModel>>>((ref) {
   final productsAsync = ref.watch(productsProvider);
   final searchParams = ref.watch(searchParamsProvider);
 
   return productsAsync.whenData((products) {
     var filtered = products.where((product) {
       // Query filter
-      final matchesQuery = product.title.toLowerCase().contains(searchParams.query.toLowerCase()) ||
-          product.brandName.toLowerCase().contains(searchParams.query.toLowerCase());
-      
+      final matchesQuery = product.title
+              .toLowerCase()
+              .contains(searchParams.query.toLowerCase()) ||
+          product.brandName
+              .toLowerCase()
+              .contains(searchParams.query.toLowerCase());
+
       // Category filter
-      final matchesCategory = searchParams.category == null || 
-          (product.categoryTitle?.toLowerCase() == searchParams.category!.toLowerCase()) ||
-          (product.subCategoryTitle?.toLowerCase() == searchParams.category!.toLowerCase());
+      final matchesCategory = searchParams.category == null ||
+          (product.categoryTitle?.toLowerCase() ==
+              searchParams.category!.toLowerCase()) ||
+          (product.subCategoryTitle?.toLowerCase() ==
+              searchParams.category!.toLowerCase());
 
       // Stock filter (assuming stock info is in model, if not skip)
       // For now, assume always matches if stock info missing or simple check
-      
+
       return matchesQuery && matchesCategory;
     }).toList();
 
@@ -304,10 +322,12 @@ final filteredProductsProvider = Provider<AsyncValue<List<ProductModel>>>((ref) 
     if (searchParams.sortOption != null) {
       switch (searchParams.sortOption) {
         case "Price [Low to High]":
-          filtered.sort((a, b) => (a.priceAfterDiscount ?? a.price).compareTo(b.priceAfterDiscount ?? b.price));
+          filtered.sort((a, b) => (a.priceAfterDiscount ?? a.price)
+              .compareTo(b.priceAfterDiscount ?? b.price));
           break;
         case "Price [High to Low]":
-          filtered.sort((a, b) => (b.priceAfterDiscount ?? b.price).compareTo(a.priceAfterDiscount ?? a.price));
+          filtered.sort((a, b) => (b.priceAfterDiscount ?? b.price)
+              .compareTo(a.priceAfterDiscount ?? a.price));
           break;
         case "A-Z":
           filtered.sort((a, b) => a.title.compareTo(b.title));
@@ -346,7 +366,8 @@ final settingsProvider = FutureProvider<Map<String, String>>((ref) async {
 });
 
 // Pincode Estimate Provider
-final pincodeEstimateProvider = FutureProvider.family<Map<String, dynamic>?, String>((ref, pincode) async {
+final pincodeEstimateProvider =
+    FutureProvider.family<Map<String, dynamic>?, String>((ref, pincode) async {
   if (pincode.length < 6) return null;
   // Use Shiprocket for live estimation
   final estimate = await LogisticsService().getEstimatedDelivery(pincode);
@@ -359,7 +380,7 @@ final pincodeEstimateProvider = FutureProvider.family<Map<String, dynamic>?, Str
       'etd': estimate['etd'],
     };
   }
-  
+
   // Fallback to API estimate
   return ApiService.instance.checkDeliveryEstimate(pincode);
 });

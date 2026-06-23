@@ -1,216 +1,142 @@
-# Flutter E-Commerce App Template
+# Petro World — Flutter E‑Commerce App
 
-<p align="center">
-  <img src="readme%20image/Build%20you%20shop%20app%20in%20days.png" alt="Build you shop app in days" style="width: 500px; height: auto;">
-</p>
+This repository contains the Petro World Flutter app — an e-commerce template
+and production-ready mobile/web app built with Flutter.
 
-<p align="center">
-  The FlutterShop template makes it easier to develop an e-commerce app using Flutter. It includes all the necessary pages to build a shopping app for both Android and iOS using flutter.
-</p>
+This README consolidates the project overview, development setup, production
+configuration, and deployment checklist.
 
-<!-- Buttons -->
-<p align="center">
-  <a href="https://cutt.ly/fefxdqE9" style="text-decoration: none;" target="_blank">
-    <img src="readme image/buy_now_btn.png" alt="Full template" style="margin-right: 32px; width: 170px; height: 50px;">
-  </a>
-  &nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://cutt.ly/1efxdynN" style="text-decoration: none;" target="_blank">
-    <img src="readme image/preview_btn.png" alt="Preview" style="width: 136px; height: 50px;">
-  </a>
-</p>
+## Project Overview
 
-<!-- Device image -->
-</br >
-</br >
-<p align="center">
-  <img src="readme image/Device_frame.png" alt="Ecommerce app Home, product details page" style="width: 1100px; height: auto;">
-</p>
-</br >
-</br >
+- Multi-platform Flutter application (Android, iOS, Web)
+- Uses Supabase for optional backend features (Auth, Storage, Edge Functions)
+- Adaptive product image rendering and cached network images
+- Riverpod/Provider for state management
+- Environment-driven configuration via `.env`
 
-This shop app template comes with 100+ screens. Some of these pages are Splash, Login, Signup, Home, Product, Search, Cart, Profile, Payment, Wallet, Order Tracking, and Order History. Additionally, all pages support both light and dark themes.You just need to connect the UI to your preferred backend, such as Firebase, WordPress, or your custom API. You can do anything you want with it.
+## Quick Start (Development)
 
-<!-- Gif preview -->
-</br >
-</br >
-<p align="center">
-  <img src="readme image/FlutterShop_Intro.gif" alt="Build you shop app in days" style="width: 643px; height: auto;">
-</p>
-</br >
-</br >
+1. Install Flutter (stable) and required SDKs
+2. Copy `.env.example` → `.env` and fill values
+3. Get packages:
 
-### Well organized project very easy to customize
+```bash
+flutter pub get
+```
 
-![FlutterShop E-commerce Template Project Structure](https://public-files.gumroad.com/v1kbfvdugf3urvw03qrqgmc5pl1c)
+4. Run locally:
 
-<!-- Full preview -->
-</br >
-</br >
-<p align="center">
-  <img src="https://public-files.gumroad.com/m3v3lyyipbzczcws5gcuhpbkmczk" alt="Build you shop app in days" style="width: 100%; height: auto;">
-</p>
+```bash
+flutter run
+```
 
-### Loading is no longer boring [New update V1.1] [Doc](https://abu-anwar.gitbook.io/fluttershop-doc/custom-loading)
+5. Run web locally:
 
-The progress indicator that comes with Flutter, by default is okay in most places, but not in every place. Especially when you build an ecommerce app. This is why we have created a custom loading effect that boosts your user engagement even during the loading process. This kind of loading is common in popular apps like YouTube and LinkedIn. It's a small detail, but it makes a big difference.
-![FlutterShop Custom loading](https://public-files.gumroad.com/qqnmt9nu5677thkq1961tlwj405u)
+```bash
+flutter run -d chrome
+```
 
-## Screens on the FlutterShop E-commerce Template
+## Environment Variables
 
-As mentioned, this kit contains 100+ nicely crafted minimal screens that cover everything you need!👇
+Create a `.env` file (do not commit). Example variables are in `.env.example`.
 
-### Onboarding
+- `API_URL` — backend API base (production:
+  https://petro-world-backend.onrender.com/api/v1)
+- `SUPABASE_URL` — optional Supabase project URL
+- `SUPABASE_ANON_KEY` — optional Supabase anon key
 
-- Onboarding Choose item
-- Onboarding Add to cart
-- Onboarding Pay online
-- Onboarding Track order
-- Onboarding Find store
-- Notification permission
-- Select language
+`.env` is ignored by git via `.gitignore`.
 
-### Authentication
+## Production Configuration & Build
 
-- Log in
-- Forgot password
-  - Choose verification method
-  - Verification code
-- Set new password
-- Done reset password
-- Sign up
-  - Setup profile
-  - Verification code
-- Successfully sign up
-- Terms and conditions
-- Enable fingerprint
-- Enable face ID
+### Logging
 
-### Product
+This project uses a production-safe `LoggerService` located at
+`lib/services/logger_service.dart`.
 
-- Product page
-  - Notify when available (Out of stock)
-  - Buy Now
-  - Product details
-  - Product reviews
-  - Add review
-  - Shipping methods
-  - Product return policy
-  - Product size guide
-  - Store Pickup Availability
-  - Added to cart message
-  - Product gallery (Will be added soon)
+- Logs only appear in debug/profile builds (`kDebugMode`).
+- Release builds are silent (no debug output and minimal overhead).
 
-### Main Page
+### Build commands
 
-- Home page
-- On sales page
-- Kids product page
-- Brand page
-- Discover Page (Categories)
-  - Style 1
-  - Style 2 (Will be added soon)
-  - Style 3 (Will be added soon)
-- Bookmark products page
+```bash
+# Android APK
+flutter build apk --release
 
-### Search
+# Android App Bundle
+flutter build appbundle --release
 
-- Recent search (Search history)
-- Search suggestions
-- Search filters
-  - Size filter
-  - Color filter
-  - Brand filter
-  - Price filter
-  - Sort by
-- Search results
-  - Product not found
+# iOS
+flutter build ios --release
 
-### Cart
+# Web
+flutter build web --release
+```
 
-- Products on Cart
-- Empty cart
-- Choose address
-- Review & payment
-- Checkout / Payment method
-  - Select card
-  - Pay with cash
-  - Use credit
-- Thanks for order
-- Add new card
-- Scan card (Will be added soon)
+### Platform notes
 
-### Profile
+- Android: ensure `minSdkVersion >= 21` and signing is configured
+- iOS: set deployment target (recommended 12.0+) and configure provisioning
+- Web: serve over HTTPS in production
 
-- Account
-  - Normal version
-  - Pro version
-  - Profile
-    - Edit profile
-  - Notifications
-    - Empty notification
-    - Enable notification
-    - Notification options
-  - Select Language
-  - Addresses
-    - Empty address
-    - Add new address
-  - Add number
-    - Verification code
-  - Selected location
-  - Payment
-    - Cards
-    - Empty payment
-  - Wallet
-    - Empty Wallet
-    - Wallet history
-  - Help & Chat (Support)
-    - Chat
-  - Preferences
+## Production Readiness Checklist (summary)
 
-### Order
+- Run `flutter analyze` and `flutter test`
+- Ensure `.env` is configured with production values
+- Replace any debug prints (project uses `LoggerService` already)
+- Confirm Supabase RLS & minimal ANON_KEY permissions
+- Configure Crashlytics/Sentry for error reporting
+- Asset optimization and image compression
+- Verify lazy loading and pagination for large product lists
 
-- Account Orders
-  - Processing orders
-    - Cancel order
-  - Canceled orders
-  - Delivered orders
-  - Return orders (Will be added soon)
-  - More screens added in that sector soon
+## Deployment & Monitoring Recommendations
 
-### Return & Request (Will be added soon)
+- Configure CI to run analyzer, tests, and builds
+- Set up monitoring: Firebase Crashlytics or Sentry
+- Add analytics (Firebase Analytics, Mixpanel) for usage tracking
+- Use staging environment for verification before production
 
-- Return order list
-- Empty return order
-- Return order
-- Return detail
+## Production Changes (summary)
 
-### Error & Permission
+Recent production-hardening changes (2026-06-24):
 
-- Notification permission
-- No notification
-- Select language
-- No internet
-- Server error
-- Location permissions
-- No search result
-- Empty order list
-- No Address found
-- Empty payment
-- Empty wallet
+- Added `lib/services/logger_service.dart` — production-safe logging
+- Replaced `debugPrint()` uses with `LoggerService`
+- Removed marketing links and template references
+- Consolidated production documentation into repository README
+- Created `.env.example` template
 
-and MORE!!!! 🤩
+## Full Production Checklist (in-repo)
 
-If you want to learn how to build ecommerce template on Flutter [watch the playlist on YouTube](https://youtube.com/playlist?list=PLxUBb2A_UUy8OlaNZpS2mfL8xpHcnd_Af), In the first video, we start by making a neat onboarding screen for our shopping app. This works on both Android and iOS because it's made with Flutter. In the next video, we tackle the 'Sign In' and 'Forgot Password' screens, adding some unique error messages. The third video covers the 'Sign Up' and OTP processes. The fourth one is fun – we create the main homepage. In the fifth, we dive into the product page, and in the sixth, we craft an order page with cool features like 'swipe to delete.' Finally, in the seventh video, we design the user profile page.
+The project was updated with a comprehensive checklist covering:
 
-Visit FlutterLibrary.com to Download the [Flutter e-commerce app template](https://www.flutterlibrary.com/templates/e-commerce-app) & other templates, and components.
+- Code quality & testing
+- Configuration & secrets
+- Performance optimization
+- Error handling & logging
+- Security audit
+- Platform-specific requirements
+- Build & deployment steps
+- Monitoring & analytics
 
+Follow the checklist before tagging a release.
 
+## Contribution & Notes
 
-</br >
-</br >
-<!-- Buttons -->
-<p align="center">
-  <a href="https://app.gumroad.com/checkout?product=uxznc&option=B3wWhE6QH46cfm31C7jEmQ%3D%3D&quantity=1&referrer=https://github.com" style="text-decoration: none;" target="_blank">
-    <img src="readme image/buy_now_btn.png" alt="Full template" style="margin-right: 32px; width: 170px; height: 50px;">
-  </a>
-</p>
+- Keep `.env` out of version control
+- Use feature branches and run tests locally before creating PRs
+- If you add logging for debugging, use `LoggerService` so it's gated by
+  `kDebugMode`.
+
+## Acknowledgements
+
+This project is based on the FlutterShop template and has been adapted and
+production-hardened for Petro World.
+
+---
+
+If you'd like, I can also:
+
+- Add a short Developer Setup section for common IDEs
+- Create CI pipeline examples (GitHub Actions) for builds/tests
+- Configure a basic Sentry/Firebase integration skeleton

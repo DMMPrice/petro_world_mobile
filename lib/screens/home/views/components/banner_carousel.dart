@@ -64,6 +64,7 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
         // Initialize scrolling only once
         if (_timer == null && usableBanners.length > 1) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             if (_pageController.hasClients) {
               int middlePage =
                   (5000 ~/ usableBanners.length) * usableBanners.length;

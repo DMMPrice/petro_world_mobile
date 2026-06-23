@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shop/models/product_model.dart';
 import 'package:shop/models/cart_item_model.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import '../../constants.dart';
 import '../network_image_with_loader.dart';
@@ -48,10 +51,92 @@ class ProductCard extends ConsumerStatefulWidget {
 
 class _ProductCardState extends ConsumerState<ProductCard> {
   bool _addingToCart = false;
+  BoxFit _imageFit = BoxFit.cover;
+
+  @override
+  void initState() {
+    super.initState();
+    _resolveImageFit();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProductCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.image != widget.image) {
+      _resolveImageFit();
+    }
+  }
+
+  Future<void> _resolveImageFit() async {
+    final source = widget.image;
+    final provider = _imageProviderFor(source);
+    if (provider == null) {
+      if (mounted) {
+        setState(() => _imageFit = BoxFit.contain);
+      }
+      return;
+    }
+
+    final stream = provider.resolve(const ImageConfiguration());
+    final completer = Completer<ImageInfo>();
+    late final ImageStreamListener listener;
+    listener = ImageStreamListener(
+      (info, _) {
+        if (!completer.isCompleted) completer.complete(info);
+      },
+      onError: (_, __) {
+        if (!completer.isCompleted) {
+          completer.completeError('image-load-failed');
+        }
+      },
+    );
+
+    stream.addListener(listener);
+    try {
+      final info = await completer.future.timeout(const Duration(seconds: 5));
+      final w = info.image.width.toDouble();
+      final h = info.image.height.toDouble();
+      if (w <= 0 || h <= 0) return;
+
+      final ratio = w / h;
+      final nextFit =
+          (ratio >= 0.85 && ratio <= 1.25) ? BoxFit.cover : BoxFit.contain;
+
+      if (!mounted || source != widget.image) return;
+      if (_imageFit != nextFit) {
+        setState(() => _imageFit = nextFit);
+      }
+    } catch (_) {
+      if (mounted && source == widget.image && _imageFit != BoxFit.contain) {
+        setState(() => _imageFit = BoxFit.contain);
+      }
+    } finally {
+      stream.removeListener(listener);
+    }
+  }
+
+  ImageProvider? _imageProviderFor(String source) {
+    if (source.isEmpty) return null;
+    final bytes = _decodeDataImage(source);
+    if (bytes != null) return MemoryImage(bytes);
+    return NetworkImage(source);
+  }
+
+  Uint8List? _decodeDataImage(String value) {
+    if (!value.startsWith('data:image/')) return null;
+    final commaIndex = value.indexOf(',');
+    if (commaIndex == -1) return null;
+    try {
+      return base64Decode(value.substring(commaIndex + 1));
+    } catch (_) {
+      return null;
+    }
+  }
 
   String? get discountLabel {
     final priceAfterDiscount = widget.priceAfterDiscount;
-    if (priceAfterDiscount == null || priceAfterDiscount >= widget.price) return null;
+    if (priceAfterDiscount == null || priceAfterDiscount >= widget.price)
+      return null;
 
     if (widget.discountPercent != null && widget.discountPercent! > 0) {
       return '${widget.discountPercent}% OFF';
@@ -66,7 +151,8 @@ class _ProductCardState extends ConsumerState<ProductCard> {
         widget.discountValue! > 0) {
       return '₹${widget.discountValue!.toInt()} OFF';
     }
-    final pct = (((widget.price - priceAfterDiscount) / widget.price) * 100).round();
+    final pct =
+        (((widget.price - priceAfterDiscount) / widget.price) * 100).round();
     if (pct > 0) return '$pct% OFF';
     return null;
   }
@@ -122,7 +208,8 @@ class _ProductCardState extends ConsumerState<ProductCard> {
 
     return InkWell(
       onTap: widget.press,
-      borderRadius: const BorderRadius.all(Radius.circular(defaultBorderRadius)),
+      borderRadius:
+          const BorderRadius.all(Radius.circular(defaultBorderRadius)),
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: blackColor10),
@@ -137,11 +224,20 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               aspectRatio: 1,
               child: Stack(
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(defaultBorderRadius),
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(defaultBorderRadius),
+                      ),
+                      child: Container(
+                        color: const Color(0xFFF7F7F7),
+                        child: NetworkImageWithLoader(
+                          widget.image,
+                          radius: 0,
+                          fit: _imageFit,
+                        ),
+                      ),
                     ),
-                    child: NetworkImageWithLoader(widget.image, radius: 0),
                   ),
 
                   // Discount badge
@@ -154,8 +250,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                             horizontal: 8, vertical: 2),
                         decoration: const BoxDecoration(
                           color: errorColor,
-                          borderRadius:
-                              BorderRadius.all(Radius.circular(4)),
+                          borderRadius: BorderRadius.all(Radius.circular(4)),
                         ),
                         child: Text(
                           discountLabel!,
