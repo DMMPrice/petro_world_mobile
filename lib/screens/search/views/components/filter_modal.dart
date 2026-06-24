@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/providers/providers.dart';
 
 class FilterModal extends ConsumerStatefulWidget {
   const FilterModal({super.key});

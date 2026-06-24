@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/components/product/product_card.dart';
-import 'package:shop/route/route_constants.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/components/product/product_card.dart';
+import 'package:petro_world/route/route_constants.dart';
 import 'components/search_form.dart';
 import 'components/filter_modal.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/providers/providers.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});

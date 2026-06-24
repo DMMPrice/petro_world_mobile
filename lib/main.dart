@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shop/route/router.dart' as router;
-import 'package:shop/theme/app_theme.dart';
-import 'package:shop/auth_gate.dart';
+import 'package:petro_world/route/router.dart' as router;
+import 'package:petro_world/theme/app_theme.dart';
+import 'package:petro_world/auth_gate.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'services/api_service.dart';

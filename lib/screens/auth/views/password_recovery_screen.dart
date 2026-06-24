@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/route_constants.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/route/route_constants.dart';
 
 import 'components/password_recovery_form.dart';
 import 'components/otp_form.dart';

@@ -1,15 +1,16 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/models/address_model.dart';
-import 'package:shop/models/cart_item_model.dart';
-import 'package:shop/providers/providers.dart';
-import 'package:shop/route/route_constants.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/models/address_model.dart';
+import 'package:petro_world/models/cart_item_model.dart';
+import 'package:petro_world/providers/providers.dart';
+import 'package:petro_world/route/route_constants.dart';
+import 'package:petro_world/services/api_service.dart';
 
 // Only import razorpay on non-web platforms
-import 'payment_screen_native.dart' if (dart.library.html) 'payment_screen_web.dart';
+import 'payment_screen_native.dart'
+    if (dart.library.html) 'payment_screen_web.dart';
 
 /// Arguments passed to PaymentScreen via Navigator.
 class PaymentScreenArgs {
@@ -71,21 +72,21 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     super.dispose();
   }
 
-  // ── Razorpay Callbacks ──────────────────────────────────────────
+  // â”€â”€ Razorpay Callbacks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _handlePaymentSuccess(Map<String, String?> response) async {
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
       await ApiService.instance.verifyRazorpayAndPlaceOrder(
-        razorpayOrderId:   response['orderId']   ?? _pendingRazorpayOrderId ?? '',
+        razorpayOrderId: response['orderId'] ?? _pendingRazorpayOrderId ?? '',
         razorpayPaymentId: response['paymentId'] ?? '',
         razorpaySignature: response['signature'] ?? '',
-        addressId:         widget.args.addressId,
-        total:             widget.args.total,
-        items:             widget.args.cartItems,
-        couponId:          widget.args.couponId,
-        couponDiscount:    widget.args.couponDiscount,
+        addressId: widget.args.addressId,
+        total: widget.args.total,
+        items: widget.args.cartItems,
+        couponId: widget.args.couponId,
+        couponDiscount: widget.args.couponDiscount,
       );
       ref.invalidate(cartProvider);
       ref.read(couponProvider.notifier).removeCoupon();
@@ -106,7 +107,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
     _pendingRazorpayOrderId = null;
-    _showError(message.isNotEmpty ? message : 'Payment was not completed. Please try again.');
+    _showError(message.isNotEmpty
+        ? message
+        : 'Payment was not completed. Please try again.');
   }
 
   void _handleExternalWallet(String walletName) {
@@ -116,7 +119,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     );
   }
 
-  // ── Pay Online via Razorpay ─────────────────────────────────────
+  // â”€â”€ Pay Online via Razorpay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _initiateRazorpayPayment() async {
     if (kIsWeb || _rzpController == null) {
@@ -129,10 +132,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       final receipt = 'pw_${DateTime.now().millisecondsSinceEpoch}';
       final orderData = await ApiService.instance.createRazorpayOrder(
         totalAmount: widget.args.total,
-        receipt:     receipt,
+        receipt: receipt,
       );
 
-      _pendingRazorpayOrderId = orderData['razorpay_order_id']?.toString() ?? '';
+      _pendingRazorpayOrderId =
+          orderData['razorpay_order_id']?.toString() ?? '';
 
       // Prefill customer info
       final profile = await ApiService.instance.getProfile();
@@ -142,7 +146,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           profile?['full_name']?.toString() ?? widget.args.address.name;
       final String prefillEmail = user?.email ?? '';
       final String prefillContact =
-          profile?['phone']?.toString() ?? widget.args.address.phoneNumber;
+          (profile?['phone'] ?? profile?['phone_number'])?.toString() ??
+              widget.args.address.phoneNumber;
 
       final options = <String, dynamic>{
         'key': orderData['key_id'],
@@ -170,7 +175,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     }
   }
 
-  // ── COD ─────────────────────────────────────────────────────────
+  // â”€â”€ COD â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Future<void> _placeCodOrder() async {
     setState(() => _isLoading = true);
@@ -208,7 +213,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     );
   }
 
-  // ── UI ──────────────────────────────────────────────────────────
+  // â”€â”€ UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +231,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Order Summary Card ───────────────────────────────────
+            // â”€â”€ Order Summary Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             _SectionCard(
               title: 'Order Summary',
               isDark: isDark,
@@ -238,24 +243,24 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                '${item.product.title} × ${item.quantity}',
+                                '${item.product.title} Ã— ${item.quantity}',
                                 style: theme.textTheme.bodyMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Text(
-                              '₹${((item.product.priceAfterDiscount ?? item.product.price) * item.quantity).toStringAsFixed(0)}',
+                              'â‚¹${((item.product.priceAfterDiscount ?? item.product.price) * item.quantity).toStringAsFixed(0)}',
                               style: theme.textTheme.titleSmall,
                             ),
                           ],
                         ),
                       )),
                   const Divider(height: 20),
-                  
+
                   // Subtotal
                   _SummaryRow(label: 'Subtotal', value: args.subtotal),
-                  
+
                   // Product Discount
                   if (args.productDiscount > 0)
                     _SummaryRow(
@@ -263,24 +268,25 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       value: -args.productDiscount,
                       valueColor: successColor,
                     ),
-                  
+
                   const Divider(height: 20),
-                  
+
                   // Bag Total
                   _SummaryRow(
                     label: 'Bag Total',
                     value: args.subtotal - args.productDiscount,
                     isBold: true,
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   // Shipping Fee
                   Consumer(
                     builder: (context, ref, child) {
                       final settings = ref.watch(shippingSettingsProvider);
                       final bagTotal = args.subtotal - args.productDiscount;
-                      final shippingFee = bagTotal > settings.threshold ? 0.0 : settings.fee;
+                      final shippingFee =
+                          bagTotal > settings.threshold ? 0.0 : settings.fee;
                       return _SummaryRow(
                         label: 'Shipping Fee',
                         value: shippingFee,
@@ -288,7 +294,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       );
                     },
                   ),
-                  
+
                   // Coupon Discount
                   if (args.couponDiscount > 0)
                     _SummaryRow(
@@ -296,7 +302,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       value: -args.couponDiscount,
                       valueColor: successColor,
                     ),
-                    
+
                   const Divider(height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -305,7 +311,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                           style: theme.textTheme.titleMedium!
                               .copyWith(fontWeight: FontWeight.bold)),
                       Text(
-                        '₹${args.total.toStringAsFixed(0)}',
+                        'â‚¹${args.total.toStringAsFixed(0)}',
                         style: theme.textTheme.titleMedium!.copyWith(
                           color: primaryColor,
                           fontWeight: FontWeight.bold,
@@ -319,7 +325,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
             const SizedBox(height: defaultPadding),
 
-            // ── Delivery Address ─────────────────────────────────────
+            // â”€â”€ Delivery Address â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             _SectionCard(
               title: 'Delivering To',
               isDark: isDark,
@@ -331,8 +337,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       color: primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child:
-                        const Icon(Icons.location_on, color: primaryColor, size: 20),
+                    child: const Icon(Icons.location_on,
+                        color: primaryColor, size: 20),
                   ),
                   const SizedBox(width: defaultPadding),
                   Expanded(
@@ -343,7 +349,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                             style: theme.textTheme.titleSmall),
                         const SizedBox(height: 2),
                         Text(
-                          '${args.address.address}, ${args.address.city}, ${args.address.state} – ${args.address.pincode}',
+                          '${args.address.address}, ${args.address.city}, ${args.address.state} â€“ ${args.address.pincode}',
                           style: theme.textTheme.bodySmall,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -357,12 +363,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
             const SizedBox(height: defaultPadding),
 
-            // ── Payment Method ───────────────────────────────────────
-            Text('Select Payment Method',
-                style: theme.textTheme.titleSmall),
+            // â”€â”€ Payment Method â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            Text('Select Payment Method', style: theme.textTheme.titleSmall),
             const SizedBox(height: defaultPadding / 2),
 
-            // Razorpay option — only selectable on mobile
+            // Razorpay option â€” only selectable on mobile
             _PaymentOption(
               value: 'razorpay',
               groupValue: _selectedMethod,
@@ -424,7 +429,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   )
                 : Text(
                     _selectedMethod == 'razorpay'
-                        ? 'Pay ₹${widget.args.total.toStringAsFixed(0)}'
+                        ? 'Pay â‚¹${widget.args.total.toStringAsFixed(0)}'
                         : 'Place Order (COD)',
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 16),
@@ -436,7 +441,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   }
 }
 
-// ── Helper Widgets ────────────────────────────────────────────────
+// â”€â”€ Helper Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _SectionCard extends StatelessWidget {
   final String title;
@@ -455,9 +460,8 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(defaultPadding),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.grey.shade50,
+        color:
+            isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
         borderRadius: BorderRadius.circular(defaultBorderRadius),
         border: Border.all(
           color: isDark ? Colors.white12 : Colors.grey.shade200,
@@ -634,7 +638,7 @@ class _SummaryRow extends StatelessWidget {
           Text(
             isShipping && value == 0
                 ? "Free"
-                : "₹${value.abs().toStringAsFixed(0)}",
+                : "â‚¹${value.abs().toStringAsFixed(0)}",
             style: Theme.of(context).textTheme.titleSmall!.copyWith(
                   color: isShipping && value == 0 ? successColor : valueColor,
                   fontWeight: isBold || (isShipping && value == 0)

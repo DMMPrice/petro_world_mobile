@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'logger_service.dart';
 
 import '../config/api_config.dart';
 import '../models/product_model.dart';
@@ -15,20 +16,35 @@ import '../models/notification_model.dart';
 
 // ─── Token storage key ────────────────────────────────────────────────────────
 const _kTokenKey = 'api_auth_token';
-const _kUserKey  = 'api_auth_user';
+const _kUserKey = 'api_auth_user';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 Map<String, String> _jsonHeaders([String? token]) => {
-  'Content-Type': 'application/json',
-  if (token != null) 'Authorization': 'Bearer $token',
-};
+      'Content-Type': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
 
 T _decode<T>(http.Response res, T Function(dynamic) mapper) {
-  final body = jsonDecode(res.body);
+  dynamic body;
+  try {
+    body = jsonDecode(res.body);
+  } catch (_) {
+    body = res.body;
+  }
+
   if (res.statusCode >= 400) {
-    final msg = body is Map ? (body['error'] ?? body['message'] ?? 'Request failed') : 'Request failed';
+    // For server errors avoid surfacing raw DB/server messages to UI.
+    if (res.statusCode >= 500) {
+      LoggerService.error('API server error: ${res.body}');
+      throw ApiException('Server error (${res.statusCode})', res.statusCode);
+    }
+
+    final msg = body is Map
+        ? (body['error'] ?? body['message'] ?? 'Request failed')
+        : 'Request failed';
     throw ApiException(msg.toString(), res.statusCode);
   }
+
   return mapper(body);
 }
 
@@ -57,17 +73,20 @@ class ApiUser {
   });
 
   factory ApiUser.fromJson(Map<String, dynamic> json) => ApiUser(
-    id:        json['id']?.toString() ?? '',
-    email:     json['email']?.toString() ?? '',
-    firstName: (json['firstName'] ?? json['first_name'] ?? '').toString(),
-    lastName:  (json['lastName']  ?? json['last_name']  ?? '').toString(),
-    role:      json['role']?.toString() ?? 'user',
-  );
+        id: json['id']?.toString() ?? '',
+        email: json['email']?.toString() ?? '',
+        firstName: (json['firstName'] ?? json['first_name'] ?? '').toString(),
+        lastName: (json['lastName'] ?? json['last_name'] ?? '').toString(),
+        role: json['role']?.toString() ?? 'user',
+      );
 
   Map<String, dynamic> toJson() => {
-    'id': id, 'email': email, 'firstName': firstName,
-    'lastName': lastName, 'role': role,
-  };
+        'id': id,
+        'email': email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'role': role,
+      };
 
   String get fullName => '$firstName $lastName'.trim();
 }
@@ -92,7 +111,8 @@ class ApiService {
     _token = prefs.getString(_kTokenKey);
     final userJson = prefs.getString(_kUserKey);
     if (userJson != null) {
-      _currentUser = ApiUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
+      _currentUser =
+          ApiUser.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
     }
   }
 
@@ -174,15 +194,20 @@ class ApiService {
   }
 
   // ── Products ─────────────────────────────────────────────────────────────
-  Future<List<ProductModel>> getProducts({String? categoryId, String? categoryName}) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}/products').replace(queryParameters: {
+  Future<List<ProductModel>> getProducts(
+      {String? categoryId, String? categoryName}) async {
+    final uri =
+        Uri.parse('${ApiConfig.baseUrl}/products').replace(queryParameters: {
       if (categoryId != null) 'categoryId': categoryId,
       if (categoryName != null) 'categoryName': categoryName,
       'limit': '100',
     });
     final res = await http.get(uri, headers: _jsonHeaders(_token));
-    return _decode(res, (body) =>
-        (body['data'] as List).map((e) => ProductModel.fromJson(_flatProduct(e))).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List)
+            .map((e) => ProductModel.fromJson(_flatProduct(e)))
+            .toList());
   }
 
   Future<List<ProductModel>> getTrendingProducts() async {
@@ -190,16 +215,22 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/products/trending'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List).map((e) => ProductModel.fromJson(_flatProduct(e))).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List)
+            .map((e) => ProductModel.fromJson(_flatProduct(e)))
+            .toList());
   }
 
   Future<List<ProductModel>> searchProducts(String query) async {
     final uri = Uri.parse('${ApiConfig.baseUrl}/products/search')
         .replace(queryParameters: {'q': query});
     final res = await http.get(uri, headers: _jsonHeaders(_token));
-    return _decode(res, (body) =>
-        (body['data'] as List).map((e) => ProductModel.fromJson(_flatProduct(e))).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List)
+            .map((e) => ProductModel.fromJson(_flatProduct(e)))
+            .toList());
   }
 
   Future<List<ProductModel>> getRelatedProducts({
@@ -213,8 +244,11 @@ class ApiService {
       headers: _jsonHeaders(_token),
     );
     if (res.statusCode == 404) return [];
-    return _decode(res, (body) =>
-        (body['data'] as List).map((e) => ProductModel.fromJson(_flatProduct(e))).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List)
+            .map((e) => ProductModel.fromJson(_flatProduct(e)))
+            .toList());
   }
 
   // ── Categories ────────────────────────────────────────────────────────────
@@ -223,8 +257,11 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/categories'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List).map((e) => CategoryModel.fromJson(e as Map<String, dynamic>)).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List)
+            .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+            .toList());
   }
 
   // ── Banners ───────────────────────────────────────────────────────────────
@@ -233,8 +270,11 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/banners'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List).map((e) => BannerModel.fromJson(e as Map<String, dynamic>)).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List)
+            .map((e) => BannerModel.fromJson(e as Map<String, dynamic>))
+            .toList());
   }
 
   // ── Settings ──────────────────────────────────────────────────────────────
@@ -244,7 +284,8 @@ class ApiService {
       headers: _jsonHeaders(_token),
     );
     return _decode(res, (body) {
-      final data = body['data'] as Map<String, dynamic>? ?? body as Map<String, dynamic>;
+      final data =
+          body['data'] as Map<String, dynamic>? ?? body as Map<String, dynamic>;
       return data.map((k, v) => MapEntry(k, v?.toString() ?? ''));
     });
   }
@@ -255,8 +296,8 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/faqs'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        List<Map<String, dynamic>>.from(body['data'] as List));
+    return _decode(
+        res, (body) => List<Map<String, dynamic>>.from(body['data'] as List));
   }
 
   // ── Profile ───────────────────────────────────────────────────────────────
@@ -285,8 +326,11 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/addresses'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List).map((e) => AddressModel.fromJson(e as Map<String, dynamic>)).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List)
+            .map((e) => AddressModel.fromJson(e as Map<String, dynamic>))
+            .toList());
   }
 
   Future<void> addAddress(AddressModel address) async {
@@ -324,7 +368,8 @@ class ApiService {
       final items = body['data'] as List? ?? [];
       return items.map((e) {
         // Backend uses row_to_json(p.*) AS products
-        final rawProduct = (e['products'] ?? e['product']) as Map<String, dynamic>;
+        final rawProduct =
+            (e['products'] ?? e['product']) as Map<String, dynamic>;
         final product = ProductModel.fromJson(_flatProduct(rawProduct));
         final qty = e['quantity'];
         return CartItemModel(
@@ -374,8 +419,9 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/wishlist'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List? ?? [])
+    return _decode(
+        res,
+        (body) => (body['data'] as List? ?? [])
             .map((e) => ProductModel.fromJson(_flatProduct(
                 // Backend uses row_to_json(p.*) AS products
                 (e['products'] ?? e['product'] ?? e) as Map<String, dynamic>)))
@@ -404,8 +450,8 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/orders'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        List<Map<String, dynamic>>.from(body['data'] as List? ?? []));
+    return _decode(res,
+        (body) => List<Map<String, dynamic>>.from(body['data'] as List? ?? []));
   }
 
   Future<void> placeOrder({
@@ -421,22 +467,25 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/orders'),
       headers: _jsonHeaders(_token),
       body: jsonEncode({
-        'addressId':     addressId,
-        'total':         total,
+        'addressId': addressId,
+        'total': total,
         'paymentMethod': paymentMethod,
         if (razorpayPaymentId != null) 'razorpayPaymentId': razorpayPaymentId,
         if (couponId != null) 'couponId': couponId,
         'couponDiscount': couponDiscount,
-        'items': items.map((i) => {
-          'productId': i.product.id,
-          'quantity':  i.quantity,
-          'price':     i.product.priceAfterDiscount ?? i.product.price,
-        }).toList(),
+        'items': items
+            .map((i) => {
+                  'productId': i.product.id,
+                  'quantity': i.quantity,
+                  'price': i.product.priceAfterDiscount ?? i.product.price,
+                })
+            .toList(),
       }),
     );
     if (res.statusCode < 200 || res.statusCode >= 300) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
-      throw ApiException(body['error']?.toString() ?? 'Failed to place order', res.statusCode);
+      throw ApiException(
+          body['error']?.toString() ?? 'Failed to place order', res.statusCode);
     }
   }
 
@@ -452,7 +501,7 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/payments/create-razorpay-order'),
       headers: _jsonHeaders(_token),
       body: jsonEncode({
-        'amount':   totalAmount,
+        'amount': totalAmount,
         'currency': 'INR',
         if (receipt != null) 'receipt': receipt,
       }),
@@ -475,23 +524,27 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/payments/verify-razorpay'),
       headers: _jsonHeaders(_token),
       body: jsonEncode({
-        'razorpay_order_id':   razorpayOrderId,
+        'razorpay_order_id': razorpayOrderId,
         'razorpay_payment_id': razorpayPaymentId,
-        'razorpay_signature':  razorpaySignature,
-        'addressId':           addressId,
-        'total':               total,
+        'razorpay_signature': razorpaySignature,
+        'addressId': addressId,
+        'total': total,
         if (couponId != null) 'couponId': couponId,
-        'couponDiscount':      couponDiscount,
-        'items': items.map((i) => {
-          'productId': i.product.id,
-          'quantity':  i.quantity,
-          'price':     i.product.priceAfterDiscount ?? i.product.price,
-        }).toList(),
+        'couponDiscount': couponDiscount,
+        'items': items
+            .map((i) => {
+                  'productId': i.product.id,
+                  'quantity': i.quantity,
+                  'price': i.product.priceAfterDiscount ?? i.product.price,
+                })
+            .toList(),
       }),
     );
     if (res.statusCode < 200 || res.statusCode >= 300) {
       final body = jsonDecode(res.body) as Map<String, dynamic>;
-      throw ApiException(body['error']?.toString() ?? 'Payment verification failed', res.statusCode);
+      throw ApiException(
+          body['error']?.toString() ?? 'Payment verification failed',
+          res.statusCode);
     }
   }
 
@@ -513,8 +566,8 @@ class ApiService {
     if (order == null) return null;
     return {
       'current_status': order['courier_status'] ?? order['status'] ?? '',
-      'activities':     <Map<String, dynamic>>[],
-      'label_url':      order['shipping_label_url'],
+      'activities': <Map<String, dynamic>>[],
+      'label_url': order['shipping_label_url'],
     };
   }
 
@@ -525,9 +578,9 @@ class ApiService {
   Future<String?> uploadAvatar(Uint8List bytes, String fileName) async {
     if (_token == null) return null;
     try {
-      final ext      = fileName.split('.').last.toLowerCase();
+      final ext = fileName.split('.').last.toLowerCase();
       final mimeType = ext == 'png' ? 'image/png' : 'image/jpeg';
-      final dataUrl  = 'data:$mimeType;base64,${base64Encode(bytes)}';
+      final dataUrl = 'data:$mimeType;base64,${base64Encode(bytes)}';
       await updateProfile({'avatar_url': dataUrl});
       return dataUrl;
     } catch (_) {
@@ -545,8 +598,9 @@ class ApiService {
         headers: _jsonHeaders(_token),
       );
       if (res.statusCode != 200) return [];
-      return _decode(res, (body) =>
-          (body['data'] as List? ?? [])
+      return _decode(
+          res,
+          (body) => (body['data'] as List? ?? [])
               .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
               .toList());
     } catch (_) {
@@ -610,8 +664,9 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/reviews/$productId'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List? ?? [])
+    return _decode(
+        res,
+        (body) => (body['data'] as List? ?? [])
             .map((e) => ReviewModel.fromJson(e as Map<String, dynamic>))
             .toList());
   }
@@ -620,7 +675,8 @@ class ApiService {
     await http.post(
       Uri.parse('${ApiConfig.baseUrl}/reviews'),
       headers: _jsonHeaders(_token),
-      body: jsonEncode({'productId': productId, 'rating': rating, 'comment': comment}),
+      body: jsonEncode(
+          {'productId': productId, 'rating': rating, 'comment': comment}),
     );
   }
 
@@ -631,8 +687,11 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/search/history'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List? ?? []).map((e) => e['query'].toString()).toList());
+    return _decode(
+        res,
+        (body) => (body['data'] as List? ?? [])
+            .map((e) => e['query'].toString())
+            .toList());
   }
 
   Future<void> saveSearchQuery(String query) async {
@@ -659,8 +718,9 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/search/recently-viewed'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        (body['data'] as List? ?? [])
+    return _decode(
+        res,
+        (body) => (body['data'] as List? ?? [])
             .map((e) => ProductModel.fromJson(_flatProduct(
                 // Backend uses row_to_json(p.*) AS products
                 (e['products'] ?? e['product'] ?? e) as Map<String, dynamic>)))
@@ -691,7 +751,8 @@ class ApiService {
       );
       if (res.statusCode != 200) return null;
       final body = jsonDecode(res.body) as Map<String, dynamic>;
-      return CouponModel.fromJson(body['data'] as Map<String, dynamic>? ?? body);
+      return CouponModel.fromJson(
+          body['data'] as Map<String, dynamic>? ?? body);
     } catch (_) {
       return null;
     }
@@ -703,7 +764,8 @@ class ApiService {
     final res = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/support/tickets'),
       headers: _jsonHeaders(_token),
-      body: jsonEncode({'message': message, if (subject != null) 'subject': subject}),
+      body: jsonEncode(
+          {'message': message, if (subject != null) 'subject': subject}),
     );
     return _decode(res, (body) => body['data']?['id']?.toString());
   }
@@ -714,8 +776,8 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/support/tickets'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        List<Map<String, dynamic>>.from(body['data'] as List? ?? []));
+    return _decode(res,
+        (body) => List<Map<String, dynamic>>.from(body['data'] as List? ?? []));
   }
 
   Future<List<Map<String, dynamic>>> getSupportMessages(String ticketId) async {
@@ -724,11 +786,12 @@ class ApiService {
       Uri.parse('${ApiConfig.baseUrl}/support/tickets/$ticketId/messages'),
       headers: _jsonHeaders(_token),
     );
-    return _decode(res, (body) =>
-        List<Map<String, dynamic>>.from(body['data'] as List? ?? []));
+    return _decode(res,
+        (body) => List<Map<String, dynamic>>.from(body['data'] as List? ?? []));
   }
 
-  Future<void> sendSupportMessage(String ticketId, String message, {bool isAdmin = false}) async {
+  Future<void> sendSupportMessage(String ticketId, String message,
+      {bool isAdmin = false}) async {
     if (_token == null) return;
     await http.post(
       Uri.parse('${ApiConfig.baseUrl}/support/tickets/$ticketId/messages'),

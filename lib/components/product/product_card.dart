@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shop/models/product_model.dart';
-import 'package:shop/models/cart_item_model.dart';
+import 'package:petro_world/models/product_model.dart';
+import 'package:petro_world/models/cart_item_model.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -149,7 +149,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
     if (widget.discountType == 'fixed' &&
         widget.discountValue != null &&
         widget.discountValue! > 0) {
-      return '₹${widget.discountValue!.toInt()} OFF';
+      return 'â‚¹${widget.discountValue!.toInt()} OFF';
     }
     final pct =
         (((widget.price - priceAfterDiscount) / widget.price) * 100).round();
@@ -219,7 +219,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Image + overlays ──────────────────────────────────────
+            // â”€â”€ Image + overlays â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             AspectRatio(
               aspectRatio: 1,
               child: Stack(
@@ -303,7 +303,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                     ),
                   ),
 
-                  // ── Blinkit-style quantity stepper (bottom-right of image) ──
+                  // â”€â”€ Blinkit-style quantity stepper (bottom-right of image) â”€â”€
                   Positioned(
                     bottom: 8,
                     right: 8,
@@ -318,7 +318,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               ),
             ),
 
-            // ── Text section ─────────────────────────────────────────
+            // â”€â”€ Text section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8),
@@ -399,7 +399,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                           children: [
                             if (discountLabel != null) ...[
                               Text(
-                                '₹${widget.price.toStringAsFixed(0)}',
+                                'â‚¹${widget.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: blackColor40,
                                   decoration: TextDecoration.lineThrough,
@@ -407,7 +407,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                                 ),
                               ),
                               Text(
-                                '₹${widget.priceAfterDiscount!.toStringAsFixed(0)}',
+                                'â‚¹${widget.priceAfterDiscount!.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: Color(0xFF5DA085),
                                   fontWeight: FontWeight.bold,
@@ -416,7 +416,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                               ),
                             ] else
                               Text(
-                                '₹${widget.price.toStringAsFixed(0)}',
+                                'â‚¹${widget.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: blackColor,
                                   fontWeight: FontWeight.bold,
@@ -438,7 +438,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
   }
 }
 
-// ── Blinkit-style quantity stepper ────────────────────────────────────────────
+// â”€â”€ Blinkit-style quantity stepper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 class _QuantityStepper extends StatelessWidget {
   const _QuantityStepper({

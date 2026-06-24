@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/providers/providers.dart';
 
 class AppBottomNavigationBar extends ConsumerWidget {
   const AppBottomNavigationBar({super.key});

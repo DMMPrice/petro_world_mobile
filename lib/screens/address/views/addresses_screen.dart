@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/providers/providers.dart';
 import 'components/address_card.dart';
-import 'package:shop/models/address_model.dart';
-import 'package:shop/services/api_service.dart';
-import 'package:shop/route/route_constants.dart';
-import 'package:shop/screens/checkout/views/payment_screen.dart';
+import 'package:petro_world/models/address_model.dart';
+import 'package:petro_world/services/api_service.dart';
+import 'package:petro_world/route/route_constants.dart';
+import 'package:petro_world/screens/checkout/views/payment_screen.dart';
 
 class AddressesScreen extends ConsumerStatefulWidget {
   const AddressesScreen({super.key});

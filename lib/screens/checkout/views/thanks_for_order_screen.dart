@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/route_constants.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/route/route_constants.dart';
 
 class ThanksForOrderScreen extends StatelessWidget {
   const ThanksForOrderScreen({super.key});

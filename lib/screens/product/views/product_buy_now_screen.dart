@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop/components/cart_button.dart';
-import 'package:shop/components/custom_modal_bottom_sheet.dart';
-import 'package:shop/components/network_image_with_loader.dart';
-import 'package:shop/screens/product/views/added_to_cart_message_screen.dart';
-import 'package:shop/screens/product/views/components/product_list_tile.dart';
-import 'package:shop/screens/product/views/location_permission_store_availability_screen.dart';
-import 'package:shop/screens/product/views/size_guide_screen.dart';
+import 'package:petro_world/components/cart_button.dart';
+import 'package:petro_world/components/custom_modal_bottom_sheet.dart';
+import 'package:petro_world/components/network_image_with_loader.dart';
+import 'package:petro_world/screens/product/views/added_to_cart_message_screen.dart';
+import 'package:petro_world/screens/product/views/components/product_list_tile.dart';
+import 'package:petro_world/screens/product/views/location_permission_store_availability_screen.dart';
+import 'package:petro_world/screens/product/views/size_guide_screen.dart';
 
-import 'package:shop/models/product_model.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/models/product_model.dart';
+import 'package:petro_world/services/api_service.dart';
 import '../../../constants.dart';
 import 'components/product_quantity.dart';
 import 'components/selected_colors.dart';

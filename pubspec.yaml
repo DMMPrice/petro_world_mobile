@@ -1,9 +1,9 @@
-name: shop
-description: FlutterShop is a premium E-commerce UI kit that you can use to build various e-commerce apps using Flutter that works on both Android & iOS. This kit contains 100+ nicely crafted minimal screens that cover everything you need for your shop app.
+name: petro_world
+description: A centralized e-commerce platform for petrol pump operators to efficiently purchase essential operational, safety, maintenance, and branding supplies, ensuring smooth, safe, and compliant fuel station operations.
 
 publish_to: "none"
 
-version: 1.0.0+1
+version: 1.0.0
 
 environment:
   sdk: ">=3.2.0 <4.0.0"

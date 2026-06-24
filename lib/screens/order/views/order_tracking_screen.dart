@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/services/api_service.dart';
-import 'package:shop/screens/order/views/components/order_status_tracker.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/services/api_service.dart';
+import 'package:petro_world/screens/order/views/components/order_status_tracker.dart';
 import 'package:intl/intl.dart';
 
 class OrderTrackingScreen extends StatefulWidget {
@@ -33,7 +33,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   bool _actionLoading = false;
   String? _error;
 
-  String _courierStatus = 'Fetching status…';
+  String _courierStatus = 'Fetching statusâ€¦';
   String? _courierName;
   String? _labelUrl;
   List<Map<String, dynamic>> _activities = [];
@@ -190,11 +190,11 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // ── Order Summary Card ──────────────────────────────
+                  // â”€â”€ Order Summary Card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                   _buildSummaryCard(),
                   const SizedBox(height: defaultPadding),
 
-                  // ── Error / refresh notice ──────────────────────────
+                  // â”€â”€ Error / refresh notice â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                   if (_error != null)
                     Container(
                       margin: const EdgeInsets.only(bottom: defaultPadding),
@@ -213,13 +213,13 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
                       ),
                     ),
 
-                  // ── Actions ─────────────────────────────────────────
+                  // â”€â”€ Actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                   if (hasInvoice || canCancel || canReturn) ...[
                     _buildActionsRow(canCancel: canCancel, canReturn: canReturn, hasInvoice: hasInvoice),
                     const SizedBox(height: defaultPadding),
                   ],
 
-                  // ── Timeline ────────────────────────────────────────
+                  // â”€â”€ Timeline â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                   if (_loading)
                     const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
                   else if (_activities.isEmpty)

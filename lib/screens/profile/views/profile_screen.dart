@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/screen_export.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/route/screen_export.dart';
+import 'package:petro_world/services/api_service.dart';
 import 'components/profile_card.dart';
 import 'components/profile_menu_item_list_tile.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/providers/providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});

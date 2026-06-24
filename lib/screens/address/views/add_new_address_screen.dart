@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/models/address_model.dart';
-import 'package:shop/services/api_service.dart';
-import 'package:shop/services/logistics_service.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/models/address_model.dart';
+import 'package:petro_world/services/api_service.dart';
+import 'package:petro_world/services/logistics_service.dart';
 
 class AddNewAddressScreen extends StatefulWidget {
   final AddressModel? address;

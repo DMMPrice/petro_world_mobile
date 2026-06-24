@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/components/dot_indicators.dart';
-import 'package:shop/components/shimmer_wrapper.dart';
-import 'package:shop/components/network_image_with_loader.dart';
+import 'package:petro_world/components/dot_indicators.dart';
+import 'package:petro_world/components/shimmer_wrapper.dart';
+import 'package:petro_world/components/network_image_with_loader.dart';
 import '../../../../constants.dart';
 import '../../../../providers/providers.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/services/api_service.dart';
-import 'package:shop/route/route_constants.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/services/api_service.dart';
+import 'package:petro_world/route/route_constants.dart';
 
 class GetHelpScreen extends StatefulWidget {
   const GetHelpScreen({super.key});

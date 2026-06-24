@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:shop/constants.dart';
+import 'package:petro_world/constants.dart';
 
-import 'package:shop/screens/order/views/components/order_status_tracker.dart';
+import 'package:petro_world/screens/order/views/components/order_status_tracker.dart';
 import '../order_tracking_screen.dart';
 
 /// Status config: color and label for each order status.
@@ -50,7 +50,7 @@ class OrderCard extends StatelessWidget {
   final double? totalAmount;
   final String? shiprocketOrderId;
   final String? shipmentId;
-  final String? trackingNumber;       // AWB number — null until Shiprocket assigns
+  final String? trackingNumber;       // AWB number â€” null until Shiprocket assigns
   final String? invoiceUrl;
   final String? courierName;
   final String? courierStatus;
@@ -74,7 +74,7 @@ class OrderCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ──────────────────────────────────────────────────
+          // â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 12, 0),
             child: Row(
@@ -113,7 +113,7 @@ class OrderCard extends StatelessWidget {
             ),
           ),
 
-          // ── Shiprocket ID row (shown only if pushed) ─────────────
+          // â”€â”€ Shiprocket ID row (shown only if pushed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           if (shiprocketOrderId != null) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -145,7 +145,7 @@ class OrderCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        '· $courierStatus',
+                        'Â· $courierStatus',
                         style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -161,7 +161,7 @@ class OrderCard extends StatelessWidget {
             child: Divider(height: 20),
           ),
 
-          // ── Product List ──────────────────────────────────────────
+          // â”€â”€ Product List â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           ...products.take(2).map((product) => Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
                 child: Row(
@@ -193,7 +193,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '₹${(() { final r = product['price']; if (r == null) return '—'; if (r is num) return r.toStringAsFixed(0); return (double.tryParse(r.toString()) ?? 0).toStringAsFixed(0); })()}',
+                      'â‚¹${(() { final r = product['price']; if (r == null) return 'â€”'; if (r is num) return r.toStringAsFixed(0); return (double.tryParse(r.toString()) ?? 0).toStringAsFixed(0); })()}',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: primaryColor),
                     ),
                   ],
@@ -209,7 +209,7 @@ class OrderCard extends StatelessWidget {
               ),
             ),
 
-          // ── Actions Row ───────────────────────────────────────────
+          // â”€â”€ Actions Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.12))),
@@ -220,11 +220,11 @@ class OrderCard extends StatelessWidget {
                 if (totalAmount != null)
                   Expanded(
                     child: Text(
-                      'Total ₹${totalAmount!.toStringAsFixed(0)}',
+                      'Total â‚¹${totalAmount!.toStringAsFixed(0)}',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                     ),
                   ),
-                // Invoice button — only if label URL is available
+                // Invoice button â€” only if label URL is available
                 if (_hasInvoice)
                   TextButton.icon(
                     onPressed: () => _openUrl(context, invoiceUrl!),
@@ -236,7 +236,7 @@ class OrderCard extends StatelessWidget {
                       textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
-                // Track Order — only if AWB is assigned
+                // Track Order â€” only if AWB is assigned
                 if (_hasAwb)
                   TextButton.icon(
                     onPressed: () => Navigator.push(

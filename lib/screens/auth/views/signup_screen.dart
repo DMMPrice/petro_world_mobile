@@ -1,10 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/screens/auth/views/components/sign_up_form.dart';
-import 'package:shop/route/route_constants.dart';
-import 'package:shop/providers/auth_provider.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/screens/auth/views/components/sign_up_form.dart';
+import 'package:petro_world/route/route_constants.dart';
+import 'package:petro_world/providers/auth_provider.dart';
+import 'package:petro_world/services/api_service.dart';
 
 import '../../../constants.dart';
 

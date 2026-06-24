@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop/components/network_image_with_loader.dart';
+import 'package:petro_world/components/network_image_with_loader.dart';
 
 import '../../../../constants.dart';
 
@@ -24,57 +24,65 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: press,
-      leading: CircleAvatar(
-        radius: 28,
-        backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-        child: imageSrc.isNotEmpty && !imageSrc.contains('i.imgur.com/IXnwbLk.png')
-            ? NetworkImageWithLoader(
-                imageSrc,
-                radius: 100,
-              )
-            : const Icon(Icons.person, color: Colors.grey),
-      ),
-      title: Row(
-        children: [
-          Text(
-            isShowHi ? "Hi, $name" : name,
-            style: const TextStyle(fontWeight: FontWeight.w500),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(width: defaultPadding / 2),
-          if (isPro)
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: defaultPadding / 2, vertical: defaultPadding / 4),
-              decoration: const BoxDecoration(
-                color: primaryColor,
-                borderRadius:
-                    BorderRadius.all(Radius.circular(defaultBorderRadius)),
-              ),
-              child: Text(
-                proLableText,
-                style: const TextStyle(
-                  fontFamily: grandisExtendedFont,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                  letterSpacing: 0.7,
-                  height: 1,
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        onTap: press,
+        leading: CircleAvatar(
+          radius: 28,
+          backgroundColor:
+              Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: imageSrc.isNotEmpty &&
+                  !imageSrc.contains('i.imgur.com/IXnwbLk.png')
+              ? NetworkImageWithLoader(
+                  imageSrc,
+                  radius: 100,
+                )
+              : const Icon(Icons.person, color: Colors.grey),
+        ),
+        title: Row(
+          children: [
+            Text(
+              isShowHi ? "Hi, $name" : name,
+              style: const TextStyle(fontWeight: FontWeight.w500),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(width: defaultPadding / 2),
+            if (isPro)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: defaultPadding / 2,
+                    vertical: defaultPadding / 4),
+                decoration: const BoxDecoration(
+                  color: primaryColor,
+                  borderRadius:
+                      BorderRadius.all(Radius.circular(defaultBorderRadius)),
+                ),
+                child: Text(
+                  proLableText,
+                  style: const TextStyle(
+                    fontFamily: grandisExtendedFont,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white,
+                    letterSpacing: 0.7,
+                    height: 1,
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
+        subtitle: Text(email),
+        trailing: isShowArrow
+            ? SvgPicture.asset(
+                "assets/icons/miniRight.svg",
+                colorFilter: ColorFilter.mode(
+                    Theme.of(context).iconTheme.color!.withValues(alpha: 0.4),
+                    BlendMode.srcIn),
+              )
+            : null,
       ),
-      subtitle: Text(email),
-      trailing: isShowArrow
-          ? SvgPicture.asset(
-              "assets/icons/miniRight.svg",
-              colorFilter: ColorFilter.mode(Theme.of(context).iconTheme.color!.withValues(alpha: 0.4), BlendMode.srcIn),
-            )
-          : null,
     );
   }
 }

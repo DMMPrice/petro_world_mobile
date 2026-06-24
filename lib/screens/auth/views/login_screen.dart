@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/route_constants.dart';
-import 'package:shop/providers/auth_provider.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/route/route_constants.dart';
+import 'package:petro_world/providers/auth_provider.dart';
+import 'package:petro_world/services/api_service.dart';
 
 import 'components/login_form.dart';
 

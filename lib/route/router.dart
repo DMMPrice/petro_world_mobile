@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:shop/entry_point.dart';
-import 'package:shop/models/product_model.dart';
-import 'package:shop/models/address_model.dart';
+import 'package:petro_world/entry_point.dart';
+import 'package:petro_world/models/product_model.dart';
+import 'package:petro_world/models/address_model.dart';
 
 import 'screen_export.dart';
 

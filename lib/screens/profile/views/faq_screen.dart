@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/services/api_service.dart';
 
 class FAQScreen extends StatefulWidget {
   const FAQScreen({super.key});

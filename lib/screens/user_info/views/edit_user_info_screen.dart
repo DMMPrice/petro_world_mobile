@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop/constants.dart';
+import 'package:petro_world/constants.dart';
 import 'package:intl/intl.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/services/api_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 
@@ -22,7 +22,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
   final TextEditingController _phoneController = TextEditingController();
   PhoneNumber _number = PhoneNumber(isoCode: 'IN');
   String? _selectedGender;
-  
+
   String? _avatarUrl;
   bool _isLoading = true;
 
@@ -35,21 +35,26 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
   Future<void> _loadProfile() async {
     final profile = await ApiService.instance.getProfile();
     final user = ApiService.instance.currentUser;
-    
+
     PhoneNumber? parsedNumber;
-    if (profile != null && profile['phone_number'] != null && profile['phone_number'].toString().isNotEmpty) {
+    final profilePhone = profile?['phone'] ?? profile?['phone_number'];
+    if (profilePhone != null && profilePhone.toString().isNotEmpty) {
       try {
-        parsedNumber = await PhoneNumber.getRegionInfoFromPhoneNumber(profile['phone_number']);
+        parsedNumber = await PhoneNumber.getRegionInfoFromPhoneNumber(
+            profilePhone.toString());
       } catch (e) {
-        parsedNumber = PhoneNumber(isoCode: 'IN', phoneNumber: profile['phone_number']);
+        parsedNumber =
+            PhoneNumber(isoCode: 'IN', phoneNumber: profilePhone.toString());
       }
     }
 
     if (mounted) {
       setState(() {
         if (profile != null) {
-          _nameController.text = "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}".trim();
-          
+          _nameController.text =
+              "${profile['first_name'] ?? ''} ${profile['last_name'] ?? ''}"
+                  .trim();
+
           // Handle DOB formatting from DB (YYYY-MM-DD) to UI (DD/MM/YYYY)
           if (profile['dob'] != null && profile['dob'].toString().isNotEmpty) {
             try {
@@ -61,8 +66,9 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
           } else {
             _dobController.text = '';
           }
-          
-          _phoneController.text = profile['phone_number'] ?? '';
+
+          _phoneController.text =
+              (profile['phone'] ?? profile['phone_number'] ?? '').toString();
           _selectedGender = profile['gender'];
           _avatarUrl = profile['avatar_url'];
           if (parsedNumber != null) _number = parsedNumber;
@@ -108,9 +114,9 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
     if (image != null) {
       setState(() => _isLoading = true);
       try {
-        final bytes    = await image.readAsBytes();
+        final bytes = await image.readAsBytes();
         final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
-        final url      = await ApiService.instance.uploadAvatar(bytes, fileName);
+        final url = await ApiService.instance.uploadAvatar(bytes, fileName);
 
         if (url != null && mounted) {
           setState(() => _avatarUrl = url);
@@ -139,7 +145,8 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
         String? dbDob;
         if (_dobController.text.isNotEmpty) {
           try {
-            DateTime uiDate = DateFormat('dd/MM/yyyy').parse(_dobController.text);
+            DateTime uiDate =
+                DateFormat('dd/MM/yyyy').parse(_dobController.text);
             dbDob = DateFormat('yyyy-MM-dd').format(uiDate);
           } catch (e) {
             dbDob = _dobController.text;
@@ -150,7 +157,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
           'first_name': firstName,
           'last_name': lastName,
           'dob': dbDob,
-          'phone_number': _phoneController.text,
+          'phone': _phoneController.text,
           'gender': _selectedGender,
         });
 
@@ -188,205 +195,260 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
           )
         ],
       ),
-      body: _isLoading 
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-                child: Column(
-                  children: [
-                    const SizedBox(height: defaultPadding),
-                    EditAvatar(
-                      avatarUrl: _avatarUrl,
-                      onTap: _pickImage,
-                    ),
-                    const SizedBox(height: defaultPadding * 2),
-                    Form(
-                      key: _formKey,
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: defaultPadding),
                       child: Column(
                         children: [
-                          TextFormField(
-                            controller: _nameController,
-                            validator: (value) => value!.isEmpty ? "Name is required" : null,
-                            decoration: InputDecoration(
-                              hintText: "Full Name",
-                              filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.all(defaultPadding * 0.75),
-                                child: SvgPicture.asset(
-                                  "assets/icons/Profile.svg",
-                                  height: 24,
-                                  width: 24,
-                                  colorFilter: ColorFilter.mode(
-                                      Theme.of(context).textTheme.bodyLarge!.color!.withValues(alpha: 0.7),
-                                      BlendMode.srcIn),
+                          const SizedBox(height: defaultPadding),
+                          EditAvatar(
+                            avatarUrl: _avatarUrl,
+                            onTap: _pickImage,
+                          ),
+                          const SizedBox(height: defaultPadding * 2),
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                  controller: _nameController,
+                                  validator: (value) => value!.isEmpty
+                                      ? "Name is required"
+                                      : null,
+                                  decoration: InputDecoration(
+                                    hintText: "Full Name",
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.5),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.all(
+                                          defaultPadding * 0.75),
+                                      child: SvgPicture.asset(
+                                        "assets/icons/Profile.svg",
+                                        height: 24,
+                                        width: 24,
+                                        colorFilter: ColorFilter.mode(
+                                            Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge!
+                                                .color!
+                                                .withValues(alpha: 0.7),
+                                            BlendMode.srcIn),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: defaultPadding),
-                          TextFormField(
-                            controller: _emailController,
-                            readOnly: true,
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.all(defaultPadding * 0.75),
-                                child: SvgPicture.asset(
-                                  "assets/icons/Message.svg",
-                                  height: 24,
-                                  width: 24,
-                                  colorFilter: ColorFilter.mode(
-                                      Theme.of(context).textTheme.bodyLarge!.color!.withValues(alpha: 0.7),
-                                      BlendMode.srcIn),
+                                const SizedBox(height: defaultPadding),
+                                TextFormField(
+                                  controller: _emailController,
+                                  readOnly: true,
+                                  keyboardType: TextInputType.emailAddress,
+                                  decoration: InputDecoration(
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.5),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.all(
+                                          defaultPadding * 0.75),
+                                      child: SvgPicture.asset(
+                                        "assets/icons/Message.svg",
+                                        height: 24,
+                                        width: 24,
+                                        colorFilter: ColorFilter.mode(
+                                            Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge!
+                                                .color!
+                                                .withValues(alpha: 0.7),
+                                            BlendMode.srcIn),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: defaultPadding),
-                          TextFormField(
-                            controller: _dobController,
-                            readOnly: true,
-                            onTap: _selectDate,
-                            decoration: InputDecoration(
-                              hintText: "Date of birth",
-                              filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              prefixIcon: Padding(
-                                padding: const EdgeInsets.all(defaultPadding * 0.75),
-                                child: SvgPicture.asset(
-                                  "assets/icons/Calender.svg",
-                                  height: 24,
-                                  width: 24,
-                                  colorFilter: ColorFilter.mode(
-                                      Theme.of(context).textTheme.bodyLarge!.color!.withValues(alpha: 0.7),
-                                      BlendMode.srcIn),
+                                const SizedBox(height: defaultPadding),
+                                TextFormField(
+                                  controller: _dobController,
+                                  readOnly: true,
+                                  onTap: _selectDate,
+                                  decoration: InputDecoration(
+                                    hintText: "Date of birth",
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.5),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.all(
+                                          defaultPadding * 0.75),
+                                      child: SvgPicture.asset(
+                                        "assets/icons/Calender.svg",
+                                        height: 24,
+                                        width: 24,
+                                        colorFilter: ColorFilter.mode(
+                                            Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge!
+                                                .color!
+                                                .withValues(alpha: 0.7),
+                                            BlendMode.srcIn),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: defaultPadding),
-                          DropdownButtonFormField<String>(
-                            initialValue: _selectedGender,
-                            items: ["Male", "Female", "Other"]
-                                .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                                .toList(),
-                            onChanged: (value) => setState(() => _selectedGender = value),
-                            decoration: InputDecoration(
-                              hintText: "Gender",
-                              filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              prefixIcon: const Padding(
-                                padding: EdgeInsets.all(defaultPadding * 0.75),
-                                child: Icon(Icons.person_outline, size: 24),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: defaultPadding),
-                          InternationalPhoneNumberInput(
-                            onInputChanged: (PhoneNumber number) {
-                              _number = number;
-                              _phoneController.text = number.phoneNumber ?? '';
-                            },
-                            selectorConfig: const SelectorConfig(
-                              selectorType: PhoneInputSelectorType.BOTTOM_SHEET,
-                              showFlags: false,
-                            ),
-                            ignoreBlank: false,
-                            autoValidateMode: AutovalidateMode.disabled,
-                            initialValue: _number,
-                            formatInput: false,
-                            keyboardType: const TextInputType.numberWithOptions(
-                                signed: true, decimal: true),
-                            inputDecoration: InputDecoration(
-                              hintText: "Phone Number",
-                              filled: true,
-                              fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(defaultBorderRadius),
-                                borderSide: BorderSide.none,
-                              ),
+                                const SizedBox(height: defaultPadding),
+                                DropdownButtonFormField<String>(
+                                  initialValue: _selectedGender,
+                                  items: ["Male", "Female", "Other"]
+                                      .map((g) => DropdownMenuItem(
+                                          value: g, child: Text(g)))
+                                      .toList(),
+                                  onChanged: (value) =>
+                                      setState(() => _selectedGender = value),
+                                  decoration: InputDecoration(
+                                    hintText: "Gender",
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.5),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    prefixIcon: const Padding(
+                                      padding:
+                                          EdgeInsets.all(defaultPadding * 0.75),
+                                      child:
+                                          Icon(Icons.person_outline, size: 24),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: defaultPadding),
+                                InternationalPhoneNumberInput(
+                                  onInputChanged: (PhoneNumber number) {
+                                    _number = number;
+                                    _phoneController.text =
+                                        number.phoneNumber ?? '';
+                                  },
+                                  selectorConfig: const SelectorConfig(
+                                    selectorType:
+                                        PhoneInputSelectorType.BOTTOM_SHEET,
+                                    showFlags: false,
+                                  ),
+                                  ignoreBlank: false,
+                                  autoValidateMode: AutovalidateMode.disabled,
+                                  initialValue: _number,
+                                  formatInput: false,
+                                  keyboardType:
+                                      const TextInputType.numberWithOptions(
+                                          signed: true, decimal: true),
+                                  inputDecoration: InputDecoration(
+                                    hintText: "Phone Number",
+                                    filled: true,
+                                    fillColor: Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest
+                                        .withValues(alpha: 0.5),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(
+                                          defaultBorderRadius),
+                                      borderSide: BorderSide.none,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(defaultPadding),
+                    child: ElevatedButton(
+                      onPressed: _saveProfile,
+                      child: const Text("Done"),
+                    ),
+                  ),
+                ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(defaultPadding),
-              child: ElevatedButton(
-                onPressed: _saveProfile,
-                child: const Text("Done"),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -410,7 +472,8 @@ class EditAvatar extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+              backgroundColor:
+                  Theme.of(context).colorScheme.surfaceContainerHighest,
               backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
                   ? NetworkImage(avatarUrl!)
                   : null,
@@ -438,7 +501,8 @@ class EditAvatar extends StatelessWidget {
                     child: SvgPicture.asset(
                       "assets/icons/Edit-Bold.svg",
                       height: 16,
-                      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+                      colorFilter:
+                          const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                     ),
                   ),
                 ),

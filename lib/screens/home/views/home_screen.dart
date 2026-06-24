@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/components/product/product_card.dart';
-import 'package:shop/route/screen_export.dart';
-import 'package:shop/components/shimmer_wrapper.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/components/product/product_card.dart';
+import 'package:petro_world/route/screen_export.dart';
+import 'package:petro_world/components/shimmer_wrapper.dart';
 
 import 'components/banner_carousel_and_categories.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/providers/providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -33,9 +33,9 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
             productsAsyncValue.when(
-              loading: () => const SliverToBoxAdapter(child: ProductGridSkeleton()),
+              loading: () =>
+                  const SliverToBoxAdapter(child: ProductGridSkeleton()),
               error: (error, stack) => SliverToBoxAdapter(
                 child: Center(child: Text('Error: $error')),
               ),
@@ -50,11 +50,13 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   );
                 }
-                
+
                 return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: defaultPadding),
                   sliver: SliverGrid(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 0.55,
                       mainAxisSpacing: defaultPadding,
@@ -64,7 +66,8 @@ class HomeScreen extends ConsumerWidget {
                       (context, index) {
                         final product = products[index];
                         final isBookmarked = wishlistAsyncValue.maybeWhen(
-                          data: (wishlist) => wishlist.any((p) => p.id == product.id),
+                          data: (wishlist) =>
+                              wishlist.any((p) => p.id == product.id),
                           orElse: () => false,
                         );
 
@@ -82,14 +85,14 @@ class HomeScreen extends ConsumerWidget {
                           reviewCount: product.reviewCount,
                           isBookmarked: isBookmarked,
                           onBookmarkTap: () {
-                            ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
+                            ref
+                                .read(wishlistProvider.notifier)
+                                .toggleWishlist(product.id, product: product);
                           },
                           press: () {
                             Navigator.pushNamed(
-                              context, 
-                              productDetailsScreenRoute,
-                              arguments: product
-                            );
+                                context, productDetailsScreenRoute,
+                                arguments: product);
                           },
                           product: product,
                         );
@@ -100,7 +103,6 @@ class HomeScreen extends ConsumerWidget {
                 );
               },
             ),
-            
             const SliverToBoxAdapter(child: SizedBox(height: defaultPadding)),
           ],
         ),
@@ -121,7 +123,7 @@ class ProductGridSkeleton extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.6,
+          childAspectRatio: 0.55,
           mainAxisSpacing: defaultPadding,
           crossAxisSpacing: defaultPadding,
         ),
@@ -142,41 +144,51 @@ class ProductCardSkeleton extends StatelessWidget {
         border: Border.all(color: blackColor10),
         borderRadius: BorderRadius.circular(defaultBorderRadius),
       ),
-      child: const ShimmerWrapper(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: 1,
-              child: SkeletonBox(
-                width: double.infinity, 
-                height: double.infinity,
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonBox(width: 60, height: 10),
-                    SizedBox(height: 8),
-                    SkeletonBox(width: double.infinity, height: 12),
-                    SizedBox(height: 4),
-                    SkeletonBox(width: 100, height: 12),
-                    Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        SkeletonBox(width: 40, height: 12),
-                        SkeletonBox(width: 50, height: 16),
-                      ],
-                    ),
-                  ],
+      child: ShimmerWrapper(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final contentWidth = constraints.maxWidth;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AspectRatio(
+                  aspectRatio: 1.25,
+                  child: SkeletonBox(
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
                 ),
-              ),
-            ),
-          ],
+                Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SkeletonBox(width: contentWidth * 0.45, height: 10),
+                      const SizedBox(height: 8),
+                      SkeletonBox(width: contentWidth, height: 12),
+                      const SizedBox(height: 4),
+                      SkeletonBox(width: contentWidth * 0.7, height: 12),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child:
+                                SkeletonBox(width: double.infinity, height: 12),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child:
+                                SkeletonBox(width: double.infinity, height: 16),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

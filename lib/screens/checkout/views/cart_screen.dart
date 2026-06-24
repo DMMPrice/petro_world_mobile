@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/route_constants.dart';
-import 'package:shop/providers/providers.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/route/route_constants.dart';
+import 'package:petro_world/providers/providers.dart';
+import 'package:petro_world/services/api_service.dart';
 import 'components/cart_item_card.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -209,7 +209,7 @@ class CartScreen extends ConsumerWidget {
                           if (appliedCoupon != null) ...[
                             const SizedBox(height: 8),
                             Text(
-                              "Applied: ${appliedCoupon.code} (${appliedCoupon.type == 'percentage' ? '${appliedCoupon.discount}%' : '₹${appliedCoupon.discount}'} off)",
+                              "Applied: ${appliedCoupon.code} (${appliedCoupon.type == 'percentage' ? '${appliedCoupon.discount}%' : 'â‚¹${appliedCoupon.discount}'} off)",
                               style: const TextStyle(
                                   color: successColor,
                                   fontWeight: FontWeight.bold),
@@ -317,7 +317,7 @@ class CartScreen extends ConsumerWidget {
                                       .copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  "₹${total.toStringAsFixed(0)}",
+                                  "â‚¹${total.toStringAsFixed(0)}",
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium!
@@ -406,7 +406,7 @@ class CartScreen extends ConsumerWidget {
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                                 Text(
-                                  '₹${total.toStringAsFixed(0)}',
+                                  'â‚¹${total.toStringAsFixed(0)}',
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium!
@@ -473,7 +473,7 @@ class _SummaryRow extends StatelessWidget {
           Text(
             isShipping && value == 0
                 ? "Free"
-                : "₹${value.abs().toStringAsFixed(0)}",
+                : "â‚¹${value.abs().toStringAsFixed(0)}",
             style: Theme.of(context).textTheme.titleSmall!.copyWith(
                   color: isShipping && value == 0 ? successColor : valueColor,
                   fontWeight: isBold || (isShipping && value == 0)

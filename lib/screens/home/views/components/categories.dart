@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shop/route/route_constants.dart';
-import 'package:shop/components/shimmer_wrapper.dart';
+import 'package:petro_world/route/route_constants.dart';
+import 'package:petro_world/components/shimmer_wrapper.dart';
 import '../../../../constants.dart';
 
-import 'package:shop/models/category_model.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/models/category_model.dart';
+import 'package:petro_world/providers/providers.dart';
 
 class Categories extends ConsumerWidget {
   const Categories({super.key});

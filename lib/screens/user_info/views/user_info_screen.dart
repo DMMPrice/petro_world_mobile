@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shop/constants.dart';
-import 'package:shop/route/route_constants.dart';
+import 'package:petro_world/constants.dart';
+import 'package:petro_world/route/route_constants.dart';
 
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/services/api_service.dart';
 import 'package:intl/intl.dart';
 
 class UserInfoScreen extends StatelessWidget {
@@ -39,7 +39,7 @@ class UserInfoScreen extends StatelessWidget {
               children: [
                 const SizedBox(height: defaultPadding),
                 ProfileInfo(
-                  name: profile?['first_name'] != null 
+                  name: profile?['first_name'] != null
                       ? "${profile!['first_name']} ${profile['last_name'] ?? ''}"
                       : "User",
                   email: user?.email ?? "No email",
@@ -48,13 +48,14 @@ class UserInfoScreen extends StatelessWidget {
                 const SizedBox(height: defaultPadding * 2),
                 UserInfoListTile(
                   title: "Name",
-                  trailingText: profile?['first_name'] != null 
+                  trailingText: profile?['first_name'] != null
                       ? "${profile!['first_name']} ${profile['last_name'] ?? ''}"
                       : "Not set",
                 ),
                 UserInfoListTile(
                   title: "Date of birth",
-                  trailingText: (profile?['dob'] != null && profile!['dob'].toString().isNotEmpty)
+                  trailingText: (profile?['dob'] != null &&
+                          profile!['dob'].toString().isNotEmpty)
                       ? (() {
                           try {
                             DateTime dbDate = DateTime.parse(profile['dob']);
@@ -67,7 +68,9 @@ class UserInfoScreen extends StatelessWidget {
                 ),
                 UserInfoListTile(
                   title: "Phone number",
-                  trailingText: profile?['phone_number'] ?? "Not set",
+                  trailingText: (profile?['phone'] ?? profile?['phone_number'])
+                          ?.toString() ??
+                      "Not set",
                 ),
                 UserInfoListTile(
                   title: "Gender",
@@ -120,10 +123,12 @@ class ProfileInfo extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 30,
-            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
-            backgroundImage: image.isNotEmpty && !image.contains('i.imgur.com/IXnwbLk.png')
-                ? NetworkImage(image)
-                : null,
+            backgroundColor:
+                Theme.of(context).colorScheme.surfaceContainerHighest,
+            backgroundImage:
+                image.isNotEmpty && !image.contains('i.imgur.com/IXnwbLk.png')
+                    ? NetworkImage(image)
+                    : null,
             child: image.isEmpty || image.contains('i.imgur.com/IXnwbLk.png')
                 ? const Icon(Icons.person, color: Colors.grey)
                 : null,

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:shop/models/product_model.dart';
-import 'package:shop/models/review_model.dart';
-import 'package:shop/providers/providers.dart';
+import 'package:petro_world/models/product_model.dart';
+import 'package:petro_world/models/review_model.dart';
+import 'package:petro_world/providers/providers.dart';
 import 'package:intl/intl.dart';
-import 'package:shop/services/api_service.dart';
+import 'package:petro_world/services/api_service.dart';
 import '../../../components/review_card.dart';
 import '../../../constants.dart';
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shop/components/network_image_with_loader.dart';
-import 'package:shop/constants.dart';
+import 'package:petro_world/components/network_image_with_loader.dart';
+import 'package:petro_world/constants.dart';
 
 class CartItemCard extends StatelessWidget {
   const CartItemCard({
@@ -97,7 +97,7 @@ class CartItemCard extends StatelessWidget {
                       ? Row(
                           children: [
                             Text(
-                              "₹${priceAfterDiscount!.toStringAsFixed(0)}",
+                              "â‚¹${priceAfterDiscount!.toStringAsFixed(0)}",
                               style: const TextStyle(
                                 color: Color(0xFF31B0D8),
                                 fontWeight: FontWeight.w500,
@@ -106,7 +106,7 @@ class CartItemCard extends StatelessWidget {
                             ),
                             const SizedBox(width: defaultPadding / 4),
                             Text(
-                              "₹${price.toStringAsFixed(0)}",
+                              "â‚¹${price.toStringAsFixed(0)}",
                               style: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme
@@ -119,7 +119,7 @@ class CartItemCard extends StatelessWidget {
                           ],
                         )
                       : Text(
-                          "₹${price.toStringAsFixed(0)}",
+                          "â‚¹${price.toStringAsFixed(0)}",
                           style: const TextStyle(
                             color: Color(0xFF31B0D8),
                             fontWeight: FontWeight.w500,
