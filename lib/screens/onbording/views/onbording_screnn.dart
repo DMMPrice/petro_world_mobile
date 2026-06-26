@@ -20,16 +20,16 @@ class _OnBordingScreenState extends State<OnBordingScreen> {
     Onbord(
       image: "assets/Illustration/Illustration-0.png",
       imageDarkTheme: "assets/Illustration/Illustration_darkTheme_0.png",
-      title: "Find the item youâ€™ve \nbeen looking for",
+      title: "Find the item you've \nbeen looking for",
       description:
-          "Here youâ€™ll see rich varieties of goods, carefully classified for seamless browsing experience.",
+          "Here you'll see rich varieties of goods, carefully classified for seamless browsing experience.",
     ),
     Onbord(
       image: "assets/Illustration/Illustration-1.png",
       imageDarkTheme: "assets/Illustration/Illustration_darkTheme_1.png",
       title: "Get those shopping \nbags filled",
       description:
-          "Add any item you want to your cart, or save it on your wishlist, so you donâ€™t miss it in your future purchases.",
+          "Add any item you want to your cart, or save it on your wishlist, so you don't miss it in your future purchases.",
     ),
     Onbord(
       image: "assets/Illustration/Illustration-2.png",

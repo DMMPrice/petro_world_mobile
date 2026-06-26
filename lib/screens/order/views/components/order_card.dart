@@ -193,7 +193,7 @@ class OrderCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      'â‚¹${(() { final r = product['price']; if (r == null) return 'â€”'; if (r is num) return r.toStringAsFixed(0); return (double.tryParse(r.toString()) ?? 0).toStringAsFixed(0); })()}',
+                      '₹${(() { final r = product['price']; if (r == null) return '—'; if (r is num) return r.toStringAsFixed(0); return (double.tryParse(r.toString()) ?? 0).toStringAsFixed(0); })()}',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: primaryColor),
                     ),
                   ],
@@ -220,7 +220,7 @@ class OrderCard extends StatelessWidget {
                 if (totalAmount != null)
                   Expanded(
                     child: Text(
-                      'Total â‚¹${totalAmount!.toStringAsFixed(0)}',
+                      'Total ₹${totalAmount!.toStringAsFixed(0)}',
                       style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
                     ),
                   ),

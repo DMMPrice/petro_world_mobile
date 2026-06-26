@@ -475,6 +475,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                             context, productDetailsScreenRoute,
                                             arguments: product);
                                       },
+                                      product: product,
                                     ),
                                   ),
                                 );
@@ -558,6 +559,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                             context, productDetailsScreenRoute,
                                             arguments: product);
                                       },
+                                      product: product,
                                     ),
                                   ),
                                 );
@@ -647,6 +649,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                                             context, productDetailsScreenRoute,
                                             arguments: p);
                                       },
+                                      product: p,
                                     ),
                                   ),
                                 );

@@ -47,10 +47,14 @@ Route<dynamic> generateRoute(RouteSettings settings) {
     //   return MaterialPageRoute(
     //     builder: (context) => const DoneResetPasswordScreen(),
     //   );
-    // case termsOfServicesScreenRoute:
-    //   return MaterialPageRoute(
-    //     builder: (context) => const TermsOfServicesScreen(),
-    //   );
+    case termsOfServicesScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const TermsOfServicesScreen(),
+      );
+    case privacyPolicyScreenRoute:
+      return MaterialPageRoute(
+        builder: (context) => const PrivacyPolicyScreen(),
+      );
     // case noInternetScreenRoute:
     //   return MaterialPageRoute(
     //     builder: (context) => const NoInternetScreen(),

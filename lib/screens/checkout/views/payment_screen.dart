@@ -243,14 +243,14 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                '${item.product.title} Ã— ${item.quantity}',
+                                '${item.product.title} × ${item.quantity}',
                                 style: theme.textTheme.bodyMedium,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Text(
-                              'â‚¹${((item.product.priceAfterDiscount ?? item.product.price) * item.quantity).toStringAsFixed(0)}',
+                              '₹${((item.product.priceAfterDiscount ?? item.product.price) * item.quantity).toStringAsFixed(0)}',
                               style: theme.textTheme.titleSmall,
                             ),
                           ],
@@ -311,7 +311,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                           style: theme.textTheme.titleMedium!
                               .copyWith(fontWeight: FontWeight.bold)),
                       Text(
-                        'â‚¹${args.total.toStringAsFixed(0)}',
+                        '₹${args.total.toStringAsFixed(0)}',
                         style: theme.textTheme.titleMedium!.copyWith(
                           color: primaryColor,
                           fontWeight: FontWeight.bold,
@@ -325,7 +325,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
             const SizedBox(height: defaultPadding),
 
-            // â”€â”€ Delivery Address â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ——— Delivery Address —————————————————————————————————————
             _SectionCard(
               title: 'Delivering To',
               isDark: isDark,
@@ -349,7 +349,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                             style: theme.textTheme.titleSmall),
                         const SizedBox(height: 2),
                         Text(
-                          '${args.address.address}, ${args.address.city}, ${args.address.state} â€“ ${args.address.pincode}',
+                          '${args.address.address}, ${args.address.city}, ${args.address.state} - ${args.address.pincode}',
                           style: theme.textTheme.bodySmall,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -363,11 +363,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
             const SizedBox(height: defaultPadding),
 
-            // â”€â”€ Payment Method â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+            // ——— Payment Method ———————————————————————————————————————
             Text('Select Payment Method', style: theme.textTheme.titleSmall),
             const SizedBox(height: defaultPadding / 2),
 
-            // Razorpay option â€” only selectable on mobile
+            // Razorpay option — only selectable on mobile
             _PaymentOption(
               value: 'razorpay',
               groupValue: _selectedMethod,
@@ -429,7 +429,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   )
                 : Text(
                     _selectedMethod == 'razorpay'
-                        ? 'Pay â‚¹${widget.args.total.toStringAsFixed(0)}'
+                        ? 'Pay ₹${widget.args.total.toStringAsFixed(0)}'
                         : 'Place Order (COD)',
                     style: const TextStyle(
                         fontWeight: FontWeight.bold, fontSize: 16),
@@ -441,7 +441,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   }
 }
 
-// â”€â”€ Helper Widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ——— Helper Widgets ———————————————————————————————————————————————
 
 class _SectionCard extends StatelessWidget {
   final String title;
@@ -638,7 +638,7 @@ class _SummaryRow extends StatelessWidget {
           Text(
             isShipping && value == 0
                 ? "Free"
-                : "â‚¹${value.abs().toStringAsFixed(0)}",
+                : "₹${value.abs().toStringAsFixed(0)}",
             style: Theme.of(context).textTheme.titleSmall!.copyWith(
                   color: isShipping && value == 0 ? successColor : valueColor,
                   fontWeight: isBold || (isShipping && value == 0)

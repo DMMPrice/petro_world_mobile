@@ -12,6 +12,7 @@ const String otpScreenRoute = "otp";
 const String newPasswordScreenRoute = "new_password";
 const String doneResetPasswordScreenRoute = "done_reset_password";
 const String termsOfServicesScreenRoute = "terms_of_services";
+const String privacyPolicyScreenRoute = "privacy_policy";
 const String noInternetScreenRoute = "no_internet";
 const String serverErrorScreenRoute = "server_error";
 const String setupFingerprintScreenRoute = "setup_fingerprint";

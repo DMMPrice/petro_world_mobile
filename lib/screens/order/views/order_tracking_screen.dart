@@ -33,7 +33,7 @@ class _OrderTrackingScreenState extends State<OrderTrackingScreen> {
   bool _actionLoading = false;
   String? _error;
 
-  String _courierStatus = 'Fetching statusâ€¦';
+  String _courierStatus = 'Fetching status...';
   String? _courierName;
   String? _labelUrl;
   List<Map<String, dynamic>> _activities = [];

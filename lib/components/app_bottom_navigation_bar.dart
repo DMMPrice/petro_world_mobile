@@ -10,6 +10,11 @@ class AppBottomNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navigationProvider);
+    final cartAsyncValue = ref.watch(cartProvider);
+    final cartCount = cartAsyncValue.maybeWhen(
+      data: (items) => items.fold<int>(0, (sum, item) => sum + item.quantity),
+      orElse: () => 0,
+    );
 
     SvgPicture svgIcon(String src, {Color? color}) {
       return SvgPicture.asset(
@@ -63,8 +68,20 @@ class AppBottomNavigationBar extends ConsumerWidget {
             label: "Wishlist",
           ),
           BottomNavigationBarItem(
-            icon: svgIcon("assets/icons/Bag.svg"),
-            activeIcon: svgIcon("assets/icons/bag_full.svg", color: const Color.fromARGB(255, 0, 0, 0)),
+            icon: cartCount > 0
+                ? Badge(
+                    label: Text('$cartCount'),
+                    backgroundColor: primaryColor,
+                    child: svgIcon("assets/icons/Bag.svg"),
+                  )
+                : svgIcon("assets/icons/Bag.svg"),
+            activeIcon: cartCount > 0
+                ? Badge(
+                    label: Text('$cartCount'),
+                    backgroundColor: primaryColor,
+                    child: svgIcon("assets/icons/bag_full.svg", color: const Color.fromARGB(255, 0, 0, 0)),
+                  )
+                : svgIcon("assets/icons/bag_full.svg", color: const Color.fromARGB(255, 0, 0, 0)),
             label: "Cart",
           ),
           BottomNavigationBarItem(

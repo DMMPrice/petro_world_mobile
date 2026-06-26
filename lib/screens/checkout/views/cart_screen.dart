@@ -209,7 +209,7 @@ class CartScreen extends ConsumerWidget {
                           if (appliedCoupon != null) ...[
                             const SizedBox(height: 8),
                             Text(
-                              "Applied: ${appliedCoupon.code} (${appliedCoupon.type == 'percentage' ? '${appliedCoupon.discount}%' : 'â‚¹${appliedCoupon.discount}'} off)",
+                              "Applied: ${appliedCoupon.code} (${appliedCoupon.type == 'percentage' ? '${appliedCoupon.discount}%' : '₹${appliedCoupon.discount}'} off)",
                               style: const TextStyle(
                                   color: successColor,
                                   fontWeight: FontWeight.bold),
@@ -317,7 +317,7 @@ class CartScreen extends ConsumerWidget {
                                       .copyWith(fontWeight: FontWeight.bold),
                                 ),
                                 Text(
-                                  "â‚¹${total.toStringAsFixed(0)}",
+                                  "₹${total.toStringAsFixed(0)}",
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium!
@@ -406,7 +406,7 @@ class CartScreen extends ConsumerWidget {
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                                 Text(
-                                  'â‚¹${total.toStringAsFixed(0)}',
+                                  '₹${total.toStringAsFixed(0)}',
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium!
@@ -473,7 +473,7 @@ class _SummaryRow extends StatelessWidget {
           Text(
             isShipping && value == 0
                 ? "Free"
-                : "â‚¹${value.abs().toStringAsFixed(0)}",
+                : "₹${value.abs().toStringAsFixed(0)}",
             style: Theme.of(context).textTheme.titleSmall!.copyWith(
                   color: isShipping && value == 0 ? successColor : valueColor,
                   fontWeight: isBold || (isShipping && value == 0)

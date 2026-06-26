@@ -168,9 +168,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             ),
                           ),
                           const TextSpan(text: " & "),
-                          const TextSpan(
+                          TextSpan(
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.pushNamed(context, privacyPolicyScreenRoute);
+                              },
                             text: "privacy policy",
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: primaryColor,
                               fontWeight: FontWeight.bold,
                             ),

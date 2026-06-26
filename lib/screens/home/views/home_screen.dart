@@ -58,7 +58,7 @@ class HomeScreen extends ConsumerWidget {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
-                      childAspectRatio: 0.55,
+                      childAspectRatio: 0.7,
                       mainAxisSpacing: defaultPadding,
                       crossAxisSpacing: defaultPadding,
                     ),
@@ -123,7 +123,7 @@ class ProductGridSkeleton extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          childAspectRatio: 0.55,
+          childAspectRatio: 0.7,
           mainAxisSpacing: defaultPadding,
           crossAxisSpacing: defaultPadding,
         ),

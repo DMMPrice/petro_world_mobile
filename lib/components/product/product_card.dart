@@ -30,6 +30,7 @@ class ProductCard extends ConsumerStatefulWidget {
     this.onBookmarkTap,
     required this.press,
     this.product,
+    this.description,
   });
 
   final String productId, image, brandName, title;
@@ -44,6 +45,7 @@ class ProductCard extends ConsumerStatefulWidget {
   final VoidCallback? onBookmarkTap;
   final VoidCallback press;
   final ProductModel? product;
+  final String? description;
 
   @override
   ConsumerState<ProductCard> createState() => _ProductCardState();
@@ -52,6 +54,8 @@ class ProductCard extends ConsumerStatefulWidget {
 class _ProductCardState extends ConsumerState<ProductCard> {
   bool _addingToCart = false;
   BoxFit _imageFit = BoxFit.cover;
+
+  String? get descriptionText => widget.description ?? widget.product?.description;
 
   @override
   void initState() {
@@ -149,7 +153,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
     if (widget.discountType == 'fixed' &&
         widget.discountValue != null &&
         widget.discountValue! > 0) {
-      return 'â‚¹${widget.discountValue!.toInt()} OFF';
+      return '₹${widget.discountValue!.toInt()} OFF';
     }
     final pct =
         (((widget.price - priceAfterDiscount) / widget.price) * 100).round();
@@ -318,21 +322,22 @@ class _ProductCardState extends ConsumerState<ProductCard> {
               ),
             ),
 
-            // â”€â”€ Text section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.brandName,
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodySmall!
-                          .copyWith(color: blackColor40, fontSize: 11),
-                    ),
-                    const SizedBox(height: 4),
+                    if (widget.brandName.isNotEmpty) ...[
+                      Text(
+                        widget.brandName,
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall!
+                            .copyWith(color: blackColor40, fontSize: 11),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
                     Text(
                       widget.title,
                       maxLines: 2,
@@ -343,6 +348,18 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (descriptionText != null && descriptionText!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        descriptionText!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: blackColor60,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                     const Spacer(),
 
                     // Rating + price row
@@ -399,7 +416,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                           children: [
                             if (discountLabel != null) ...[
                               Text(
-                                'â‚¹${widget.price.toStringAsFixed(0)}',
+                                '₹${widget.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: blackColor40,
                                   decoration: TextDecoration.lineThrough,
@@ -407,7 +424,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                                 ),
                               ),
                               Text(
-                                'â‚¹${widget.priceAfterDiscount!.toStringAsFixed(0)}',
+                                '₹${widget.priceAfterDiscount!.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: Color(0xFF5DA085),
                                   fontWeight: FontWeight.bold,
@@ -416,7 +433,7 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                               ),
                             ] else
                               Text(
-                                'â‚¹${widget.price.toStringAsFixed(0)}',
+                                '₹${widget.price.toStringAsFixed(0)}',
                                 style: const TextStyle(
                                   color: blackColor,
                                   fontWeight: FontWeight.bold,

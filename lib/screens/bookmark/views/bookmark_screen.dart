@@ -19,7 +19,34 @@ class BookmarkScreen extends ConsumerWidget {
         error: (err, stack) => Center(child: Text('Error: $err')),
         data: (products) {
           if (products.isEmpty) {
-            return const Center(child: Text("Your wishlist is empty."));
+            return Padding(
+              padding: const EdgeInsets.all(defaultPadding),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.favorite_border,
+                        size: 64, color: greyColor),
+                    const SizedBox(height: defaultPadding),
+                    Text("Your wishlist is empty",
+                        style: Theme.of(context).textTheme.titleLarge),
+                    const SizedBox(height: defaultPadding / 2),
+                    const Text("Looks like you haven't added anything yet.",
+                        textAlign: TextAlign.center),
+                    const SizedBox(height: defaultPadding),
+                    SizedBox(
+                      width: 200,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          ref.read(navigationProvider.notifier).setIndex(0);
+                        },
+                        child: const Text("Start Shopping"),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
 
           return CustomScrollView(
@@ -32,7 +59,7 @@ class BookmarkScreen extends ConsumerWidget {
                     maxCrossAxisExtent: 200.0,
                     mainAxisSpacing: defaultPadding,
                     crossAxisSpacing: defaultPadding,
-                    childAspectRatio: 0.55,
+                    childAspectRatio: 0.7,
                   ),
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
@@ -58,6 +85,7 @@ class BookmarkScreen extends ConsumerWidget {
                               context, productDetailsScreenRoute,
                               arguments: product);
                         },
+                        product: product,
                       );
                     },
                     childCount: products.length,

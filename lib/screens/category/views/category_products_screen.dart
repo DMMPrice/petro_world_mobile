@@ -39,7 +39,7 @@ class CategoryProductsScreen extends ConsumerWidget {
                   itemCount: products.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.55,
+                    childAspectRatio: 0.7,
                     mainAxisSpacing: defaultPadding,
                     crossAxisSpacing: defaultPadding,
                   ),

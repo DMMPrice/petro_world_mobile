@@ -31,3 +31,5 @@ export '../screens/checkout/views/payment_screen.dart';
 export '../screens/profile/views/get_help_screen.dart';
 export '../screens/profile/views/faq_screen.dart';
 export '../screens/profile/views/support_chat_screen.dart';
+export '../screens/profile/views/terms_of_services_screen.dart';
+export '../screens/profile/views/privacy_policy_screen.dart';
