@@ -82,15 +82,74 @@ jobs:
       - name: Analyze
         run: flutter analyze
 
+      - name: Install Play API helper
+        run: npm install googleapis@latest
+
       - name: Resolve build version
+        env:
+          GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          PACKAGE_NAME: com.petroworld.app
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             VERSION_NAME="${{ inputs.version_name }}"
           else
             VERSION_NAME="${GITHUB_REF_NAME#v}"
           fi
+
+          node <<'NODE'
+          const { google } = require("googleapis");
+
+          async function main() {
+            const packageName = process.env.PACKAGE_NAME;
+            const credentials = JSON.parse(process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON);
+            const auth = new google.auth.GoogleAuth({
+              credentials,
+              scopes: ["https://www.googleapis.com/auth/androidpublisher"],
+            });
+            const androidpublisher = google.androidpublisher({
+              version: "v3",
+              auth,
+            });
+
+            const edit = await androidpublisher.edits.insert({ packageName });
+            const editId = edit.data.id;
+
+            try {
+              const tracks = await androidpublisher.edits.tracks.list({
+                packageName,
+                editId,
+              });
+              const versionCodes = [];
+
+              for (const track of tracks.data.tracks || []) {
+                for (const release of track.releases || []) {
+                  for (const versionCode of release.versionCodes || []) {
+                    const parsed = Number(versionCode);
+                    if (Number.isFinite(parsed)) {
+                      versionCodes.push(parsed);
+                    }
+                  }
+                }
+              }
+
+              const nextVersionCode = Math.max(0, ...versionCodes) + 1;
+              const fs = require("fs");
+              fs.appendFileSync(process.env.GITHUB_ENV, `VERSION_CODE=${nextVersionCode}\n`);
+              console.log(`Resolved next Android versionCode: ${nextVersionCode}`);
+            } finally {
+              if (editId) {
+                await androidpublisher.edits.delete({ packageName, editId });
+              }
+            }
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
           echo "VERSION_NAME=${VERSION_NAME}" >> "$GITHUB_ENV"
-          echo "VERSION_CODE=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
 
       - name: Build app bundle
         run: flutter build appbundle --release --build-name="$VERSION_NAME" --build-number="$VERSION_CODE"
