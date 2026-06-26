@@ -1,0 +1,111 @@
+name: Android release
+
+on:
+  workflow_dispatch:
+    inputs:
+      track:
+        description: "Google Play track to publish to"
+        required: true
+        default: "internal"
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      release_status:
+        description: "Google Play release status"
+        required: true
+        default: "draft"
+        type: choice
+        options:
+          - draft
+          - completed
+          - inProgress
+      version_name:
+        description: "Android version name, for example 1.0.2"
+        required: true
+        default: "1.0.2"
+        type: string
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-and-publish:
+    name: Build and publish Android app bundle
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Restore production env file
+        run: |
+          if [ -z "${{ secrets.MOBILE_ENV_FILE }}" ]; then
+            echo "Missing MOBILE_ENV_FILE secret. Add the production .env contents in GitHub Actions secrets."
+            exit 1
+          fi
+          printf '%s' "${{ secrets.MOBILE_ENV_FILE }}" > .env
+
+      - name: Restore Android signing key
+        run: |
+          if [ -z "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            echo "Missing ANDROID_KEYSTORE_BASE64 secret."
+            exit 1
+          fi
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/release.keystore
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=app/release.keystore
+          EOF
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Resolve build version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION_NAME="${{ inputs.version_name }}"
+          else
+            VERSION_NAME="${GITHUB_REF_NAME#v}"
+          fi
+          echo "VERSION_NAME=${VERSION_NAME}" >> "$GITHUB_ENV"
+          echo "VERSION_CODE=${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      - name: Build app bundle
+        run: flutter build appbundle --release --build-name="$VERSION_NAME" --build-number="$VERSION_CODE"
+
+      - name: Upload app bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: petro-world-release-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+
+      - name: Publish to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.petroworld.app
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: ${{ inputs.track || 'internal' }}
+          status: ${{ inputs.release_status || 'draft' }}
