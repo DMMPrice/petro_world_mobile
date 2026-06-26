@@ -45,7 +45,7 @@ class PaymentScreen extends ConsumerStatefulWidget {
 
 class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   // On web, default to COD since Razorpay native SDK doesn't support web
-  String _selectedMethod = kIsWeb ? 'cod' : 'razorpay';
+  String _selectedMethod = 'cod';
   bool _isLoading = false;
 
   // RazorpayController handles the platform-specific Razorpay lifecycle
@@ -367,23 +367,19 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             Text('Select Payment Method', style: theme.textTheme.titleSmall),
             const SizedBox(height: defaultPadding / 2),
 
-            // Razorpay option — only selectable on mobile
+            // Razorpay option — coming soon
             _PaymentOption(
               value: 'razorpay',
               groupValue: _selectedMethod,
-              onChanged: kIsWeb
-                  ? null // disabled on web
-                  : (v) => setState(() => _selectedMethod = v!),
+              onChanged: null,
               icon: Icons.credit_card_rounded,
-              iconColor: kIsWeb ? Colors.grey : const Color(0xFF072654),
+              iconColor: Colors.grey,
               title: 'Pay Online',
-              subtitle: kIsWeb
-                  ? 'Available on Android & iOS app only'
-                  : 'Cards, UPI, Net Banking, Wallets via Razorpay',
-              badge: kIsWeb ? null : 'RECOMMENDED',
-              badgeColor: primaryColor,
+              subtitle: 'Coming Soon',
+              badge: 'COMING SOON',
+              badgeColor: Colors.grey,
               isDark: isDark,
-              disabled: kIsWeb,
+              disabled: true,
             ),
 
             const SizedBox(height: defaultPadding / 2),

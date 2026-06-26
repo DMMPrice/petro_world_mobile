@@ -334,27 +334,30 @@ class ApiService {
   }
 
   Future<void> addAddress(AddressModel address) async {
-    await http.post(
+    final res = await http.post(
       Uri.parse('${ApiConfig.baseUrl}/addresses'),
       headers: _jsonHeaders(_token),
       body: jsonEncode(address.toJson()),
     );
+    _decode(res, (body) => null);
   }
 
   Future<void> updateAddress(AddressModel address) async {
     if (address.id == null) return;
-    await http.patch(
+    final res = await http.patch(
       Uri.parse('${ApiConfig.baseUrl}/addresses/${address.id}'),
       headers: _jsonHeaders(_token),
       body: jsonEncode(address.toJson()),
     );
+    _decode(res, (body) => null);
   }
 
   Future<void> deleteAddress(String id) async {
-    await http.delete(
+    final res = await http.delete(
       Uri.parse('${ApiConfig.baseUrl}/addresses/$id'),
       headers: _jsonHeaders(_token),
     );
+    _decode(res, (body) => null);
   }
 
   // ── Cart ──────────────────────────────────────────────────────────────────

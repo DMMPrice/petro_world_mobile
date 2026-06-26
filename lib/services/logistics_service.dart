@@ -45,8 +45,11 @@ class LogisticsService {
   Future<Map<String, String>?> lookupPincode(String pincode) async {
     if (pincode.length != 6) return null;
     try {
-      final response = await http
-          .get(Uri.parse('https://api.postalpincode.in/pincode/$pincode'));
+      String url = 'https://api.postalpincode.in/pincode/$pincode';
+      if (kIsWeb) {
+        url = 'https://api.allorigins.win/raw?url=${Uri.encodeComponent(url)}';
+      }
+      final response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         if (data.isNotEmpty && data[0]['Status'] == 'Success') {

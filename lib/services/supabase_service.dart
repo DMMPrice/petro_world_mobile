@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/product_model.dart';
 import '../models/category_model.dart';
@@ -171,9 +170,12 @@ class SupabaseService {
         .eq('user_id', user.id)
         .maybeSingle();
 
-    if (order == null) return null;
-    if (order['shipment_id'] == null && order['tracking_number'] == null)
+    if (order == null) {
       return null;
+    }
+    if (order['shipment_id'] == null && order['tracking_number'] == null) {
+      return null;
+    }
 
     try {
       final response = await client.functions.invoke(

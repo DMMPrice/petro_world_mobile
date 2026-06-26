@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../constants.dart';
 
@@ -18,7 +17,6 @@ class BuyFullKit extends StatefulWidget {
 
 class _BuyFullKitState extends State<BuyFullKit> {
   bool _isCopied = false;
-  late Uri _url;
   Future<void> buyLink() async {
     // Link removed in production
   }

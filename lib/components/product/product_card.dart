@@ -120,16 +120,24 @@ class _ProductCardState extends ConsumerState<ProductCard> {
   }
 
   ImageProvider? _imageProviderFor(String source) {
-    if (source.isEmpty) return null;
+    if (source.isEmpty) {
+      return null;
+    }
     final bytes = _decodeDataImage(source);
-    if (bytes != null) return MemoryImage(bytes);
+    if (bytes != null) {
+      return MemoryImage(bytes);
+    }
     return NetworkImage(source);
   }
 
   Uint8List? _decodeDataImage(String value) {
-    if (!value.startsWith('data:image/')) return null;
+    if (!value.startsWith('data:image/')) {
+      return null;
+    }
     final commaIndex = value.indexOf(',');
-    if (commaIndex == -1) return null;
+    if (commaIndex == -1) {
+      return null;
+    }
     try {
       return base64Decode(value.substring(commaIndex + 1));
     } catch (_) {
@@ -139,8 +147,9 @@ class _ProductCardState extends ConsumerState<ProductCard> {
 
   String? get discountLabel {
     final priceAfterDiscount = widget.priceAfterDiscount;
-    if (priceAfterDiscount == null || priceAfterDiscount >= widget.price)
+    if (priceAfterDiscount == null || priceAfterDiscount >= widget.price) {
       return null;
+    }
 
     if (widget.discountPercent != null && widget.discountPercent! > 0) {
       return '${widget.discountPercent}% OFF';

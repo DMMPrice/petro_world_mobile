@@ -23,8 +23,8 @@ class AddressModel {
     return AddressModel(
       id: json['id'],
       name: json['name'] ?? "",
-      address: json['address'] ?? "",
-      phoneNumber: json['phone_number'] ?? "",
+      address: json['address_line1'] ?? json['address'] ?? "",
+      phoneNumber: json['phone'] ?? json['phone_number'] ?? "",
       city: json['city'] ?? "",
       state: json['state'] ?? "",
       pincode: json['pincode'] ?? "",
@@ -36,8 +36,8 @@ class AddressModel {
     return {
       if (id != null) 'id': id,
       'name': name,
-      'address': address,
-      'phone_number': phoneNumber,
+      'address_line1': address,
+      'phone': phoneNumber,
       'city': city,
       'state': state,
       'pincode': pincode,
