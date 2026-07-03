@@ -4,9 +4,119 @@ import 'package:petro_world/route/route_constants.dart';
 
 import 'package:petro_world/services/api_service.dart';
 import 'package:intl/intl.dart';
+import 'package:petro_world/components/network_image_with_loader.dart';
 
 class UserInfoScreen extends StatelessWidget {
   const UserInfoScreen({super.key});
+
+  Future<void> _showChangePasswordDialog(BuildContext context) async {
+    final formKey = GlobalKey<FormState>();
+    final currentController = TextEditingController();
+    final newController = TextEditingController();
+    final confirmController = TextEditingController();
+    var isLoading = false;
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Change password'),
+              content: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: currentController,
+                      obscureText: true,
+                      decoration:
+                          const InputDecoration(hintText: 'Current password'),
+                      validator: (value) => value == null || value.isEmpty
+                          ? 'Current password is required'
+                          : null,
+                    ),
+                    const SizedBox(height: defaultPadding),
+                    TextFormField(
+                      controller: newController,
+                      obscureText: true,
+                      decoration:
+                          const InputDecoration(hintText: 'New password'),
+                      validator: passwordValidator.call,
+                    ),
+                    const SizedBox(height: defaultPadding),
+                    TextFormField(
+                      controller: confirmController,
+                      obscureText: true,
+                      decoration:
+                          const InputDecoration(hintText: 'Confirm password'),
+                      validator: (value) {
+                        if (value != newController.text) {
+                          return pasNotMatchErrorText;
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed:
+                      isLoading ? null : () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (!formKey.currentState!.validate()) return;
+                          setDialogState(() => isLoading = true);
+                          try {
+                            await ApiService.instance.changePassword(
+                              currentPassword: currentController.text,
+                              newPassword: newController.text,
+                            );
+                            if (!context.mounted) return;
+                            Navigator.pop(dialogContext);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Password changed successfully'),
+                              ),
+                            );
+                          } catch (e) {
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Unable to change password: $e'),
+                              ),
+                            );
+                          } finally {
+                            if (context.mounted) {
+                              setDialogState(() => isLoading = false);
+                            }
+                          }
+                        },
+                  child: isLoading
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Update'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    currentController.dispose();
+    newController.dispose();
+    confirmController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +203,7 @@ class UserInfoScreen extends StatelessWidget {
                     ),
                   ),
                   onTap: () {
-                    // Navigate to change password
+                    _showChangePasswordDialog(context);
                   },
                 ),
               ],
@@ -125,13 +235,19 @@ class ProfileInfo extends StatelessWidget {
             radius: 30,
             backgroundColor:
                 Theme.of(context).colorScheme.surfaceContainerHighest,
-            backgroundImage:
+            child:
                 image.isNotEmpty && !image.contains('i.imgur.com/IXnwbLk.png')
-                    ? NetworkImage(image)
-                    : null,
-            child: image.isEmpty || image.contains('i.imgur.com/IXnwbLk.png')
-                ? const Icon(Icons.person, color: Colors.grey)
-                : null,
+                    ? ClipOval(
+                        child: SizedBox(
+                          width: 60,
+                          height: 60,
+                          child: NetworkImageWithLoader(
+                            image,
+                            radius: 0,
+                          ),
+                        ),
+                      )
+                    : const Icon(Icons.person, color: Colors.grey),
           ),
           const SizedBox(width: defaultPadding),
           Expanded(

@@ -55,7 +55,8 @@ class _ProductCardState extends ConsumerState<ProductCard> {
   bool _addingToCart = false;
   BoxFit _imageFit = BoxFit.cover;
 
-  String? get descriptionText => widget.description ?? widget.product?.description;
+  String? get descriptionText =>
+      widget.description ?? widget.product?.description;
 
   @override
   void initState() {
@@ -298,17 +299,30 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                               ),
                             ],
                           ),
-                          child: SvgPicture.asset(
-                            widget.isBookmarked
-                                ? 'assets/icons/heart-filled.svg'
-                                : 'assets/icons/heart.svg',
-                            height: 20,
-                            width: 20,
-                            colorFilter: ColorFilter.mode(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            transitionBuilder: (child, animation) {
+                              return ScaleTransition(
+                                scale: animation,
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: SvgPicture.asset(
                               widget.isBookmarked
-                                  ? const Color.fromARGB(255, 255, 0, 0)
-                                  : blackColor,
-                              BlendMode.srcIn,
+                                  ? 'assets/icons/heart-filled.svg'
+                                  : 'assets/icons/heart.svg',
+                              key: ValueKey(widget.isBookmarked),
+                              height: 20,
+                              width: 20,
+                              colorFilter: ColorFilter.mode(
+                                widget.isBookmarked
+                                    ? const Color.fromARGB(255, 255, 0, 0)
+                                    : blackColor,
+                                BlendMode.srcIn,
+                              ),
                             ),
                           ),
                         ),
@@ -357,7 +371,8 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    if (descriptionText != null && descriptionText!.isNotEmpty) ...[
+                    if (descriptionText != null &&
+                        descriptionText!.isNotEmpty) ...[
                       const SizedBox(height: 2),
                       Text(
                         descriptionText!,

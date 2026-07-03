@@ -171,6 +171,52 @@ class ApiService {
 
   Future<void> logout() => _clearPersisted();
 
+  Future<String?> requestPasswordReset(String email) async {
+    final res = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/auth/forgot-password'),
+      headers: _jsonHeaders(),
+      body: jsonEncode({'email': email}),
+    );
+    return _decode(res, (body) {
+      if (body is Map<String, dynamic>) {
+        return body['code']?.toString();
+      }
+      return null;
+    });
+  }
+
+  Future<void> resetPassword({
+    required String email,
+    required String code,
+    required String password,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/auth/reset-password'),
+      headers: _jsonHeaders(),
+      body: jsonEncode({
+        'email': email,
+        'code': code,
+        'password': password,
+      }),
+    );
+    _decode(res, (_) => null);
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final res = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/auth/change-password'),
+      headers: _jsonHeaders(_token),
+      body: jsonEncode({
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      }),
+    );
+    _decode(res, (_) => null);
+  }
+
   Future<ApiUser?> refreshUser() async {
     if (_token == null) return null;
     try {

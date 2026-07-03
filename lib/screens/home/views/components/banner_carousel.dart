@@ -41,8 +41,8 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
 
   @override
   void dispose() {
-    _pageController.dispose();
     _timer?.cancel();
+    _pageController.dispose();
     super.dispose();
   }
 

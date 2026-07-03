@@ -15,21 +15,29 @@ class _StatusStyle {
 }
 
 const _statusStyles = <OrderStatus, _StatusStyle>{
-  OrderStatus.ordered:        _StatusStyle(Color(0xFFD97706), Color(0xFFFFF7ED), 'New Order',   Icons.receipt_long_outlined),
-  OrderStatus.processing:     _StatusStyle(Color(0xFF2563EB), Color(0xFFEFF6FF), 'Processing',  Icons.inventory_2_outlined),
-  OrderStatus.packed:         _StatusStyle(Color(0xFF7C3AED), Color(0xFFF5F3FF), 'Packed',      Icons.inventory_outlined),
-  OrderStatus.shipped:        _StatusStyle(Color(0xFF0284C7), Color(0xFFE0F2FE), 'Shipped',     Icons.local_shipping_outlined),
-  OrderStatus.delivered:      _StatusStyle(Color(0xFF16A34A), Color(0xFFF0FDF4), 'Delivered',   Icons.check_circle_outline),
-  OrderStatus.canceled:       _StatusStyle(Color(0xFFDC2626), Color(0xFFFEF2F2), 'Canceled',    Icons.cancel_outlined),
-  OrderStatus.returned:       _StatusStyle(Color(0xFFEA580C), Color(0xFFFFF7ED), 'Returned',    Icons.assignment_return_outlined),
-  OrderStatus.awaitingPayment:_StatusStyle(Color(0xFFCA8A04), Color(0xFFFEFCE8), 'Awaiting',   Icons.access_time_outlined),
+  OrderStatus.ordered: _StatusStyle(Color(0xFFD97706), Color(0xFFFFF7ED),
+      'New Order', Icons.receipt_long_outlined),
+  OrderStatus.processing: _StatusStyle(Color(0xFF2563EB), Color(0xFFEFF6FF),
+      'Processing', Icons.inventory_2_outlined),
+  OrderStatus.packed: _StatusStyle(
+      Color(0xFF7C3AED), Color(0xFFF5F3FF), 'Packed', Icons.inventory_outlined),
+  OrderStatus.shipped: _StatusStyle(Color(0xFF0284C7), Color(0xFFE0F2FE),
+      'Shipped', Icons.local_shipping_outlined),
+  OrderStatus.delivered: _StatusStyle(Color(0xFF16A34A), Color(0xFFF0FDF4),
+      'Delivered', Icons.check_circle_outline),
+  OrderStatus.canceled: _StatusStyle(
+      Color(0xFFDC2626), Color(0xFFFEF2F2), 'Canceled', Icons.cancel_outlined),
+  OrderStatus.returned: _StatusStyle(Color(0xFFEA580C), Color(0xFFFFF7ED),
+      'Returned', Icons.assignment_return_outlined),
+  OrderStatus.awaitingPayment: _StatusStyle(Color(0xFFCA8A04),
+      Color(0xFFFEFCE8), 'Awaiting', Icons.access_time_outlined),
 };
 
 class OrderCard extends StatelessWidget {
   const OrderCard({
     super.key,
-    required this.orderId,           // internal DB uuid
-    required this.orderNumber,       // PW-XXXXXXXXX
+    required this.orderId, // internal DB uuid
+    required this.orderNumber, // PW-XXXXXXXXX
     required this.date,
     required this.status,
     required this.products,
@@ -40,6 +48,7 @@ class OrderCard extends StatelessWidget {
     this.invoiceUrl,
     this.courierName,
     this.courierStatus,
+    this.onCancel,
   });
 
   final String orderId;
@@ -50,25 +59,34 @@ class OrderCard extends StatelessWidget {
   final double? totalAmount;
   final String? shiprocketOrderId;
   final String? shipmentId;
-  final String? trackingNumber;       // AWB number â€” null until Shiprocket assigns
+  final String? trackingNumber; // AWB number â€” null until Shiprocket assigns
   final String? invoiceUrl;
   final String? courierName;
   final String? courierStatus;
+  final VoidCallback? onCancel;
 
   bool get _hasAwb => trackingNumber != null && trackingNumber!.isNotEmpty;
   bool get _hasInvoice => invoiceUrl != null && invoiceUrl!.isNotEmpty;
+  bool get _canCancel =>
+      status == OrderStatus.ordered || status == OrderStatus.processing;
 
   @override
   Widget build(BuildContext context) {
-    final style = _statusStyles[status] ?? _statusStyles[OrderStatus.processing]!;
+    final style =
+        _statusStyles[status] ?? _statusStyles[OrderStatus.processing]!;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: defaultPadding, vertical: defaultPadding / 2),
+      margin: const EdgeInsets.symmetric(
+          horizontal: defaultPadding, vertical: defaultPadding / 2),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE5E7EB)),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 12, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 14,
+              offset: const Offset(0, 5)),
         ],
       ),
       child: Column(
@@ -85,27 +103,38 @@ class OrderCard extends StatelessWidget {
                     children: [
                       Text(
                         orderNumber,
-                        style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, letterSpacing: -0.3),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w800,
+                          fontSize: 14,
+                          color: Color(0xFF111827),
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         'Placed on $date',
-                        style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                        style: const TextStyle(
+                            fontSize: 11, color: Color(0xFF4B5563)),
                       ),
                     ],
                   ),
                 ),
                 // Status pill
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(color: style.bg, borderRadius: BorderRadius.circular(20)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                      color: style.bg, borderRadius: BorderRadius.circular(20)),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(style.icon, size: 12, color: style.color),
                       const SizedBox(width: 4),
-                      Text(style.label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: style.color)),
+                      Text(style.label,
+                          style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: style.color)),
                     ],
                   ),
                 ),
@@ -120,24 +149,35 @@ class OrderCard extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                     decoration: BoxDecoration(
                       color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       'SR #$shiprocketOrderId',
-                      style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                      style: const TextStyle(
+                          fontSize: 10,
+                          fontFamily: 'monospace',
+                          color: Color(0xFF64748B),
+                          fontWeight: FontWeight.w600),
                     ),
                   ),
                   if (courierName != null) ...[
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(6)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 3),
+                      decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(6)),
                       child: Text(
                         courierName!,
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF64748B),
+                            fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -146,7 +186,8 @@ class OrderCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         'Â· $courierStatus',
-                        style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8)),
+                        style: const TextStyle(
+                            fontSize: 10, color: Color(0xFF94A3B8)),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -171,7 +212,9 @@ class OrderCard extends StatelessWidget {
                       child: product['image'] != null
                           ? Image.network(
                               product['image'],
-                              width: 52, height: 52, fit: BoxFit.cover,
+                              width: 52,
+                              height: 52,
+                              fit: BoxFit.cover,
                               errorBuilder: (_, __, ___) => _imagePlaceholder(),
                             )
                           : _imagePlaceholder(),
@@ -183,18 +226,35 @@ class OrderCard extends StatelessWidget {
                         children: [
                           Text(
                             product['title'] ?? 'Product',
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 13,
+                              color: Color(0xFF111827),
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                           if (product['brandName'] != null)
-                            Text(product['brandName'], style: TextStyle(fontSize: 11, color: Colors.grey[500])),
+                            Text(
+                              product['brandName'],
+                              style: const TextStyle(
+                                  fontSize: 11, color: Color(0xFF4B5563)),
+                            ),
                         ],
                       ),
                     ),
                     Text(
-                      '₹${(() { final r = product['price']; if (r == null) return '—'; if (r is num) return r.toStringAsFixed(0); return (double.tryParse(r.toString()) ?? 0).toStringAsFixed(0); })()}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: primaryColor),
+                      '₹${(() {
+                        final r = product['price'];
+                        if (r == null) return '—';
+                        if (r is num) return r.toStringAsFixed(0);
+                        return (double.tryParse(r.toString()) ?? 0)
+                            .toStringAsFixed(0);
+                      })()}',
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                          color: primaryColor),
                     ),
                   ],
                 ),
@@ -212,7 +272,8 @@ class OrderCard extends StatelessWidget {
           // â”€â”€ Actions Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
           Container(
             decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: Colors.grey.withValues(alpha: 0.12))),
+              border: Border(
+                  top: BorderSide(color: Colors.grey.withValues(alpha: 0.12))),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(
@@ -221,7 +282,25 @@ class OrderCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Total ₹${totalAmount!.toStringAsFixed(0)}',
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 13,
+                        color: Color(0xFF111827),
+                      ),
+                    ),
+                  ),
+                if (_canCancel && onCancel != null)
+                  TextButton.icon(
+                    onPressed: onCancel,
+                    icon: const Icon(Icons.cancel_outlined, size: 15),
+                    label: const Text('Cancel'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: errorColor,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      textStyle: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 // Invoice button â€” only if label URL is available
@@ -233,7 +312,8 @@ class OrderCard extends StatelessWidget {
                     style: TextButton.styleFrom(
                       foregroundColor: const Color(0xFF6366F1),
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      textStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
                 // Track Order â€” only if AWB is assigned
@@ -243,12 +323,12 @@ class OrderCard extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (_) => OrderTrackingScreen(
-                          orderId:        orderId,
-                          orderNumber:    orderNumber,
+                          orderId: orderId,
+                          orderNumber: orderNumber,
                           trackingNumber: trackingNumber!,
-                          shipmentId:     shipmentId,
-                          invoiceUrl:     invoiceUrl,
-                          status:         status,
+                          shipmentId: shipmentId,
+                          invoiceUrl: invoiceUrl,
+                          status: status,
                         ),
                       ),
                     ),
@@ -257,7 +337,8 @@ class OrderCard extends StatelessWidget {
                     style: TextButton.styleFrom(
                       foregroundColor: primaryColor,
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                      textStyle: const TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
               ],
@@ -270,9 +351,12 @@ class OrderCard extends StatelessWidget {
 
   Widget _imagePlaceholder() {
     return Container(
-      width: 52, height: 52,
-      decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
-      child: Icon(Icons.inventory_2_outlined, color: Colors.grey[400], size: 22),
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+          color: Colors.grey[100], borderRadius: BorderRadius.circular(8)),
+      child:
+          Icon(Icons.inventory_2_outlined, color: Colors.grey[400], size: 22),
     );
   }
 
@@ -291,4 +375,3 @@ class OrderCard extends StatelessWidget {
     }
   }
 }
-

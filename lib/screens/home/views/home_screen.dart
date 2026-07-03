@@ -13,20 +13,21 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsyncValue = ref.watch(productsProvider);
+    final productsAsyncValue = ref.watch(homeProductsProvider);
     final wishlistAsyncValue = ref.watch(wishlistProvider);
+    final selectedCategory = ref.watch(homeSelectedCategoryProvider);
 
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             const SliverToBoxAdapter(child: BannerCarouselAndCategories()),
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.all(defaultPadding),
+                padding: const EdgeInsets.all(defaultPadding),
                 child: Text(
-                  "All Products",
-                  style: TextStyle(
+                  selectedCategory ?? "All Products",
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petro_world/constants.dart';
 import 'package:petro_world/route/route_constants.dart';
+import 'package:petro_world/services/api_service.dart';
 
 import 'components/password_recovery_form.dart';
 import 'components/otp_form.dart';
@@ -16,13 +17,64 @@ class PasswordRecoveryScreen extends StatefulWidget {
 class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
   int _currentStep = 0;
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  String _email = '';
+  String _code = '';
+  String _password = '';
+  String _confirmPassword = '';
+  String? _debugCode;
 
-  void _nextStep() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      setState(() {
-        _currentStep++;
-      });
+  Future<void> _handleContinue() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
+
+    setState(() => _isLoading = true);
+    try {
+      if (_currentStep == 0) {
+        final code = await ApiService.instance.requestPasswordReset(_email);
+        if (!mounted) return;
+        setState(() {
+          _debugCode = code;
+          _currentStep = 1;
+        });
+        if (code != null && code.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Verification code: $code')),
+          );
+        }
+      } else if (_currentStep == 1) {
+        setState(() => _currentStep = 2);
+      } else {
+        if (_password != _confirmPassword) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Passwords do not match')),
+          );
+          return;
+        }
+        await ApiService.instance.resetPassword(
+          email: _email,
+          code: _code,
+          password: _password,
+        );
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Password reset successfully')),
+        );
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          logInScreenRoute,
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password reset failed: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -53,18 +105,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
               _buildStepContent(),
               const SizedBox(height: defaultPadding * 2),
               ElevatedButton(
-                onPressed: () {
-                  if (_currentStep < 2) {
-                    _nextStep();
-                  } else {
-                    // Final step
-                    Navigator.pushNamedAndRemoveUntil(
-                      context,
-                      logInScreenRoute,
-                      (route) => false,
-                    );
-                  }
-                },
+                onPressed: _isLoading ? null : _handleContinue,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: whiteColor,
@@ -73,7 +114,13 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                     borderRadius: BorderRadius.circular(defaultBorderRadius),
                   ),
                 ),
-                child: Text(_currentStep < 2 ? "Continue" : "Reset Password"),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Text(_currentStep < 2 ? "Continue" : "Reset Password"),
               ),
               const SizedBox(height: defaultPadding),
             ],
@@ -82,8 +129,6 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
       ),
     );
   }
-
-
 
   Widget _buildStepContent() {
     switch (_currentStep) {
@@ -108,7 +153,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
             const SizedBox(height: defaultPadding),
             PasswordRecoveryForm(
               formKey: _formKey,
-              onEmailSaved: (value) {},
+              onEmailSaved: (value) => _email = value?.trim() ?? '',
             ),
           ],
         );
@@ -125,7 +170,9 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
             ),
             const SizedBox(height: defaultPadding / 2),
             Text(
-              "Please enter the 4-digit code sent to your email address.",
+              _debugCode == null
+                  ? "Please enter the 4-digit code sent to your email address."
+                  : "Please enter the 4-digit code shown in the previous message.",
               style: Theme.of(context).textTheme.bodyMedium!.copyWith(
                     color: blackColor60,
                   ),
@@ -133,7 +180,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
             const SizedBox(height: defaultPadding),
             OtpForm(
               formKey: _formKey,
-              onSaved: (value) {},
+              onSaved: (value) => _code = value?.trim() ?? '',
             ),
           ],
         );
@@ -158,8 +205,8 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
             const SizedBox(height: defaultPadding),
             ResetPasswordForm(
               formKey: _formKey,
-              onPasswordSaved: (value) {},
-              onConfirmPasswordSaved: (value) {},
+              onPasswordSaved: (value) => _password = value ?? '',
+              onConfirmPasswordSaved: (value) => _confirmPassword = value ?? '',
             ),
           ],
         );

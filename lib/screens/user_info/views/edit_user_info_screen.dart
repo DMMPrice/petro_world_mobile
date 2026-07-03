@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:intl_phone_number_input/intl_phone_number_input.dart';
 import 'package:petro_world/services/api_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:petro_world/components/network_image_with_loader.dart';
 
 class EditUserInfoScreen extends StatefulWidget {
   const EditUserInfoScreen({super.key});
@@ -473,12 +474,18 @@ class EditAvatar extends StatelessWidget {
               radius: 50,
               backgroundColor:
                   Theme.of(context).colorScheme.surfaceContainerHighest,
-              backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
-                  ? NetworkImage(avatarUrl!)
-                  : null,
-              child: avatarUrl == null || avatarUrl!.isEmpty
-                  ? const Icon(Icons.person, size: 50, color: Colors.grey)
-                  : null,
+              child: avatarUrl != null && avatarUrl!.isNotEmpty
+                  ? ClipOval(
+                      child: SizedBox(
+                        width: 100,
+                        height: 100,
+                        child: NetworkImageWithLoader(
+                          avatarUrl!,
+                          radius: 0,
+                        ),
+                      ),
+                    )
+                  : const Icon(Icons.person, size: 50, color: Colors.grey),
             ),
             Positioned(
               right: -5,

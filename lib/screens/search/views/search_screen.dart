@@ -16,16 +16,20 @@ class SearchScreen extends ConsumerStatefulWidget {
 
 class _SearchScreenState extends ConsumerState<SearchScreen> {
   late TextEditingController _searchController;
+  late FocusNode _searchFocusNode;
 
   @override
   void initState() {
     super.initState();
-    _searchController = TextEditingController(text: ref.read(searchParamsProvider).query);
+    _searchController =
+        TextEditingController(text: ref.read(searchParamsProvider).query);
+    _searchFocusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _searchFocusNode.dispose();
     super.dispose();
   }
 
@@ -61,8 +65,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               child: SearchForm(
                 controller: _searchController,
-                focusNode: FocusNode(),
-                autofocus: searchParams.query.isEmpty && searchParams.category == null,
+                focusNode: _searchFocusNode,
+                autofocus:
+                    searchParams.query.isEmpty && searchParams.category == null,
                 onTabFilter: _showFilterModal,
                 onChanged: (query) {
                   ref.read(searchParamsProvider.notifier).setQuery(query ?? "");
@@ -75,7 +80,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
             ),
             // Active Filters Row
-            if (searchParams.category != null || searchParams.sortOption != null)
+            if (searchParams.category != null ||
+                searchParams.sortOption != null)
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
@@ -86,7 +92,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         padding: const EdgeInsets.only(right: 8),
                         child: InputChip(
                           label: Text(searchParams.category!),
-                          onDeleted: () => ref.read(searchParamsProvider.notifier).setCategory(null),
+                          onDeleted: () => ref
+                              .read(searchParamsProvider.notifier)
+                              .setCategory(null),
                           backgroundColor: primaryColor.withValues(alpha: 0.1),
                           deleteIconColor: Colors.black54,
                         ),
@@ -96,7 +104,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         padding: const EdgeInsets.only(right: 8),
                         child: InputChip(
                           label: Text(searchParams.sortOption!),
-                          onDeleted: () => ref.read(searchParamsProvider.notifier).setSortOption(null),
+                          onDeleted: () => ref
+                              .read(searchParamsProvider.notifier)
+                              .setSortOption(null),
                           backgroundColor: primaryColor.withValues(alpha: 0.1),
                           deleteIconColor: Colors.black54,
                         ),
@@ -105,7 +115,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 ),
               ),
 
-            if (searchParams.query.isEmpty && searchParams.category == null) ...[
+            if (searchParams.query.isEmpty &&
+                searchParams.category == null) ...[
               Expanded(
                 child: SingleChildScrollView(
                   child: Column(
@@ -130,20 +141,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: history.length > 5 ? 5 : history.length,
-                          separatorBuilder: (context, index) => const Divider(height: 1),
+                          separatorBuilder: (context, index) =>
+                              const Divider(height: 1),
                           itemBuilder: (context, index) {
                             return ListTile(
-                              leading: const Icon(Icons.access_time_outlined, color: blackColor40),
+                              leading: const Icon(Icons.access_time_outlined,
+                                  color: blackColor40),
                               title: Text(history[index]),
-                              trailing: const Icon(Icons.north_west, size: 16, color: blackColor40),
+                              trailing: const Icon(Icons.north_west,
+                                  size: 16, color: blackColor40),
                               onTap: () {
-                                ref.read(searchParamsProvider.notifier).setQuery(history[index]);
+                                ref
+                                    .read(searchParamsProvider.notifier)
+                                    .setQuery(history[index]);
                               },
                             );
                           },
                         ),
-                        loading: () => const Center(child: CircularProgressIndicator()),
-                        error: (e, s) => const Center(child: Text("Error loading history")),
+                        loading: () =>
+                            const Center(child: CircularProgressIndicator()),
+                        error: (e, s) =>
+                            const Center(child: Text("Error loading history")),
                       ),
                       const Divider(height: 1),
                       const SizedBox(height: defaultPadding),
@@ -151,21 +169,28 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       // Recently Viewed Section
                       Consumer(
                         builder: (context, ref, child) {
-                          final recentlyViewedAsync = ref.watch(recentlyViewedProvider);
+                          final recentlyViewedAsync =
+                              ref.watch(recentlyViewedProvider);
                           return recentlyViewedAsync.when(
                             data: (products) {
-                              if (products.isEmpty) return const SizedBox.shrink();
+                              if (products.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: defaultPadding),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           "Recently Viewed",
-                                          style: Theme.of(context).textTheme.titleSmall,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleSmall,
                                         ),
                                       ],
                                     ),
@@ -174,17 +199,21 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                     height: 240,
                                     child: ListView.builder(
                                       scrollDirection: Axis.horizontal,
-                                      padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: defaultPadding),
                                       itemCount: products.length,
                                       itemBuilder: (context, index) {
                                         final product = products[index];
-                                        final isBookmarked = wishlistAsyncValue.maybeWhen(
-                                          data: (wishlist) => wishlist.any((p) => p.id == product.id),
+                                        final isBookmarked =
+                                            wishlistAsyncValue.maybeWhen(
+                                          data: (wishlist) => wishlist
+                                              .any((p) => p.id == product.id),
                                           orElse: () => false,
                                         );
 
                                         return Padding(
-                                          padding: const EdgeInsets.only(right: defaultPadding),
+                                          padding: const EdgeInsets.only(
+                                              right: defaultPadding),
                                           child: SizedBox(
                                             width: 140,
                                             child: ProductCard(
@@ -193,18 +222,27 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                               brandName: product.brandName,
                                               title: product.title,
                                               price: product.price,
-                                              priceAfterDiscount: product.priceAfterDiscount,
-                                              discountPercent: product.discountPercent,
-                                              discountType: product.discountType,
-                                              discountValue: product.discountValue,
+                                              priceAfterDiscount:
+                                                  product.priceAfterDiscount,
+                                              discountPercent:
+                                                  product.discountPercent,
+                                              discountType:
+                                                  product.discountType,
+                                              discountValue:
+                                                  product.discountValue,
                                               rating: product.rating,
                                               reviewCount: product.reviewCount,
                                               isBookmarked: isBookmarked,
                                               onBookmarkTap: () {
-                                                ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
+                                                ref
+                                                    .read(wishlistProvider
+                                                        .notifier)
+                                                    .toggleWishlist(product.id,
+                                                        product: product);
                                               },
                                               press: () {
-                                                Navigator.pushNamed(context, productDetailsScreenRoute,
+                                                Navigator.pushNamed(context,
+                                                    productDetailsScreenRoute,
                                                     arguments: product);
                                               },
                                               product: product,
@@ -230,7 +268,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ] else ...[
               Expanded(
                 child: filteredProductsAsync.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (err, stack) => Center(child: Text('Error: $err')),
                   data: (products) {
                     if (products.isEmpty) {
@@ -260,7 +299,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         Expanded(
                           child: GridView.builder(
                             padding: const EdgeInsets.all(defaultPadding),
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
                               childAspectRatio: 0.7,
                               mainAxisSpacing: defaultPadding,
@@ -270,7 +310,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                             itemBuilder: (context, index) {
                               final product = products[index];
                               final isBookmarked = wishlistAsyncValue.maybeWhen(
-                                data: (wishlist) => wishlist.any((p) => p.id == product.id),
+                                data: (wishlist) =>
+                                    wishlist.any((p) => p.id == product.id),
                                 orElse: () => false,
                               );
 
@@ -288,10 +329,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 reviewCount: product.reviewCount,
                                 isBookmarked: isBookmarked,
                                 onBookmarkTap: () {
-                                  ref.read(wishlistProvider.notifier).toggleWishlist(product.id, product: product);
+                                  ref
+                                      .read(wishlistProvider.notifier)
+                                      .toggleWishlist(product.id,
+                                          product: product);
                                 },
                                 press: () {
-                                  Navigator.pushNamed(context, productDetailsScreenRoute,
+                                  Navigator.pushNamed(
+                                      context, productDetailsScreenRoute,
                                       arguments: product);
                                 },
                                 product: product,

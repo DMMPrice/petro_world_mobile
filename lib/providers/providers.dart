@@ -41,6 +41,34 @@ final productsProvider = FutureProvider<List<ProductModel>>((ref) async {
   return ApiService.instance.getProducts();
 });
 
+class HomeSelectedCategoryNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void setCategory(String? category) => state = category;
+}
+
+final homeSelectedCategoryProvider =
+    NotifierProvider<HomeSelectedCategoryNotifier, String?>(() {
+  return HomeSelectedCategoryNotifier();
+});
+
+final homeProductsProvider = Provider<AsyncValue<List<ProductModel>>>((ref) {
+  final productsAsync = ref.watch(productsProvider);
+  final selectedCategory = ref.watch(homeSelectedCategoryProvider);
+
+  return productsAsync.whenData((products) {
+    if (selectedCategory == null) return products;
+
+    return products.where((product) {
+      return product.categoryTitle?.toLowerCase() ==
+              selectedCategory.toLowerCase() ||
+          product.subCategoryTitle?.toLowerCase() ==
+              selectedCategory.toLowerCase();
+    }).toList();
+  });
+});
+
 // Trending Products Provider
 final trendingProductsProvider =
     FutureProvider<List<ProductModel>>((ref) async {
@@ -159,18 +187,27 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
       }
       state = AsyncData(List.from(_guestWishlist));
     } else {
-      try {
-        final wishlist = await future;
-        final isBookmarked = wishlist.any((p) => p.id == productId);
+      final previousList = state.value ?? [];
+      final isBookmarked = previousList.any((p) => p.id == productId);
+      var nextList = List<ProductModel>.from(previousList);
 
+      if (isBookmarked) {
+        nextList.removeWhere((p) => p.id == productId);
+      } else if (product != null) {
+        nextList.add(product);
+      }
+      state = AsyncData(nextList);
+
+      try {
         if (isBookmarked) {
           await ApiService.instance.removeFromWishlist(productId);
         } else {
           await ApiService.instance.addToWishlist(productId);
         }
-        ref.invalidateSelf();
       } catch (e) {
-        state = AsyncError(e, StackTrace.current);
+        state = AsyncData(previousList);
+      } finally {
+        ref.invalidateSelf();
       }
     }
   }

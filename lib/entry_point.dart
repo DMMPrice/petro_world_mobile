@@ -30,53 +30,61 @@ class _EntryPointState extends ConsumerState<EntryPoint> {
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(navigationProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        leading: const SizedBox(),
-        leadingWidth: 0,
-        centerTitle: false,
-        title: Image.asset(
-          "assets/logo/logo.png",
-          height: 32,
-          fit: BoxFit.contain,
-        ),
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                onPressed: () {
-                  if (!ApiService.instance.isLoggedIn) {
-                    Navigator.pushNamed(context, logInScreenRoute);
-                  } else {
-                    Navigator.pushNamed(context, notificationsScreenRoute);
-                  }
-                },
-                icon: SvgPicture.asset(
-                  "assets/icons/Notification.svg",
-                  height: 24,
-                  colorFilter: ColorFilter.mode(
-                      Theme.of(context).textTheme.bodyLarge!.color!,
-                      BlendMode.srcIn),
-                ),
-              ),
-              const NotificationBadge(),
-            ],
+    return PopScope(
+      canPop: currentIndex == 0,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop && currentIndex != 0) {
+          ref.read(navigationProvider.notifier).setIndex(0);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          leading: const SizedBox(),
+          leadingWidth: 0,
+          centerTitle: false,
+          title: Image.asset(
+            "assets/logo/logo.png",
+            height: 32,
+            fit: BoxFit.contain,
           ),
-        ],
+          actions: [
+            Stack(
+              children: [
+                IconButton(
+                  onPressed: () {
+                    if (!ApiService.instance.isLoggedIn) {
+                      Navigator.pushNamed(context, logInScreenRoute);
+                    } else {
+                      Navigator.pushNamed(context, notificationsScreenRoute);
+                    }
+                  },
+                  icon: SvgPicture.asset(
+                    "assets/icons/Notification.svg",
+                    height: 24,
+                    colorFilter: ColorFilter.mode(
+                        Theme.of(context).textTheme.bodyLarge!.color!,
+                        BlendMode.srcIn),
+                  ),
+                ),
+                const NotificationBadge(),
+              ],
+            ),
+          ],
+        ),
+        body: PageTransitionSwitcher(
+          duration: defaultDuration,
+          transitionBuilder: (child, animation, secondAnimation) {
+            return FadeThroughTransition(
+              animation: animation,
+              secondaryAnimation: secondAnimation,
+              child: child,
+            );
+          },
+          child: _pages[currentIndex],
+        ),
+        bottomNavigationBar: const AppBottomNavigationBar(),
       ),
-      body: PageTransitionSwitcher(
-        duration: defaultDuration,
-        transitionBuilder: (child, animation, secondAnimation) {
-          return FadeThroughTransition(
-            animation: animation,
-            secondaryAnimation: secondAnimation,
-            child: child,
-          );
-        },
-        child: _pages[currentIndex],
-      ),
-      bottomNavigationBar: const AppBottomNavigationBar(),
     );
   }
 }

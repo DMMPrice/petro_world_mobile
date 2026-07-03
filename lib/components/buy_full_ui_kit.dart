@@ -34,6 +34,9 @@ class _BuyFullKitState extends State<BuyFullKit> {
 
   void _startAutoScroll() {
     _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      if (!mounted || widget.images.isEmpty || !_pageController.hasClients) {
+        return;
+      }
       if (_currentPage < widget.images.length - 1) {
         _currentPage++;
       } else {

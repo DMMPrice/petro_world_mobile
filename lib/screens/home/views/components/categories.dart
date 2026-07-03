@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:petro_world/route/route_constants.dart';
 import 'package:petro_world/components/shimmer_wrapper.dart';
 import '../../../../constants.dart';
 
@@ -14,6 +13,7 @@ class Categories extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsyncValue = ref.watch(categoriesProvider);
+    final selectedCategory = ref.watch(homeSelectedCategoryProvider);
 
     return categoriesAsyncValue.when(
       loading: () => const CategoryListSkeleton(),
@@ -33,18 +33,24 @@ class Categories extends ConsumerWidget {
                 (index) => Padding(
                   padding: EdgeInsets.only(
                       left: index == 0 ? defaultPadding : defaultPadding / 2,
-                      right: index == categories.length - 1 ? defaultPadding : 0),
+                      right:
+                          index == categories.length - 1 ? defaultPadding : 0),
                   child: CategoryBtn(
                     category: categories[index].title,
                     svgSrc: categories[index].svgSrc,
-                    isActive: false, // Could be derived from searchParams but home is usually "fresh"
+                    isActive: categories[index].title == "All Categories"
+                        ? selectedCategory == null
+                        : selectedCategory == categories[index].title,
                     press: () {
                       if (categories[index].title == "All Categories") {
-                        ref.read(searchParamsProvider.notifier).clearAll();
+                        ref
+                            .read(homeSelectedCategoryProvider.notifier)
+                            .setCategory(null);
                       } else {
-                        ref.read(searchParamsProvider.notifier).setCategory(categories[index].title);
+                        ref
+                            .read(homeSelectedCategoryProvider.notifier)
+                            .setCategory(categories[index].title);
                       }
-                      Navigator.pushNamed(context, searchScreenRoute);
                     },
                   ),
                 ),
@@ -106,7 +112,9 @@ class CategoryBtn extends StatelessWidget {
     return InkWell(
       onTap: press,
       borderRadius: const BorderRadius.all(Radius.circular(30)),
-      child: Container(
+      child: AnimatedContainer(
+        duration: defaultDuration,
+        curve: Curves.easeOutCubic,
         height: 36,
         padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
         decoration: BoxDecoration(
@@ -129,14 +137,18 @@ class CategoryBtn extends StatelessWidget {
                 ),
               ),
             if (svgSrc != null) const SizedBox(width: defaultPadding / 2),
-            Text(
-              category,
+            AnimatedDefaultTextStyle(
+              duration: defaultDuration,
+              curve: Curves.easeOutCubic,
               style: TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 color: isActive
                     ? Colors.white
                     : Theme.of(context).textTheme.bodyLarge!.color,
+              ),
+              child: Text(
+                category,
               ),
             ),
           ],
