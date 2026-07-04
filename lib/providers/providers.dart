@@ -83,7 +83,7 @@ final homeSelectedCategoryProvider =
 });
 
 class HomeProductsNotifier extends AsyncNotifier<PagedProductsState> {
-  static const _pageSize = 20;
+  static const _pageSize = 8;
   int _offset = 0;
   String? _categoryName;
 
