@@ -52,7 +52,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: SafeArea(
         child: CustomScrollView(
           controller: _scrollController,
-          cacheExtent: 900,
           slivers: [
             const SliverToBoxAdapter(child: BannerCarouselAndCategories()),
             SliverToBoxAdapter(
