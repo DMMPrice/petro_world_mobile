@@ -615,7 +615,7 @@ class _AvatarImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final source = avatarUrl ?? '';
+    final source = (avatarUrl ?? '').trim();
     if (source.isEmpty) return const _AvatarPlaceholder();
 
     final dataImage = _decodeDataImage(source);
@@ -635,12 +635,15 @@ class _AvatarImage extends StatelessWidget {
   }
 
   Uint8List? _decodeDataImage(String value) {
-    if (!value.startsWith('data:image/')) return null;
-    final commaIndex = value.indexOf(',');
+    final trimmedValue = value.trim();
+    if (!trimmedValue.toLowerCase().startsWith('data:image/')) return null;
+    final commaIndex = trimmedValue.indexOf(',');
     if (commaIndex == -1) return null;
 
     try {
-      return base64Decode(value.substring(commaIndex + 1));
+      final base64Payload =
+          trimmedValue.substring(commaIndex + 1).replaceAll(RegExp(r'\s+'), '');
+      return base64Decode(base64Payload);
     } catch (_) {
       return null;
     }

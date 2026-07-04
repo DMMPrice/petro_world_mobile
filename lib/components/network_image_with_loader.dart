@@ -22,15 +22,17 @@ class NetworkImageWithLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final imageSource = src.trim();
+
     // If URL is missing show a placeholder immediately — no network call needed
-    if (src.isEmpty) {
+    if (imageSource.isEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.all(Radius.circular(radius)),
         child: _placeholder(),
       );
     }
 
-    final dataImage = _decodeDataImage(src);
+    final dataImage = _decodeDataImage(imageSource);
     if (dataImage != null) {
       return ClipRRect(
         borderRadius: BorderRadius.all(Radius.circular(radius)),
@@ -46,7 +48,7 @@ class NetworkImageWithLoader extends StatelessWidget {
       borderRadius: BorderRadius.all(Radius.circular(radius)),
       child: CachedNetworkImage(
         fit: fit,
-        imageUrl: src,
+        imageUrl: imageSource,
         imageBuilder: (context, imageProvider) => Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -62,12 +64,15 @@ class NetworkImageWithLoader extends StatelessWidget {
   }
 
   Uint8List? _decodeDataImage(String value) {
-    if (!value.startsWith('data:image/')) return null;
-    final commaIndex = value.indexOf(',');
+    final trimmedValue = value.trim();
+    if (!trimmedValue.toLowerCase().startsWith('data:image/')) return null;
+    final commaIndex = trimmedValue.indexOf(',');
     if (commaIndex == -1) return null;
 
     try {
-      return base64Decode(value.substring(commaIndex + 1));
+      final base64Payload =
+          trimmedValue.substring(commaIndex + 1).replaceAll(RegExp(r'\s+'), '');
+      return base64Decode(base64Payload);
     } catch (_) {
       return null;
     }

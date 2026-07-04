@@ -374,11 +374,12 @@ class ApiService {
   }
 
   Future<void> updateProfile(Map<String, dynamic> data) async {
-    await http.patch(
+    final res = await http.patch(
       Uri.parse('${ApiConfig.baseUrl}/profile'),
       headers: _jsonHeaders(_token),
       body: jsonEncode(data),
     );
+    _decode(res, (_) => null);
   }
 
   // ── Addresses ─────────────────────────────────────────────────────────────
