@@ -8,11 +8,39 @@ import 'package:petro_world/components/shimmer_wrapper.dart';
 import 'components/banner_carousel_and_categories.dart';
 import 'package:petro_world/providers/providers.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController()..addListener(_loadMoreNearBottom);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_loadMoreNearBottom)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _loadMoreNearBottom() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.extentAfter < 700) {
+      ref.read(homeProductsProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final productsAsyncValue = ref.watch(homeProductsProvider);
     final wishlistAsyncValue = ref.watch(wishlistProvider);
     final selectedCategory = ref.watch(homeSelectedCategoryProvider);
@@ -20,6 +48,8 @@ class HomeScreen extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         child: CustomScrollView(
+          controller: _scrollController,
+          cacheExtent: 900,
           slivers: [
             const SliverToBoxAdapter(child: BannerCarouselAndCategories()),
             SliverToBoxAdapter(
@@ -40,7 +70,8 @@ class HomeScreen extends ConsumerWidget {
               error: (error, stack) => SliverToBoxAdapter(
                 child: Center(child: Text('Error: $error')),
               ),
-              data: (products) {
+              data: (pagedProducts) {
+                final products = pagedProducts.items;
                 if (products.isEmpty) {
                   return const SliverToBoxAdapter(
                     child: Center(
@@ -104,7 +135,40 @@ class HomeScreen extends ConsumerWidget {
                 );
               },
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: defaultPadding)),
+            productsAsyncValue.maybeWhen(
+              data: (pagedProducts) {
+                if (!pagedProducts.isLoadingMore &&
+                    pagedProducts.loadMoreError == null) {
+                  return const SliverToBoxAdapter(
+                    child: SizedBox(height: defaultPadding),
+                  );
+                }
+
+                return SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: defaultPadding,
+                    ),
+                    child: Center(
+                      child: pagedProducts.loadMoreError != null
+                          ? TextButton(
+                              onPressed: () => ref
+                                  .read(homeProductsProvider.notifier)
+                                  .loadMore(),
+                              child: const Text('Retry loading products'),
+                            )
+                          : const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                    ),
+                  ),
+                );
+              },
+              orElse: () => const SliverToBoxAdapter(
+                  child: SizedBox(height: defaultPadding)),
+            ),
           ],
         ),
       ),

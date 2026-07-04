@@ -406,35 +406,41 @@ class _ProductCardState extends ConsumerState<ProductCard> {
                               data: (reviews) => reviews.length,
                               orElse: () => widget.reviewCount ?? 0,
                             );
-                            return Row(
-                              children: [
-                                SvgPicture.asset(
-                                  'assets/icons/Star_filled.svg',
-                                  height: 12,
-                                  colorFilter: const ColorFilter.mode(
-                                      Color(0xFFFFAD33), BlendMode.srcIn),
+                            return Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      'assets/icons/Star_filled.svg',
+                                      height: 12,
+                                      colorFilter: const ColorFilter.mode(
+                                          Color(0xFFFFAD33), BlendMode.srcIn),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      currentRating.toStringAsFixed(1),
+                                      style: const TextStyle(
+                                          fontSize: 12, color: blackColor60),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Text('|',
+                                        style: TextStyle(
+                                            fontSize: 12, color: blackColor20)),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '$currentCount',
+                                      style: const TextStyle(
+                                          fontSize: 12, color: blackColor60),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  currentRating.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                      fontSize: 12, color: blackColor60),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text('|',
-                                    style: TextStyle(
-                                        fontSize: 12, color: blackColor20)),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '$currentCount',
-                                  style: const TextStyle(
-                                      fontSize: 12, color: blackColor60),
-                                ),
-                              ],
+                              ),
                             );
                           },
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 6),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
@@ -494,7 +500,7 @@ class _QuantityStepper extends StatelessWidget {
   final VoidCallback onAdd;
   final VoidCallback onDecrement;
 
-  static const _h = 34.0;
+  static const _h = 30.0;
   static const _green = Color(0xFF0C831F); // Blinkit green
 
   @override
@@ -509,8 +515,8 @@ class _QuantityStepper extends StatelessWidget {
         ),
         child: const Center(
           child: SizedBox(
-            width: 16,
-            height: 16,
+            width: 14,
+            height: 14,
             child: CircularProgressIndicator(
               strokeWidth: 2,
               color: Colors.white,
@@ -529,7 +535,7 @@ class _QuantityStepper extends StatelessWidget {
           width: _h,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(7),
             border: Border.all(color: _green, width: 1.5),
             boxShadow: [
               BoxShadow(
@@ -539,7 +545,7 @@ class _QuantityStepper extends StatelessWidget {
               ),
             ],
           ),
-          child: const Icon(Icons.add, color: _green, size: 20),
+          child: const Icon(Icons.add, color: _green, size: 18),
         ),
       );
     }
@@ -549,7 +555,7 @@ class _QuantityStepper extends StatelessWidget {
       height: _h,
       decoration: BoxDecoration(
         color: _green,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(7),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.12),
@@ -565,21 +571,21 @@ class _QuantityStepper extends StatelessWidget {
           GestureDetector(
             onTap: onDecrement,
             child: const SizedBox(
-              width: 30,
+              width: 26,
               height: _h,
-              child: Icon(Icons.remove, color: Colors.white, size: 16),
+              child: Icon(Icons.remove, color: Colors.white, size: 15),
             ),
           ),
           // Count
           Container(
-            constraints: const BoxConstraints(minWidth: 26),
+            constraints: const BoxConstraints(minWidth: 22),
             alignment: Alignment.center,
             child: Text(
               '$qty',
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
           ),
@@ -587,9 +593,9 @@ class _QuantityStepper extends StatelessWidget {
           GestureDetector(
             onTap: onAdd,
             child: const SizedBox(
-              width: 30,
+              width: 26,
               height: _h,
-              child: Icon(Icons.add, color: Colors.white, size: 16),
+              child: Icon(Icons.add, color: Colors.white, size: 15),
             ),
           ),
         ],

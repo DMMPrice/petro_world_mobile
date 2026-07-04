@@ -19,7 +19,7 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
   bool _isLoading = true;
   List<Map<String, dynamic>> _messages = [];
 
-  // Poll every 5 seconds instead of Supabase Realtime
+  // Poll every 5 seconds for fresh support messages.
   Timer? _pollTimer;
 
   @override

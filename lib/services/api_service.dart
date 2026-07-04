@@ -240,13 +240,18 @@ class ApiService {
   }
 
   // ── Products ─────────────────────────────────────────────────────────────
-  Future<List<ProductModel>> getProducts(
-      {String? categoryId, String? categoryName}) async {
+  Future<List<ProductModel>> getProducts({
+    String? categoryId,
+    String? categoryName,
+    int? limit,
+    int? offset,
+  }) async {
     final uri =
         Uri.parse('${ApiConfig.baseUrl}/products').replace(queryParameters: {
       if (categoryId != null) 'categoryId': categoryId,
       if (categoryName != null) 'categoryName': categoryName,
-      'limit': '100',
+      if (limit != null) 'limit': limit.toString(),
+      if (offset != null) 'offset': offset.toString(),
     });
     final res = await http.get(uri, headers: _jsonHeaders(_token));
     return _decode(
@@ -851,7 +856,7 @@ class ApiService {
 
   // ── Delivery estimate ─────────────────────────────────────────────────────
   Future<Map<String, dynamic>?> checkDeliveryEstimate(String pincode) async {
-    // Falls back to Supabase RPC; this endpoint is not on Express backend yet
+    // Express backend endpoint not implemented yet.
     return null;
   }
 

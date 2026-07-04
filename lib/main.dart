@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:petro_world/route/router.dart' as router;
 import 'package:petro_world/theme/app_theme.dart';
 import 'package:petro_world/auth_gate.dart';
@@ -15,15 +14,6 @@ Future<void> main() async {
   // Initialise Express-backend JWT token from local storage FIRST,
   // so every provider can correctly see isLoggedIn on first build.
   await ApiService.instance.init();
-
-  // Keep Supabase for Edge Functions (Shiprocket, Razorpay) and Storage.
-  // Only initialise if credentials are present in .env.
-  final supabaseUrl = dotenv.env['SUPABASE_URL'];
-  final supabaseKey = dotenv.env['SUPABASE_ANON_KEY'];
-  if (supabaseUrl != null && supabaseUrl.isNotEmpty &&
-      supabaseKey != null && supabaseKey.isNotEmpty) {
-    await Supabase.initialize(url: supabaseUrl, anonKey: supabaseKey);
-  }
 
   runApp(const ProviderScope(child: MyApp()));
 }

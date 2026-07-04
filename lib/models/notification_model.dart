@@ -1,4 +1,3 @@
-
 enum NotificationType { global, individual }
 
 class NotificationModel {
@@ -24,15 +23,17 @@ class NotificationModel {
     return NotificationModel(
       id: json['id']?.toString() ?? '',
       title: json['title']?.toString() ?? '',
-      // Backend schema uses 'body'; old Supabase schema used 'message'
+      // Backend schema uses 'body'; keep 'message' for backward compatibility.
       message: (json['body'] ?? json['message'] ?? '').toString(),
-      type: (json['type'] ?? json['user_id']) == 'global' || json['user_id'] == null
+      type: (json['type'] ?? json['user_id']) == 'global' ||
+              json['user_id'] == null
           ? NotificationType.global
           : NotificationType.individual,
       userId: json['user_id']?.toString(),
-      // Backend schema uses 'read'; old Supabase schema used 'is_read'
+      // Backend schema uses 'read'; keep 'is_read' for backward compatibility.
       isRead: (json['read'] ?? json['is_read'] ?? false) as bool,
-      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
+      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+          DateTime.now(),
     );
   }
 

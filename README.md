@@ -9,7 +9,7 @@ configuration, and deployment checklist.
 ## Project Overview
 
 - Multi-platform Flutter application (Android, iOS, Web)
-- Uses Supabase for optional backend features (Auth, Storage, Edge Functions)
+- Uses the Petro World Express backend for app data and authentication
 - Adaptive product image rendering and cached network images
 - Riverpod/Provider for state management
 - Environment-driven configuration via `.env`
@@ -42,8 +42,6 @@ Create a `.env` file (do not commit). Example variables are in `.env.example`.
 
 - `API_URL` — backend API base (production:
   https://petro-world-backend.onrender.com/api/v1)
-- `SUPABASE_URL` — optional Supabase project URL
-- `SUPABASE_ANON_KEY` — optional Supabase anon key
 
 `.env` is ignored by git via `.gitignore`.
 
@@ -84,7 +82,7 @@ flutter build web --release
 - Run `flutter analyze` and `flutter test`
 - Ensure `.env` is configured with production values
 - Replace any debug prints (project uses `LoggerService` already)
-- Confirm Supabase RLS & minimal ANON_KEY permissions
+- Confirm backend API availability, HTTPS, CORS, and production data handling
 - Configure Crashlytics/Sentry for error reporting
 - Asset optimization and image compression
 - Verify lazy loading and pagination for large product lists

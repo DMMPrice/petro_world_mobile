@@ -38,8 +38,37 @@ final categoriesProvider = FutureProvider<List<CategoryModel>>((ref) async {
 
 // Products Provider
 final productsProvider = FutureProvider<List<ProductModel>>((ref) async {
-  return ApiService.instance.getProducts();
+  return ApiService.instance.getProducts(limit: 100);
 });
+
+class PagedProductsState {
+  const PagedProductsState({
+    required this.items,
+    required this.hasMore,
+    this.isLoadingMore = false,
+    this.loadMoreError,
+  });
+
+  final List<ProductModel> items;
+  final bool hasMore;
+  final bool isLoadingMore;
+  final String? loadMoreError;
+
+  PagedProductsState copyWith({
+    List<ProductModel>? items,
+    bool? hasMore,
+    bool? isLoadingMore,
+    String? Function()? loadMoreError,
+  }) {
+    return PagedProductsState(
+      items: items ?? this.items,
+      hasMore: hasMore ?? this.hasMore,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      loadMoreError:
+          loadMoreError != null ? loadMoreError() : this.loadMoreError,
+    );
+  }
+}
 
 class HomeSelectedCategoryNotifier extends Notifier<String?> {
   @override
@@ -53,20 +82,68 @@ final homeSelectedCategoryProvider =
   return HomeSelectedCategoryNotifier();
 });
 
-final homeProductsProvider = Provider<AsyncValue<List<ProductModel>>>((ref) {
-  final productsAsync = ref.watch(productsProvider);
-  final selectedCategory = ref.watch(homeSelectedCategoryProvider);
+class HomeProductsNotifier extends AsyncNotifier<PagedProductsState> {
+  static const _pageSize = 20;
+  int _offset = 0;
+  String? _categoryName;
 
-  return productsAsync.whenData((products) {
-    if (selectedCategory == null) return products;
+  @override
+  Future<PagedProductsState> build() async {
+    _categoryName = ref.watch(homeSelectedCategoryProvider);
+    _offset = 0;
 
-    return products.where((product) {
-      return product.categoryTitle?.toLowerCase() ==
-              selectedCategory.toLowerCase() ||
-          product.subCategoryTitle?.toLowerCase() ==
-              selectedCategory.toLowerCase();
-    }).toList();
-  });
+    final products = await ApiService.instance.getProducts(
+      categoryName: _categoryName,
+      limit: _pageSize,
+      offset: _offset,
+    );
+    _offset = products.length;
+
+    return PagedProductsState(
+      items: products,
+      hasMore: products.length == _pageSize,
+    );
+  }
+
+  Future<void> loadMore() async {
+    final current = state.value;
+    if (current == null || current.isLoadingMore || !current.hasMore) return;
+
+    state = AsyncData(current.copyWith(
+      isLoadingMore: true,
+      loadMoreError: () => null,
+    ));
+
+    try {
+      final products = await ApiService.instance.getProducts(
+        categoryName: _categoryName,
+        limit: _pageSize,
+        offset: _offset,
+      );
+      _offset += products.length;
+
+      final existingIds = current.items.map((product) => product.id).toSet();
+      final nextItems = [
+        ...current.items,
+        ...products.where((product) => !existingIds.contains(product.id)),
+      ];
+
+      state = AsyncData(PagedProductsState(
+        items: nextItems,
+        hasMore: products.length == _pageSize,
+      ));
+    } catch (e) {
+      state = AsyncData(current.copyWith(
+        isLoadingMore: false,
+        loadMoreError: () => e.toString(),
+      ));
+    }
+  }
+}
+
+final homeProductsProvider =
+    AsyncNotifierProvider<HomeProductsNotifier, PagedProductsState>(() {
+  return HomeProductsNotifier();
 });
 
 // Trending Products Provider

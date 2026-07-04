@@ -2,8 +2,8 @@ import 'dart:async';
 import '../models/notification_model.dart';
 import 'api_service.dart';
 
-/// Notification service backed entirely by the Express/Neon backend.
-/// All Supabase Realtime has been replaced with periodic polling.
+/// Notification service backed entirely by the Express backend.
+/// Realtime updates are handled with periodic polling.
 class NotificationService {
   // ── Read notifications ────────────────────────────────────────────────────
 
@@ -13,7 +13,8 @@ class NotificationService {
 
   // ── Mark read ─────────────────────────────────────────────────────────────
 
-  static Future<void> markAsRead(String notificationId, NotificationType type) async {
+  static Future<void> markAsRead(
+      String notificationId, NotificationType type) async {
     await ApiService.instance.markNotificationRead(notificationId);
   }
 
@@ -25,7 +26,7 @@ class NotificationService {
     return ApiService.instance.getUnreadNotificationCount();
   }
 
-  // ── Polled stream (replaces Supabase Realtime) ────────────────────────────
+  // ── Polled stream ────────────────────────────────────────────────────────
 
   /// Emits the unread notification count immediately and then every 30 seconds.
   static Stream<int> get unreadCountStream async* {
@@ -62,7 +63,8 @@ class NotificationService {
 
   // ── Admin helpers (no-ops — admin panel handles these via its own backend calls) ──
 
-  static Future<void> sendGlobalNotification(String title, String message) async {
+  static Future<void> sendGlobalNotification(
+      String title, String message) async {
     // Admin panel sends notifications via POST /api/v1/admin/notifications
     // This method is left as a no-op on the mobile side.
   }
