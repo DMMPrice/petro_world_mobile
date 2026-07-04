@@ -283,8 +283,6 @@ class WishlistNotifier extends AsyncNotifier<List<ProductModel>> {
         }
       } catch (e) {
         state = AsyncData(previousList);
-      } finally {
-        ref.invalidateSelf();
       }
     }
   }

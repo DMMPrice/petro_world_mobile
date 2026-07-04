@@ -42,6 +42,15 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     );
   }
 
+  void _syncSearchController(String query) {
+    if (_searchController.text == query || _searchFocusNode.hasFocus) return;
+
+    _searchController.value = TextEditingValue(
+      text: query,
+      selection: TextSelection.collapsed(offset: query.length),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final searchParams = ref.watch(searchParamsProvider);
@@ -49,10 +58,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     final wishlistAsyncValue = ref.watch(wishlistProvider);
     final searchHistoryAsync = ref.watch(searchHistoryProvider);
 
-    // Sync controller if state changes externally (e.g. from recent search tap)
-    if (_searchController.text != searchParams.query) {
-      _searchController.text = searchParams.query;
-    }
+    // Sync only external changes. While focused, the controller already owns
+    // the typed value and resetting it can drop cursor/focus on deletion.
+    _syncSearchController(searchParams.query);
 
     return Scaffold(
       body: SafeArea(
