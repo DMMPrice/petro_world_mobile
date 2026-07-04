@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:petro_world/constants.dart';
@@ -176,25 +179,122 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class ProductGridSkeleton extends StatelessWidget {
+class ProductGridSkeleton extends StatefulWidget {
   const ProductGridSkeleton({super.key});
+
+  @override
+  State<ProductGridSkeleton> createState() => _ProductGridSkeletonState();
+}
+
+class _ProductGridSkeletonState extends State<ProductGridSkeleton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  Timer? _delayTimer;
+  bool _showDelayLoader = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat();
+    _delayTimer = Timer(const Duration(milliseconds: 1400), () {
+      if (mounted) {
+        setState(() => _showDelayLoader = true);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _delayTimer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: defaultPadding),
-      child: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.7,
-          mainAxisSpacing: defaultPadding,
-          crossAxisSpacing: defaultPadding,
-        ),
-        itemCount: 4, // Show 4 skeletons initially
-        itemBuilder: (context, index) => const ProductCardSkeleton(),
+      child: Column(
+        children: [
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.7,
+              mainAxisSpacing: defaultPadding,
+              crossAxisSpacing: defaultPadding,
+            ),
+            itemCount: 4,
+            itemBuilder: (context, index) => const ProductCardSkeleton(),
+          ),
+          AnimatedSwitcher(
+            duration: defaultDuration,
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            child: _showDelayLoader
+                ? Padding(
+                    key: const ValueKey('delayed-home-loader'),
+                    padding: const EdgeInsets.only(top: 6, bottom: 18),
+                    child: _DelayedLoadingIndicator(controller: _controller),
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class _DelayedLoadingIndicator extends StatelessWidget {
+  const _DelayedLoadingIndicator({required this.controller});
+
+  final Animation<double> controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (var index = 0; index < 3; index++)
+              Transform.translate(
+                offset: Offset(
+                  0,
+                  math.sin((controller.value * math.pi * 2) + index * 0.75) * 3,
+                ),
+                child: Container(
+                  width: 7,
+                  height: 7,
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  decoration: BoxDecoration(
+                    color: Color.lerp(
+                      primaryColor,
+                      navyColor,
+                      index / 2,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            const SizedBox(width: 10),
+            const Text(
+              'Loading is taking a little longer',
+              style: TextStyle(
+                color: blackColor60,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
