@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:petro_world/constants.dart';
@@ -25,6 +28,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
 
   String? _avatarUrl;
   bool _isLoading = true;
+  bool _isAvatarUploading = false;
 
   @override
   void initState() {
@@ -105,14 +109,55 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _showPhotoSourcePicker() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              defaultPadding,
+              0,
+              defaultPadding,
+              defaultPadding,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.photo_camera_outlined),
+                  title: const Text('Take photo'),
+                  onTap: () => Navigator.pop(context, ImageSource.camera),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.photo_library_outlined),
+                  title: const Text('Choose from gallery'),
+                  onTap: () => Navigator.pop(context, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (source != null) {
+      await _pickImage(source);
+    }
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
     final ImagePicker picker = ImagePicker();
     // imageQuality: 70 keeps the base64 payload reasonable in size
     final XFile? image = await picker.pickImage(
-        source: ImageSource.gallery, imageQuality: 70, maxWidth: 800);
+      source: source,
+      imageQuality: 70,
+      maxWidth: 800,
+    );
 
     if (image != null) {
-      setState(() => _isLoading = true);
+      setState(() => _isAvatarUploading = true);
       try {
         final bytes = await image.readAsBytes();
         final fileName = 'avatar_${DateTime.now().millisecondsSinceEpoch}.jpg';
@@ -120,6 +165,13 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
 
         if (url != null && mounted) {
           setState(() => _avatarUrl = url);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Profile photo updated')),
+          );
+        } else if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Unable to upload profile photo')),
+          );
         }
       } catch (e) {
         if (mounted) {
@@ -128,7 +180,7 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
           );
         }
       } finally {
-        if (mounted) setState(() => _isLoading = false);
+        if (mounted) setState(() => _isAvatarUploading = false);
       }
     }
   }
@@ -209,7 +261,8 @@ class _EditUserInfoScreenState extends State<EditUserInfoScreen> {
                           const SizedBox(height: defaultPadding),
                           EditAvatar(
                             avatarUrl: _avatarUrl,
-                            onTap: _pickImage,
+                            isUploading: _isAvatarUploading,
+                            onTap: _showPhotoSourcePicker,
                           ),
                           const SizedBox(height: defaultPadding * 2),
                           Form(
@@ -457,10 +510,12 @@ class EditAvatar extends StatelessWidget {
   const EditAvatar({
     super.key,
     this.avatarUrl,
+    this.isUploading = false,
     required this.onTap,
   });
 
   final String? avatarUrl;
+  final bool isUploading;
   final VoidCallback onTap;
 
   @override
@@ -474,24 +529,48 @@ class EditAvatar extends StatelessWidget {
               radius: 50,
               backgroundColor:
                   Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: avatarUrl != null && avatarUrl!.isNotEmpty
-                  ? ClipOval(
-                      child: SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: NetworkImageWithLoader(
-                          avatarUrl!,
-                          radius: 0,
-                        ),
+              child: ClipOval(
+                child: SizedBox(
+                  width: 100,
+                  height: 100,
+                  child: _AvatarImage(avatarUrl: avatarUrl),
+                ),
+              ),
+            ),
+            if (isUploading)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.28),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
                       ),
-                    )
-                  : const Icon(Icons.person, size: 50, color: Colors.grey),
+                    ),
+                  ),
+                ),
+              ),
+            Positioned.fill(
+              child: Material(
+                color: Colors.transparent,
+                shape: const CircleBorder(),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: isUploading ? null : onTap,
+                ),
+              ),
             ),
             Positioned(
               right: -5,
               bottom: -5,
               child: GestureDetector(
-                onTap: onTap,
+                onTap: isUploading ? null : onTap,
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -518,13 +597,68 @@ class EditAvatar extends StatelessWidget {
         ),
         const SizedBox(height: defaultPadding),
         TextButton(
-          onPressed: onTap,
-          child: const Text(
-            "Edit photo",
-            style: TextStyle(color: primaryColor),
+          onPressed: isUploading ? null : onTap,
+          child: Text(
+            isUploading ? "Uploading..." : "Edit photo",
+            style: const TextStyle(color: primaryColor),
           ),
         )
       ],
+    );
+  }
+}
+
+class _AvatarImage extends StatelessWidget {
+  const _AvatarImage({required this.avatarUrl});
+
+  final String? avatarUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final source = avatarUrl ?? '';
+    if (source.isEmpty) return const _AvatarPlaceholder();
+
+    final dataImage = _decodeDataImage(source);
+    if (dataImage != null) {
+      return Image.memory(
+        dataImage,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const _AvatarPlaceholder(),
+      );
+    }
+
+    return NetworkImageWithLoader(
+      source,
+      radius: 0,
+      fit: BoxFit.cover,
+    );
+  }
+
+  Uint8List? _decodeDataImage(String value) {
+    if (!value.startsWith('data:image/')) return null;
+    final commaIndex = value.indexOf(',');
+    if (commaIndex == -1) return null;
+
+    try {
+      return base64Decode(value.substring(commaIndex + 1));
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
+class _AvatarPlaceholder extends StatelessWidget {
+  const _AvatarPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+      child: Icon(
+        Icons.person,
+        size: 50,
+        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.32),
+      ),
     );
   }
 }
