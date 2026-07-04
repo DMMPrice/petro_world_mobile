@@ -96,6 +96,7 @@ class ApiService {
   // Singleton
   ApiService._();
   static final ApiService instance = ApiService._();
+  static const Duration _requestTimeout = Duration(seconds: 12);
 
   // In-memory cache
   String? _token;
@@ -104,6 +105,16 @@ class ApiService {
   String? get token => _token;
   ApiUser? get currentUser => _currentUser;
   bool get isLoggedIn => _token != null;
+
+  Future<http.Response> _get(Uri uri) {
+    return http.get(uri, headers: _jsonHeaders(_token)).timeout(_requestTimeout,
+        onTimeout: () {
+      throw const ApiException(
+        'Backend is not reachable. Check API_URL and make sure the backend is running.',
+        408,
+      );
+    });
+  }
 
   // ── Init ──────────────────────────────────────────────────────────────────
   Future<void> init() async {
@@ -253,7 +264,7 @@ class ApiService {
       if (limit != null) 'limit': limit.toString(),
       if (offset != null) 'offset': offset.toString(),
     });
-    final res = await http.get(uri, headers: _jsonHeaders(_token));
+    final res = await _get(uri);
     return _decode(
         res,
         (body) => (body['data'] as List)
