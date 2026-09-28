@@ -1,5 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../services/api_service.dart';
+
+const _googleWebClientId =
+    '521094424048-l0141t7rubl1q8hf4di8vd80utcen68f.apps.googleusercontent.com';
+final _googleSignIn = GoogleSignIn.instance;
 
 // ─── Auth state ───────────────────────────────────────────────────────────────
 enum AuthStatus { unknown, authenticated, unauthenticated }
@@ -14,6 +19,7 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   @override
   Future<AuthState> build() async {
     // Restore persisted session on startup
+    await _googleSignIn.initialize(serverClientId: _googleWebClientId);
     await ApiService.instance.init();
     if (ApiService.instance.isLoggedIn) {
       final user = await ApiService.instance.refreshUser();
@@ -22,6 +28,19 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
       }
     }
     return const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  Future<void> googleLogin() async {
+    state = const AsyncLoading();
+    state = await AsyncValue.guard(() async {
+      final account = await _googleSignIn.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null || idToken.isEmpty) {
+        throw const ApiException('Google did not return an ID token', 401);
+      }
+      final user = await ApiService.instance.googleLogin(idToken);
+      return AuthState(status: AuthStatus.authenticated, user: user);
+    });
   }
 
   Future<void> login(String email, String password) async {

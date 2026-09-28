@@ -28,7 +28,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (!_agreedToTerms) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('You must agree to the Terms of service & privacy policy.'),
+          content: const Text(
+              'You must agree to the Terms of service & privacy policy.'),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -41,11 +42,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
       try {
         await ref.read(authProvider.notifier).register(
-          email: _email!,
-          password: _password!,
-          firstName: _firstName!,
-          lastName: _lastName ?? '',
-        );
+              email: _email!,
+              password: _password!,
+              firstName: _firstName!,
+              lastName: _lastName ?? '',
+            );
 
         final authState = ref.read(authProvider);
         if (authState.hasError) {
@@ -53,7 +54,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(error is ApiException ? error.message : 'Registration failed'),
+                content: Text(error is ApiException
+                    ? error.message
+                    : 'Registration failed'),
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
@@ -74,7 +77,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(error is ApiException ? error.message : 'Unexpected error occurred'),
+              content: Text(error is ApiException
+                  ? error.message
+                  : 'Unexpected error occurred'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -82,6 +87,47 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _googleSignup() async {
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+              'You must agree to the Terms of service & privacy policy.'),
+          backgroundColor: Theme.of(context).colorScheme.error,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authProvider.notifier).googleLogin();
+      final authState = ref.read(authProvider);
+      if (authState.hasError) {
+        throw authState.error ?? Exception('Google sign-up failed');
+      }
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          entryPointScreenRoute,
+          (route) => false,
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error is ApiException
+                ? error.message
+                : 'Google sign-up failed'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -159,7 +205,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           TextSpan(
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                Navigator.pushNamed(context, termsOfServicesScreenRoute);
+                                Navigator.pushNamed(
+                                    context, termsOfServicesScreenRoute);
                               },
                             text: "Terms of service",
                             style: const TextStyle(
@@ -171,7 +218,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           TextSpan(
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
-                                Navigator.pushNamed(context, privacyPolicyScreenRoute);
+                                Navigator.pushNamed(
+                                    context, privacyPolicyScreenRoute);
                               },
                             text: "privacy policy",
                             style: const TextStyle(
@@ -196,11 +244,55 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         foregroundColor: whiteColor,
                         minimumSize: const Size(double.infinity, 56),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(defaultBorderRadius),
+                          borderRadius:
+                              BorderRadius.circular(defaultBorderRadius),
                         ),
                       ),
                       child: const Text("Create Account"),
                     ),
+              const SizedBox(height: defaultPadding),
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: defaultPadding),
+                    child: Text('OR',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: defaultPadding),
+              OutlinedButton(
+                onPressed: _isLoading ? null : _googleSignup,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  foregroundColor: navyColor,
+                  side: BorderSide(color: blackColor20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(defaultBorderRadius),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: blackColor20),
+                      ),
+                      child: const Text('G',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: defaultPadding),
+                    const Text('Continue with Google'),
+                  ],
+                ),
+              ),
               const SizedBox(height: defaultPadding),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -212,7 +304,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     },
                     child: const Text(
                       "Log in",
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     ),
                   )
                 ],

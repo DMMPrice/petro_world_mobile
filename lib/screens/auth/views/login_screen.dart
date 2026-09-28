@@ -34,7 +34,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(error is ApiException ? error.message : 'Login failed'),
+                content: Text(
+                    error is ApiException ? error.message : 'Login failed'),
                 backgroundColor: Theme.of(context).colorScheme.error,
               ),
             );
@@ -50,7 +51,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(error is ApiException ? error.message : 'Unexpected error occurred'),
+              content: Text(error is ApiException
+                  ? error.message
+                  : 'Unexpected error occurred'),
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
           );
@@ -58,6 +61,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       } finally {
         if (mounted) setState(() => _isLoading = false);
       }
+    }
+  }
+
+  Future<void> _googleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authProvider.notifier).googleLogin();
+      final authState = ref.read(authProvider);
+      if (authState.hasError) {
+        throw authState.error ?? Exception('Google sign-in failed');
+      }
+      if (mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          entryPointScreenRoute,
+          (route) => false,
+        );
+      }
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error is ApiException
+                ? error.message
+                : 'Google sign-in failed'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -127,11 +160,55 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         foregroundColor: whiteColor,
                         minimumSize: const Size(double.infinity, 56),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(defaultBorderRadius),
+                          borderRadius:
+                              BorderRadius.circular(defaultBorderRadius),
                         ),
                       ),
                       child: const Text("Log in"),
                     ),
+              const SizedBox(height: defaultPadding),
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: defaultPadding),
+                    child: Text('OR',
+                        style: Theme.of(context).textTheme.bodySmall),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: defaultPadding),
+              OutlinedButton(
+                onPressed: _isLoading ? null : _googleLogin,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 56),
+                  foregroundColor: navyColor,
+                  side: BorderSide(color: blackColor20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(defaultBorderRadius),
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: blackColor20),
+                      ),
+                      child: const Text('G',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: defaultPadding),
+                    const Text('Continue with Google'),
+                  ],
+                ),
+              ),
               const SizedBox(height: defaultPadding),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -143,7 +220,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                     child: const Text(
                       "Sign up",
-                      style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: primaryColor, fontWeight: FontWeight.bold),
                     ),
                   )
                 ],

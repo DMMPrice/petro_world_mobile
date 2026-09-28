@@ -157,6 +157,19 @@ class ApiService {
     });
   }
 
+  Future<ApiUser> googleLogin(String idToken) async {
+    final res = await http.post(
+      Uri.parse('${ApiConfig.baseUrl}/auth/google'),
+      headers: _jsonHeaders(),
+      body: jsonEncode({'idToken': idToken}),
+    );
+    return _decode(res, (body) async {
+      final user = ApiUser.fromJson(body['user'] as Map<String, dynamic>);
+      await _persist(body['token'] as String, user);
+      return user;
+    });
+  }
+
   Future<ApiUser> register({
     required String email,
     required String password,
