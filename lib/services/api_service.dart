@@ -677,11 +677,12 @@ class ApiService {
         headers: _jsonHeaders(_token),
       );
       if (res.statusCode != 200) return [];
-      return _decode(
+      final decoded = _decode(
           res,
           (body) => (body['data'] as List? ?? [])
               .map((e) => NotificationModel.fromJson(e as Map<String, dynamic>))
               .toList());
+      return decoded;
     } catch (_) {
       return [];
     }
