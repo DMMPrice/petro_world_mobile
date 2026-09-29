@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../services/api_service.dart';
+import '../services/logger_service.dart';
 
 const _googleWebClientId =
-    '521094424048-l0141t7rubl1q8hf4di8vd80utcen68f.apps.googleusercontent.com';
+    '521094424048-65p6soaovklg8t8kkpg53400mj5r32sg.apps.googleusercontent.com';
 final _googleSignIn = GoogleSignIn.instance;
 
 // ─── Auth state ───────────────────────────────────────────────────────────────
@@ -33,7 +34,24 @@ class AuthNotifier extends AsyncNotifier<AuthState> {
   Future<void> googleLogin() async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final account = await _googleSignIn.authenticate();
+      late final GoogleSignInAccount account;
+      try {
+        account = await _googleSignIn.authenticate();
+      } on GoogleSignInException catch (error, stackTrace) {
+        LoggerService.error('Google sign-in failed', error, stackTrace);
+        final detail = error.description?.trim();
+        final message = switch (error.code) {
+          GoogleSignInExceptionCode.canceled => 'Google sign-in was cancelled',
+          GoogleSignInExceptionCode.clientConfigurationError =>
+            'Google sign-in is not configured for this Android app${detail == null || detail.isEmpty ? '' : ': $detail'}',
+          GoogleSignInExceptionCode.providerConfigurationError =>
+            'Google sign-in provider configuration error${detail == null || detail.isEmpty ? '' : ': $detail'}',
+          _ => detail == null || detail.isEmpty
+              ? 'Google sign-in failed (${error.code.name})'
+              : 'Google sign-in failed: $detail',
+        };
+        throw ApiException(message, 400);
+      }
       final idToken = account.authentication.idToken;
       if (idToken == null || idToken.isEmpty) {
         throw const ApiException('Google did not return an ID token', 401);
